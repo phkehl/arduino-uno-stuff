@@ -53,7 +53,7 @@ static void sLedFlush(void);
 // initialise the user application
 void appInit(void)
 {
-    DEBUG("ex3: init");
+    DEBUG("ffchreis: init");
 
     // WS2812 LED strip
     PIN_OUTPUT(STRIP_PIN);

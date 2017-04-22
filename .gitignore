@@ -3,3 +3,4 @@ doc/avr-libc/man
 doc/html
 examples/*/obj_*
 projects/*/obj_*
+3rdparty/simavr

@@ -1,0 +1,8 @@
+extract html.tar.gz and/or man.tar.gz here,
+then make the rest of the douc:
+
+tar -xzvf man.tar.gz
+tar -xzvf html.tar.gz
+make
+
+

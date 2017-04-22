@@ -1,0 +1,96 @@
+--- doc/api/doxygen.config.in-orig	2016-12-26 13:40:37.748373825 +0100
++++ doc/api/doxygen.config.in	2016-12-26 14:03:23.848565417 +0100
+@@ -73,7 +73,7 @@
+ # the file and class documentation (similar to JavaDoc). 
+ # Set to NO to disable this.
+ 
+-BRIEF_MEMBER_DESC      = NO
++BRIEF_MEMBER_DESC      = YES
+ 
+ # If the REPEAT_BRIEF tag is set to YES (the default) Doxygen will prepend 
+ # the brief description of a member or function before the detailed description. 
+@@ -383,7 +383,7 @@
+ # by member name. If set to NO (the default) the members will appear in 
+ # declaration order.
+ 
+-SORT_BRIEF_DOCS        = NO
++SORT_BRIEF_DOCS        = YES
+ 
+ # If the SORT_GROUP_NAMES tag is set to YES then doxygen will sort the 
+ # hierarchy of group names into alphabetical order. If set to NO (the default) 
+@@ -731,7 +731,7 @@
+ # Note: To get rid of all source code in the generated output, make sure also 
+ # VERBATIM_HEADERS is set to NO.
+ 
+-SOURCE_BROWSER         = NO
++SOURCE_BROWSER         = YES
+ 
+ # Setting the INLINE_SOURCES tag to YES will include the body 
+ # of functions and classes directly in the documentation.
+@@ -807,7 +807,7 @@
+ # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
+ # put in front of it. If left blank `html' will be used as the default path.
+ 
+-HTML_OUTPUT            = @AVR_LIBC_USER_MANUAL@
++HTML_OUTPUT            = html
+ 
+ # The HTML_FILE_EXTENSION tag can be used to specify the file extension for 
+ # each generated HTML page (for example: .htm,.php,.asp). If it is left blank 
+@@ -819,13 +819,13 @@
+ # each generated HTML page. If it is left blank doxygen will generate a 
+ # standard header.
+ 
+-HTML_HEADER            = @srcdir@/dox_html_header
++HTML_HEADER            =
+ 
+ # The HTML_FOOTER tag can be used to specify a personal HTML footer for 
+ # each generated HTML page. If it is left blank doxygen will generate a 
+ # standard footer.
+ 
+-HTML_FOOTER            = @srcdir@/dox_html_footer
++HTML_FOOTER            =
+ 
+ # The HTML_STYLESHEET tag can be used to specify a user-defined cascading 
+ # style sheet that is used by each HTML page. It can be used to 
+@@ -834,7 +834,7 @@
+ # the style sheet file to the HTML output directory, so don't put your own 
+ # stylesheet in the HTML output directory as well, or it will be erased!
+ 
+-HTML_STYLESHEET        = @srcdir@/dox.css
++HTML_STYLESHEET        =
+ 
+ # If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
+ # files or namespaces will be aligned in HTML using tables. If set to 
+@@ -978,7 +978,7 @@
+ # releases of Doxygen, the values YES and NO are equivalent to FRAME and NONE
+ # respectively.
+ 
+-GENERATE_TREEVIEW      = NONE
++GENERATE_TREEVIEW      = ALL
+ 
+ # If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be 
+ # used to set the initial width (in pixels) of the frame in which the tree 
+@@ -1001,7 +1001,7 @@
+ # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will 
+ # generate Latex output.
+ 
+-GENERATE_LATEX         = YES
++GENERATE_LATEX         = NO
+ 
+ # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. 
+ # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
+@@ -1312,7 +1312,7 @@
+ # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
+ # a tag file that is based on the input files it reads.
+ 
+-GENERATE_TAGFILE       = 
++GENERATE_TAGFILE       = avr-libc.tag
+ 
+ # If the ALLEXTERNALS tag is set to YES all external classes will be listed 
+ # in the class index. If set to NO only the inherited external classes 
+@@ -1527,4 +1527,4 @@
+ # The SEARCHENGINE tag specifies whether or not a search engine should be 
+ # used. If set to NO the values of all tags below this one will be ignored.
+ 
+-SEARCHENGINE           = NO
++SEARCHENGINE           = YES

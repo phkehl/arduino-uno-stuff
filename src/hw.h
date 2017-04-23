@@ -145,6 +145,8 @@ void hwDelay(const U4 usDelay);
     Uses the MCU's built-in random number generator or other means (watchdog
     jitter).
 
+    \todo it seems this only works when the scheduler is running.. why?
+
     \returns a fairly random number
 */
 U4 hwGetRandomSeed(void);

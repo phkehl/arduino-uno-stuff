@@ -70,9 +70,6 @@ void appInit(void)
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
 
-    // initialise random number generator
-    hwMathSeedRandom(hwGetRandomSeed());
-
     // select A5 for analog input
     // (connect a pot to A5 for brightness setting, or connect it to VCC for maximum brightness)
     //hwAdcInit(HW_ADC_A5, false);
@@ -446,6 +443,9 @@ static void sAppTask(void *pArg)
 {
     // not using the task argument
     UNUSED(pArg);
+
+    // initialise random number generator
+    hwMathSeedRandom(hwGetRandomSeed());
 
     //CS_ENTER; while (1) {}; CS_LEAVE;
 

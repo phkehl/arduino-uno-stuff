@@ -580,7 +580,7 @@ static volatile U4 sHwRandomSeed = 0;
 ISR(WDT_vect)
 {
     sHwRandomSeed <<= 8;
-    sHwRandomSeed ^= (U4)TCNT0;
+    sHwRandomSeed ^= (U4)TCNT1;
 }
 
 U4 hwGetRandomSeed(void)
@@ -603,7 +603,7 @@ U4 hwGetRandomSeed(void)
     wdt_enable(WDTO_8S);    // and enable the default watchdog again
 #endif
     const U4 seed = sHwRandomSeed; // this should now be fairly random
-    DEBUG("hw: seed %08lx", seed);
+    DEBUG("hw: seed 0x%08"F_U4x, seed);
     return seed;
 }
 

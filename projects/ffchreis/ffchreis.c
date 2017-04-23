@@ -144,6 +144,8 @@ static inline void sLedUpdBright(void)
 
 /* ***** LED effects ********************************************************* */
 
+enum { NO_FLUSH = 0, FLUSH_MATRIX = 1 };
+
 // effect state
 static union
 {
@@ -151,13 +153,13 @@ static union
 
 } sFxState;
 
-static L sFxTest(const L init)
+static U2 sFxTest(const U2 frame)
 {
-    if (init)
+    if (frame == 0)
     {
         sFxState.r[0] = 0; // mode
         sFxState.r[1] = 0; // step
-        return false;
+        return NO_FLUSH;
     }
     static const U1 v[] PROGMEM = { 0, 10, 50, 100, 150, 200, 250, 255 };
 
@@ -169,7 +171,7 @@ static L sFxTest(const L init)
     if (sFxState.r[0] == 7)
     {
         sFxState.r[0] %= 7;
-        return false;
+        return NO_FLUSH;
     }
 
     const U1 mode = sFxState.r[0];
@@ -209,24 +211,24 @@ static L sFxTest(const L init)
     }
 
     sFxState.r[1]++;
-    return true;
+    return FLUSH_MATRIX;
 }
 
-static inline L sFxNoise1(const L init)
+static inline U2 sFxNoise1(const U2 frame)
 {
-    ledfxNoiseRandom(init, 0, 0, 5);
-    return true;
+    ledfxNoiseRandom(frame == 0 ? true : false, 0, 0, 5);
+    return FLUSH_MATRIX;
 }
 
-static inline L sFxNoise2(const L init)
+static inline U2 sFxNoise2(const U2 frame)
 {
-    ledfxNoiseRandomDistinct(init, 0, 0, 5);
-    return true;
+    ledfxNoiseRandomDistinct(frame == 0 ? true : false, 0, 0, 5);
+    return FLUSH_MATRIX;
 }
 
-static L sFxChase(const L init)
+static U2 sFxChase(const U2 frame)
 {
-    UNUSED(init);
+    UNUSED(frame);
     const U1 sat = 255;
     const U1 val = 255;
     const U1 hue = sFxState.r[0];
@@ -251,12 +253,12 @@ static L sFxChase(const L init)
         ledfxSetHSV(ix, hue + (2 * ix), sat, val);
     }
     sFxState.r[0]++;
-    return true;
+    return FLUSH_MATRIX;
 }
 
-static L sFxKaa(const L init)
+static U2 sFxKaa(const U2 frame)
 {
-    UNUSED(init);
+    UNUSED(frame);
     const U1 hue = sFxState.r[0];
     const U1 sat = 255;
     const U1 val = 255;
@@ -266,18 +268,18 @@ static L sFxKaa(const L init)
     ledfxFillHSV(RING_4_IX0, RING_4_IX1, hue + 30, sat, val);
     ledfxFillHSV(RING_5_IX0, RING_5_IX1, hue + 40, sat, val);
     sFxState.r[0]++;
-    return true;
+    return FLUSH_MATRIX;
 }
 
-static L sFxHueNoise1(const L init)
+static U2 sFxHueNoise1(const U2 frame)
 {
-    ledfxNoiseMovingHue(init, 0, 0, 5, &sFxState.r[0], &sFxState.r[1]);
-    return true;
+    ledfxNoiseMovingHue(frame == 0 ? true : false, 0, 0, 5, &sFxState.r[0], &sFxState.r[1]);
+    return FLUSH_MATRIX;
 }
 
-static L sFxHueNoise2(const L init)
+static U2 sFxHueNoise2(const U2 frame)
 {
-    if (init)
+    if (frame == 0)
     {
         sFxState.r[0] = 0;
         sFxState.r[1] = 20; sFxState.r[2] = 127 + 20;
@@ -293,18 +295,18 @@ static L sFxHueNoise2(const L init)
     ledfxNoiseMovingHue(false, RING_4_IX0, RING_4_IX1, 3, &sFxState.r[5], &sFxState.r[6]);
     ledfxNoiseMovingHue(false, RING_5_IX0, RING_5_IX1, 4, &sFxState.r[7], &sFxState.r[8]);
     sFxState.r[0] += 3;
-    return true;
+    return FLUSH_MATRIX;
 }
 
-static L sFxHueFill(const L init)
+static U2 sFxHueFill(const U2 frame)
 {
-    UNUSED(init);
+    UNUSED(frame);
     const U1 hue = sFxState.r[0];
     const U1 sat = 255;
     const U1 val = 255;
     ledfxFillHSV(0, 0, hue, sat, val);
     sFxState.r[0]++;
-    return true;
+    return FLUSH_MATRIX;
 }
 
 /* ***** capacitive touch "buttons" ****************************************** */
@@ -483,10 +485,10 @@ static void sAppTask(void *pArg)
     {
         //PIN_TOGGLE(LED_PIN);
 
-        const L doUpdate = fxloopRun(false);
+        const U2 res = fxloopRun(false);
 
         // update matrix?
-        if (doUpdate)
+        if (res == FLUSH_MATRIX)
         {
             sLedUpdBright();
             ledfxLimitCurrent(MA_PER_LED, PSU_MAX_MA, &sAppCurrent);

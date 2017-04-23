@@ -46,20 +46,17 @@ void appCreateTask(void)
 
 /* ***** application functions *********************************************** */
 
-static L sFxloopFunc1(const L init)
+static U2 sFxloopFunc1(const U2 frame)
 {
-    static U1 n;
-    if (init)
+    if (frame == 0)
     {
-        n = 0;
         DEBUG("sFxloopFunc1() init");
     }
     else
     {
-        n++;
-        DEBUG("sFxloopFunc1() run %"F_U1, n);
+        DEBUG("sFxloopFunc1() frame %"F_U2, frame);
 
-        if ((n % 5) == 0)
+        if ((frame % 5) == 0)
         {
             // waste CPU time so that we miss a frame
             U4 x = 1000000;
@@ -68,33 +65,33 @@ static L sFxloopFunc1(const L init)
             }
         }
     }
-    return true;
+    return frame;
 }
 
-static L sFxloopFunc2(const L init)
+static U2 sFxloopFunc2(const U2 frame)
 {
-    if (init)
+    if (frame == 0)
     {
         DEBUG("sFxloopFunc2() init");
     }
     else
     {
-        DEBUG("sFxloopFunc2() run");
+        DEBUG("sFxloopFunc2() frame %"F_U2, frame);
     }
-    return true;
+    return frame;
 }
 
-static L sFxloopFunc3(const L init)
+static U2 sFxloopFunc3(const U2 frame)
 {
-    if (init)
+    if (frame == 0)
     {
         DEBUG("sFxloopFunc3() init");
     }
     else
     {
-        DEBUG("sFxloopFunc3() run");
+        DEBUG("sFxloopFunc3() frame %"F_U2, frame);
     }
-    return true;
+    return frame;
 }
 
 
@@ -123,7 +120,8 @@ static void sAppTask(void *pArg)
         sAppCnt++;
 
         // run one iteration of the effect
-        fxloopRun(false);
+        const U2 res = fxloopRun(false);
+        DEBUG("res=%"F_U2, res);
 
         // do other stuff.. such as wasting some CPU time
         U2 n = 10000;
@@ -132,7 +130,12 @@ static void sAppTask(void *pArg)
         }
 
         // delay until it's time to run the next iteration of the effect
-        fxloopWait();
+        const L fxWillChange = fxloopWait();
+
+        if (fxWillChange)
+        {
+            DEBUG("prepare for next effect...");
+        }
     }
 }
 

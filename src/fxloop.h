@@ -26,17 +26,23 @@
 /* *************************************************************************** */
 
 //! effect function signature
-typedef L (*FXLOOP_FUNC_t)(const L);
+/*!
+    \param[in] frame  the frame number to render (0 is the first frame)
+    \returns user return value, passed through to application via fxloopRun()
+*/
+typedef U2 (*FXLOOP_FUNC_t)(const U2 frame);
 
 //! effect info
 typedef struct FXLOOP_INFO_s
 {
     CH            fxName[16];  //!< effect name
     FXLOOP_FUNC_t fxFunc;      //!< effect function
-    U4            fxPeriod;    //!< update period (= 1 / refresh rate) [ms], how often to call the \c fxFunc
+    U2            fxPeriod;    //!< update period (= 1 / refresh rate) [ms], how often to call the \c fxFunc
     U4            fxDuration;  //!< how long to play the effect [ms]
 } FXLOOP_INFO_t;
 
+//! fxloopRun() special meaning return value
+#define FXLOOP_NEXT 0xffff
 
 //! initialise effects loop
 /*!
@@ -49,12 +55,18 @@ void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const boo
 //! run effect
 /*!
     \param[in] forceNext  force transition to next effect
-    \returns the return value of the effect function
+                          (after running the current effect one last time)
+
+    \returns the return value of the effect function (#FXLOOP_FUNC_t),
+        or #FXLOOP_NEXT if in transition to next effect
 */
-L fxloopRun(const L forceNext);
+U2 fxloopRun(const L forceNext);
 
 //! wait until it's time for the next call to fxloopRun()
-void fxloopWait(void);
+/*!
+    \returns true if the effect will change with the next call to fxloopInit()
+*/
+L fxloopWait(void);
 
 //! get effects loop status
 /*!

@@ -37,9 +37,9 @@ typedef struct STATUS_s
     FXLOOP_FUNC_t  fxFunc;      // currently selected effect function
     U4             duration;    // how long to play the effect
     U4             runtime;     // how long the effect has been playing
-    U4             frame;       // frame counter
-    U4             frameDrop;   // frame drop counter
-    U4             period;      // refresh period
+    U2             frame;       // frame counter
+    U2             frameDrop;   // frame drop counter
+    U2             period;      // refresh period
     U4             msss;
     const FXLOOP_INFO_t *fxInfo;
     U1             numFx;
@@ -49,7 +49,7 @@ static STATUS_t sStatus;
 
 #define INFO_NAME(ix)      (/* STFU */const wchar_t *)&sStatus.fxInfo[ix].fxName
 #define INFO_FUNC(ix)      (FXLOOP_FUNC_t)pgm_read_word(&sStatus.fxInfo[ix].fxFunc)
-#define INFO_PERIOD(ix)    (U4)pgm_read_dword(&sStatus.fxInfo[ix].fxPeriod)
+#define INFO_PERIOD(ix)    (U4)pgm_read_word(&sStatus.fxInfo[ix].fxPeriod)
 #define INFO_DURATION(ix)  (U4)pgm_read_dword(&sStatus.fxInfo[ix].fxDuration)
 
 void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const bool verbose)
@@ -67,17 +67,17 @@ void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const boo
         // print the effects that available
         for (U1 ix = 0; ix < sStatus.numFx; ix++)
         {
-            const U4 period = INFO_PERIOD(ix);
+            const U2 period = INFO_PERIOD(ix);
             const U1 hz = period ? 1000 / period : 0;
-            PRINT_F("fxloop: %2"F_U" %-16S %5"F_U4"ms @ %3"F_U4"ms/%2"F_U1"Hz",
+            PRINT_F("fxloop: %2"F_U" %-16S %5"F_U4"ms @ %3"F_U2"ms/%2"F_U1"Hz",
                 ix + 1, INFO_NAME(ix), INFO_DURATION(ix), period, hz);
         }
     }
 }
 
-L fxloopRun(const L forceNext)
+U2 fxloopRun(const L forceNext)
 {
-    L funcRes = false;
+    U2 funcRes = 0;
 
     switch (sStatus.loopState)
     {
@@ -86,6 +86,8 @@ L fxloopRun(const L forceNext)
         case RUN_NEXT:
             sStatus.loopIx++;
             sStatus.loopIx %= sStatus.numFx;
+
+            funcRes = FXLOOP_NEXT;
 
             // next, go initialise next effect..
             sStatus.loopState = RUN_INIT;
@@ -106,8 +108,8 @@ L fxloopRun(const L forceNext)
                 sStatus.loopIx + 1, sStatus.numFx, INFO_NAME(sStatus.loopIx), sStatus.duration);
 
             // run program initialisation
+            funcRes = sStatus.fxFunc(sStatus.frame);
             sStatus.frame++;
-            funcRes = sStatus.fxFunc(true);
 
             // go play..
             sStatus.loopState = RUN_PLAY;
@@ -119,8 +121,8 @@ L fxloopRun(const L forceNext)
         case RUN_PLAY:
 
             // run effect (render next frame)
+            funcRes = sStatus.fxFunc(sStatus.frame);
             sStatus.frame++;
-            funcRes = sStatus.fxFunc(false);
 
             // switch to next loop by user choice?
             if (forceNext)
@@ -140,13 +142,13 @@ L fxloopRun(const L forceNext)
 }
 
 
-void fxloopWait(void)
+L fxloopWait(void)
 {
     // delay to achieve desired update period (refresh rate)
     if (sStatus.loopState != RUN_NEXT)
     {
         // target refresh rate (period in [ms])
-        const U4 period = INFO_PERIOD(sStatus.loopIx);
+        const U2 period = INFO_PERIOD(sStatus.loopIx);
         sStatus.period = period;
 
         // delay until next frame
@@ -160,8 +162,8 @@ void fxloopWait(void)
         if ( (msssNow - sStatus.msss) > 10 ) // other tasks may schedule in before us so that we may be slightly late
         {
             const U4 dt = (msssNow - sStatus.msss);
-            const U4 numDropped = (dt / period) + 1;
-            WARNING("fxloop: %S %"F_U4" frames dropped! %"F_U4"+%"F_U4"ms",
+            const U2 numDropped = (dt / period) + 1;
+            WARNING("fxloop: %S %"F_U4" frames dropped! %"F_U2"+%"F_U2"ms",
                 INFO_NAME(sStatus.loopIx), numDropped, period, dt);
             sStatus.frameDrop += numDropped;
             sStatus.frame     += numDropped;
@@ -169,6 +171,11 @@ void fxloopWait(void)
             osTaskDelayUntil(&sStatus.msss, period);
             sStatus.runtime   += period;
         }
+        return false;
+    }
+    else
+    {
+        return true;
     }
 }
 
@@ -176,13 +183,12 @@ void fxloopWait(void)
 void fxloopStatus(char *str, const size_t size)
 {
     const U1 hz = sStatus.period ? 1000 / sStatus.period : 0;
-    snprintf_P(str, size, PSTR("fx#%"F_U1" %S %"F_U4"/%"F_U4" %"F_U4"/%"F_U4" %"F_U4"ms/%"F_U1"Hz"),
+    snprintf_P(str, size, PSTR("fx#%"F_U1" %S %"F_U4"/%"F_U4" %"F_U2"/%"F_U2" %"F_U2"ms/%"F_U1"Hz"),
         sStatus.loopIx + 1,
         INFO_NAME(sStatus.loopIx),
         sStatus.runtime, sStatus.duration,
         sStatus.frameDrop, sStatus.frame,
-        sStatus.period,
-        hz);
+        sStatus.period, hz);
     str[size-1] = '\0';
 
 }

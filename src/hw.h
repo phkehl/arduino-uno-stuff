@@ -105,7 +105,7 @@ typedef enum HW_PANIC_e
     \param u0      user display word 0
     \param u1      user display word 1
 */
-void hwPanic(const HW_PANIC_t reason, const U u0, const U u1);
+void hwPanic(const HW_PANIC_t reason, const U4 u0, const U4 u1);
 
 //! assert the watchdog
 /*!

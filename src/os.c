@@ -295,7 +295,7 @@ void osTaskCreate(const CH *taskName, const U priority, OS_TASK_t *pTask,
         (atomThreadCreate((ATOM_TCB *)pTask, (U1)priority, (ATOM_TASKFUNC_t)taskFunc,
             (U2)(void *)taskParam, pStack, stackSize, true) != ATOM_OK))
     {
-        hwPanic(HW_PANIC_OS, OS_PANIC_TASK, ((U4)taskName[0] << 16) || ((U4)taskName[1] << 8) | ((U4)taskName[2]));
+        hwPanic(HW_PANIC_OS, OS_PANIC_TASK, (((U4)taskName[0]) << 16) | (((U4)taskName[1]) << 8) | ((U4)taskName[2]));
     }
     else
     {

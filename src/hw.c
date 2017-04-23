@@ -393,11 +393,12 @@ const PGM_P const skHwPanicStr[] PROGMEM =
     skHwPanicStr0, skHwPanicStr1, skHwPanicStr2, skHwPanicStr3
 };
 
-void hwPanic(const HW_PANIC_t reason, const U u0, const U u1)
+void hwPanic(const HW_PANIC_t reason, const U4 u0, const U4 u1)
 {
     cli();
     osTaskSuspendScheduler();
     wdt_reset();
+    wdt_disable();
 
     U n = 0, time = 0;
     U msss = osTaskGetTicks();
@@ -422,9 +423,10 @@ void hwPanic(const HW_PANIC_t reason, const U u0, const U u1)
     // blink load LED
     if (n > 0)
     {
-        ERROR("PANIC @ %" F_U ": 0x%04" F_Ux " %S 0x%04" F_Ux " 0x%04" F_Ux,
-              (U)msss, (U)reason,
-              (PGM_P)pgm_read_word(&skHwPanicStr[reason]), (U)u0, (U)u1);
+        DEBUG(":-(");
+        ERROR("PANIC @ %"F_U4": 0x%"F_Ux" %S (0x%08"F_U4x", 0x%08"F_U4x")",
+              (U4)msss, (U)reason,
+              (PGM_P)pgm_read_word(&skHwPanicStr[reason]), u0, u1);
 
 
         sHwLedLoadInit();
@@ -439,12 +441,10 @@ void hwPanic(const HW_PANIC_t reason, const U u0, const U u1)
                 _delay_ms(200);
                 hwLedLoadOff();
                 _delay_ms(200);
-                wdt_reset();
             }
             i = 5;
             while (i--)
             {
-                wdt_reset();
                 _delay_ms(200);
             }
 
@@ -459,7 +459,7 @@ void hwPanic(const HW_PANIC_t reason, const U u0, const U u1)
                     timeLeft = 0;
                 }
             }
-            wdt_reset();
+//            wdt_reset();
         }
 
         ERROR("RESET");

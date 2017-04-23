@@ -4,6 +4,8 @@
 
     - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
 
+    - Portions copyright by others (see ledfx.h)
+
     \defgroup LEDFX LED Effects
     \ingroup FF
 
@@ -78,9 +80,9 @@ void ledfxSetRGB(const U2 ix, const U1 red, const U1 green, const U1 blue);
 //! set pixel given hue, saturation and value (HSV)
 /*!
     \param[in] ix   LED index (0..(#FF_LEDFX_NUM_LED-1))
-    \param[in] hue  red value (0..255)
-    \param[in] sat  green value (0..255)
-    \param[in] val  blue value (0..255)
+    \param[in] hue  hue value (0..255)
+    \param[in] sat  saturation value (0..255)
+    \param[in] val  (brightness) value (0..255)
 */
 void ledfxSetHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val);
 
@@ -88,22 +90,21 @@ void ledfxSetHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val);
 /*!
     \param[in] x    LED column index (0..(#FF_LEDFX_NUM_X-1))
     \param[in] y    LED row index (0..(#FF_LEDFX_NUM_Y-1))
-    \param[in] hue  red value (0..255)
-    \param[in] sat  green value (0..255)
-    \param[in] val  blue value (0..255)
+    \param[in] hue  hue value (0..255)
+    \param[in] sat  saturation value (0..255)
+    \param[in] val  (brightness) value (0..255)
 */
 void ledfxSetMatrixHSV(const U2 x, const U2 y, const U1 hue, const U1 sat, const U1 val);
 
 //! set matrix pixel given red, green and blue (RGB)
 /*!
-    \param[in] x    LED column index (0..(#FF_LEDFX_NUM_X-1))
-    \param[in] y    LED row index (0..(#FF_LEDFX_NUM_Y-1))
-    \param[in] hue  red value (0..255)
-    \param[in] sat  green value (0..255)
-    \param[in] val  blue value (0..255)
+    \param[in] x      LED column index (0..(#FF_LEDFX_NUM_X-1))
+    \param[in] y      LED row index (0..(#FF_LEDFX_NUM_Y-1))
+    \param[in] red    red value (0..255)
+    \param[in] green  green value (0..255)
+    \param[in] blue   blue value (0..255)
 */
 void ledfxSetMatrixRGB(const U2 x, const U2 y, const U1 red, const U1 green, const U1 blue);
-
 
 //! fill range of pixels given red, green and blue (RGB)
 /*!
@@ -121,9 +122,9 @@ void ledfxFillRGB(const U2 ix0, const U2 ix1, const U1 red, const U1 green, cons
 /*!
     \param[in] ix0  start index
     \param[in] ix1  end index
-    \param[in] hue  red value (0..255)
-    \param[in] sat  green value (0..255)
-    \param[in] val  blue value (0..255)
+    \param[in] hue  hue value (0..255)
+    \param[in] sat  saturation value (0..255)
+    \param[in] val  (brightness) value (0..255)
 
     Setting both \c ix0 and \c ix1 to to 0 will fill all.
 */
@@ -152,6 +153,11 @@ U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed);
 /* *************************************************************************** */
 /*!
     \name Noise Effects
+
+    \todo play with different noises: Worley, Simplex, ...
+
+    \todo fireflys http://www.michaelfogleman.com/sync/
+
     @{
 */
 
@@ -190,26 +196,56 @@ void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2
 */
 void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num, U1 *r0, U1 *r1);
 
-
 //@}
 
 
 /* *************************************************************************** */
 /*!
     \name Colour Flow Effects
+    \todo better plasma à la http://lodev.org/cgtutor/plasma.html, http://pastebin.com/MQhR526C,
+          http://www.bidouille.org/prog/plasma
+
     @{
 */
 
 //! concentric moving hue flow
 /*!
+    \todo make this centred for even numbers of rows/columns
+
     \param[in] init  set to \c true on first call to initialise things
     \param[in] step  how many hue steps to move per iteration
     \param[in,out]   r0  effect state storage
 */
 void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0);
 
+//! plasma effect
+/*!
+    \param[in] init  set to \c true on first call to initialise things
+    \param[in,out]   r0  effect state storage
+
+    The formulas used in this function are based on code floating the internet in various code
+    (google "colorduino", "shiftbrite", et al.). While the original source is never properly
+    referenced it all seems to be attributed to: copyright (c) 2011 Sam C. Lin, 2009 Ben Combee,
+    2009 Ken Corey, 2008 Windell H. Oskay \todo find original reference for this
+*/
+void ledfxPlasma(const L init, R4 *r0);
 
 //@}
+
+
+/* *************************************************************************** */
+/*!
+    \name Matrix Only Effects
+
+    \todo fire, water
+
+    \todo game of life
+
+    @{
+*/
+
+//@}
+
 
 /* *************************************************************************** */
 

@@ -4,6 +4,8 @@
 
     - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
 
+    - Portions copyright by others (see ledfx.h)
+
     \addtogroup LEDFX
     @{
 */
@@ -332,8 +334,8 @@ void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
     const I2 x0 = FF_LEDFX_NUM_X / 2;
     const I2 y0 = FF_LEDFX_NUM_Y / 2;
     const I2 hueMax = 256/2;
-    const U1 s = 255;
-    const U1 v = 255;
+    const U1 sat = 255;
+    const U1 val = 255;
     I2 dX = x0 + 1;
     while (dX--)
     {
@@ -347,13 +349,67 @@ void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
             //      X0 + dx, dy, X0 - dx, dy, dx, Y0 + dy, dx, Y0 - dy);
 
             // FIXME: possible overflow?
-            ledfxSetMatrixHSV(x0 + dX, y0 + dY, hue, s, v);
-            ledfxSetMatrixHSV(x0 - dX, y0 + dY, hue, s, v);
-            ledfxSetMatrixHSV(x0 + dX, y0 - dY, hue, s, v);
-            ledfxSetMatrixHSV(x0 - dX, y0 - dY, hue, s, v);
+            ledfxSetMatrixHSV(x0 + dX, y0 + dY, hue, sat, val);
+            ledfxSetMatrixHSV(x0 - dX, y0 + dY, hue, sat, val);
+            ledfxSetMatrixHSV(x0 + dX, y0 - dY, hue, sat, val);
+            ledfxSetMatrixHSV(x0 - dX, y0 - dY, hue, sat, val);
         }
     }
 }
+
+
+static __INLINE R4 sDist(const R4 a, const R4 b, const R4 c, const R4 d)
+{
+    // based on: see header file
+    const R4 cma = c - a;
+    const R4 dmb = d - b;
+    return _sqrtf( (cma * cma) + (dmb * dmb) );
+}
+
+void ledfxPlasma(const L init, R4 *r0)
+{
+    const U1 sat = 255;
+    const U1 val = 255;
+
+    if (init)
+    {
+        hwTic(0);
+        // based on: see header file
+        *r0 = 128000.0f; // pallete shift, FIXME: 128000, obviously.. :-/
+        //for (U1 y = 0; y < MATRIX_NY; y++)
+        //{
+        //    for (U1 x = 0; x < MATRIX_NX; x++)
+        //    {
+        //        pState->plasma[x][y] = (U1)(
+        //            256.0f + ( 256.0f * _sinf( (R4)x * (16.0f / 24.0f) ) ) +
+        //            256.0f + ( 256.0f * _sinf( (R4)y * (8.0f / 16.0f) ) )
+        //            ) / 2;
+        //    }
+        //}
+        DEBUG("ledfxPlasma() init %"F_U4, hwToc(0)); // 15ms
+    }
+
+    hwTic(0);
+    for (U1 y = 0; y < FF_LEDFX_NUM_Y; y++)
+    {
+        for (U1 x = 0; x < FF_LEDFX_NUM_X; x++)
+        {
+            // based on source: see progPlasma() docu
+            const R4 value =
+                _sinf( sDist((R4)x + *r0, y, 128.0f, 128.0) * (1.0f / 8.0f)) +
+                _sinf( sDist(x, y, 64.0f, 64.0f) * (1.0f / 8.0f) ) +
+                _sinf( sDist(x, (R4)y + (*r0 / 7.0f), 192.0f, 64.0f) * (1.0f / 7.0f) ) +
+                _sinf( sDist(x, y, 192.0f, 100.0f) * (1.0 / 8.0) );
+            const U1 h = (U1)((U4)(value * 128.0) & 0xff);
+            ledfxSetMatrixHSV(x, y, h, sat, val);
+        }
+    }
+    (*r0) -= 0.25; // smooth (the original code used -= 1)
+    // AVR: ~45ms
+    // ~250ms --> ~55ms
+    DEBUG("ledfxPlasma() render %"F_U4, hwToc(0));
+}
+
 
 
 /* ************************************************************************** */

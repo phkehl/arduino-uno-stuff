@@ -14,8 +14,11 @@
 /* *************************************************************************** */
 
 
-// use the built-in LED for the system load and status
-#define FF_HW_LOAD_PIN 13
+// LED for the system load and status
+#define FF_HW_LOAD_PIN PD4
+
+// system tick signal
+#define FF_HW_TICK_PIN PD3
 
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0
@@ -23,11 +26,21 @@
 // loose some memory by using a slightly smother hsv2rgb() conversion method
 #define FF_HSV2RGB_METHOD 2
 
-// we have this many LEDs
-#define FF_LEDFX_NUM_LED (1+8+12+16+24)
+// matrix dimension
+#define FF_LEDFX_NUM_X 7
+#define FF_LEDFX_NUM_Y 7
 
-// GRB colour ordering
-#define FF_LEDFX_ORDER 213
+// we have this many LEDs
+#define FF_LEDFX_NUM_LED ((FF_LEDFX_NUM_X) * (FF_LEDFX_NUM_Y))
+
+// LEd matrix arrangement
+#define FF_LEDFX_XY_ARR 1
+
+// BRG colour ordering
+#define FF_LEDFX_ORDER 312
+
+// SPI master speed
+#define FF_WS2801_SPI_SPEED 1000
 
 
 // complete configuration by including the defaults

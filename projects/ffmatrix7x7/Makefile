@@ -2,6 +2,7 @@
 # path to stuff
 FFDIR       := ../..
 
+# FTDI cable and standalone ("breadboard") Arduino
 #PROGSPEED   := 57600
 PROGPORT    := /dev/ttyUSB0
 

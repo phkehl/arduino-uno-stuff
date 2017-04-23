@@ -11,6 +11,7 @@
 */
 
 #include <string.h>        // libc: string operations
+#include <math.h>          // libc: mathematical functions
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
@@ -156,7 +157,7 @@ static inline void sLedfxSetRGB(const U2 ix, const U1 red, const U1 green, const
     }
 }
 
-inline void ledfxSetRGB(const U2 ix, const U1 red, const U1 green, const U1 blue) 
+inline void ledfxSetIxRGB(const U2 ix, const U1 red, const U1 green, const U1 blue) 
 {
     if (ix < FF_LEDFX_NUM_LED)
     {
@@ -164,7 +165,7 @@ inline void ledfxSetRGB(const U2 ix, const U1 red, const U1 green, const U1 blue
     }
 }
 
-inline void ledfxSetHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val)
+inline void ledfxSetIxHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val)
 {
     if (ix < FF_LEDFX_NUM_LED)
     {
@@ -201,7 +202,7 @@ void ledfxFillRGB(const U2 ix0, const U2 ix1, const U1 red, const U1 green, cons
     U2 _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
     for (U2 ix = _ix0; ix <= _ix1; ix++)
     {
-        ledfxSetRGB(ix, red, green, blue);
+        ledfxSetIxRGB(ix, red, green, blue);
     }
 }
 void ledfxFillHSV(const U2 ix0, const U2 ix1, const U1 hue, const U1 sat, const U1 val)
@@ -276,7 +277,7 @@ void ledfxNoiseRandom(const L init, const U2 ix0, const U2 ix1, const U2 num)
     {
         const U4 rnd = hwMathGetRandom();
         const U2 ix = ix0 + (rnd % range);
-        ledfxSetHSV(ix, rnd >> 8, 255, 255);
+        ledfxSetIxHSV(ix, rnd >> 8, 255, 255);
     }
 }
 
@@ -291,7 +292,7 @@ void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2
         const U4 rnd = hwMathGetRandom();
         const U2 ix = ix0 + (rnd % range);
         const U1 hue = hues[ (rnd >> 8) % NUMOF(hues) ];
-        ledfxSetHSV(ix, hue, 255, 255);
+        ledfxSetIxHSV(ix, hue, 255, 255);
     }
 }
 
@@ -311,7 +312,7 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
     {
         const U4 rnd = hwMathGetRandom();
         const U2 ix = ix0 + (rnd % range);
-        ledfxSetHSV(ix, *r1, 255, 255);
+        ledfxSetIxHSV(ix, *r1, 255, 255);
     }
 
     *r0 += 3;
@@ -390,9 +391,9 @@ void ledfxPlasma(const L init, R4 *r0)
     }
 
     hwTic(0);
-    for (U1 y = 0; y < FF_LEDFX_NUM_Y; y++)
+    for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
     {
-        for (U1 x = 0; x < FF_LEDFX_NUM_X; x++)
+        for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
         {
             // based on source: see progPlasma() docu
             const R4 value =
@@ -400,19 +401,102 @@ void ledfxPlasma(const L init, R4 *r0)
                 _sinf( sDist(x, y, 64.0f, 64.0f) * (1.0f / 8.0f) ) +
                 _sinf( sDist(x, (R4)y + (*r0 / 7.0f), 192.0f, 64.0f) * (1.0f / 7.0f) ) +
                 _sinf( sDist(x, y, 192.0f, 100.0f) * (1.0 / 8.0) );
-            const U1 h = (U1)((U4)(value * 128.0) & 0xff);
-            ledfxSetMatrixHSV(x, y, h, sat, val);
+            const U1 hue = (U1)((U4)(value * 128.0) & 0xff);
+            ledfxSetMatrixHSV(x, y, hue, sat, val);
         }
     }
     (*r0) -= 0.25; // smooth (the original code used -= 1)
     // AVR: ~45ms
     // ~250ms --> ~55ms
-    DEBUG("ledfxPlasma() render %"F_U4, hwToc(0));
+    DEBUG("ledfxPlasma() render %"F_U, hwToc(0));
+}
+
+void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0)
+{
+    if (init)
+    {
+        *r0 = 0; // hue offset
+    }
+    else
+    {
+        (*r0)++;
+    }
+    const U1 sat = 255;
+    const U1 val = 255;
+
+    U2 _ix0 = ix0;
+    U2 _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
+    for (U2 ix = _ix0; ix <= _ix1; ix++)
+    {
+        const U1 hue = (U4)(*r0) + ((U4)ix * 256 / 2 / FF_LEDFX_NUM_LED);
+        //const U1 hue = *r0 + (((U2)ix * ((256 << 6) / FF_LEDFX_NUM_LED)) >> 6);
+        ledfxSetIxHSV(ix, hue, sat, val);
+    }
+
 }
 
 
-
 /* ************************************************************************** */
+
+void ledfxRotor(const L init, R4 *r0, R4 *r1)
+{
+    const U1 sat = 255;
+    const U1 val = 255;
+
+    if (init)
+    {
+        *r0 = (R4)(hwMathGetRandom() & 0xff); // hue offset
+        *r1 = 0.0f; // angle
+    }
+    else
+    {
+        *r0 += 0.25;
+        *r1 += M_PI / 200;
+    }
+
+    // we rotate the coordinate system (or: a the line y = 0.5*x)
+    hwTic(0);
+    const R4 sinAngle = _sinf(*r1);
+    const R4 cosAngle = _cosf(*r1);
+    for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
+    {
+        const R4 cosAngleY = cosAngle * ((R4)y +- ((R4)FF_LEDFX_NUM_Y/2.0f) + 0.5f);
+        for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
+        {
+            const R4 sinAngleX = sinAngle * ((R4)x - ((R4)FF_LEDFX_NUM_X/2.0f) + 0.5f);
+
+            // the distance of the point at (x,y) to the line is (dot product) (in [px])
+            // [ x, y ] * [ sin(a), cos(a) ] = x * sin(a) + y * cos(a)
+            const R4 dist = (sinAngleX + cosAngleY); // distance in [px]
+
+            // (an approximation of) the maximum distance we'll see
+            const R4 maxDist = 1.4142f * ((R4)FF_LEDFX_NUM_X + (R4)FF_LEDFX_NUM_Y) / 2.0f / 2.0f;
+
+            // scale distance to the range -1..+1 (via sin() instead of linear)
+            //const R4 normDist = _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f));
+            // scale distance to the range 0..+1 (symmetric) (via sin() instead of linear)
+            //const R4 normDist = fabsf( _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
+            //const R4 normDist = fabsf( _cosf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
+            const R4 normDist = fabsf( dist * (1.0f/maxDist) );
+
+            // calculate hue
+            const R4 hueSpan = 200.0f;
+            const U1 hue = normDist * (hueSpan / 2.0) + (hueSpan / 2.0)
+                // cycle through hue spectrum
+                + *r0;
+
+            //if (x == 0)
+            //{
+            //    DEBUG("y=%u dist=%.1f maxDist=%.1f normDist=%.1f h=%u", y, dist, maxDist, normDist, h);
+            //}
+
+            ledfxSetMatrixHSV(x, y, hue, sat, val);
+        }
+    }
+    DEBUG("ledfxRotor() render %"F_U, hwToc(0));
+
+}
+
 
 /* ************************************************************************** */
 

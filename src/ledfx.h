@@ -75,7 +75,7 @@ void ledfxSetBrightness(const U1 brightness);
     \param[in] green  green value (0..255)
     \param[in] blue   blue value (0..255)
 */
-void ledfxSetRGB(const U2 ix, const U1 red, const U1 green, const U1 blue);
+void ledfxSetIxRGB(const U2 ix, const U1 red, const U1 green, const U1 blue);
 
 //! set pixel given hue, saturation and value (HSV)
 /*!
@@ -84,7 +84,7 @@ void ledfxSetRGB(const U2 ix, const U1 red, const U1 green, const U1 blue);
     \param[in] sat  saturation value (0..255)
     \param[in] val  (brightness) value (0..255)
 */
-void ledfxSetHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val);
+void ledfxSetIxHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val);
 
 //! set matrix pixel given hue, saturation and value (HSV)
 /*!
@@ -185,12 +185,12 @@ void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2
 
 //! moving hue noise
 /*!
-    \param[in] init  set to \c true on first call to initialise things
-    \param[in] ix0   start index
-    \param[in] ix1   end index
-    \param[in] num   number of LEDs to change colours in one call
-    \param[in,out]   r0  effect state storage
-    \param[in,out]   r1  effect state storage
+    \param[in]      init  set to \c true on first call to initialise things
+    \param[in]      ix0   start index
+    \param[in]      ix1   end index
+    \param[in]      num   number of LEDs to change colours in one call
+    \param[in,out]  r0    effect state storage
+    \param[in,out]  r1    effect state storage
 
     Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
 */
@@ -202,6 +202,7 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
 /* *************************************************************************** */
 /*!
     \name Colour Flow Effects
+
     \todo better plasma à la http://lodev.org/cgtutor/plasma.html, http://pastebin.com/MQhR526C,
           http://www.bidouille.org/prog/plasma
 
@@ -212,16 +213,16 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
 /*!
     \todo make this centred for even numbers of rows/columns
 
-    \param[in] init  set to \c true on first call to initialise things
-    \param[in] step  how many hue steps to move per iteration
-    \param[in,out]   r0  effect state storage
+    \param[in]      init  set to \c true on first call to initialise things
+    \param[in]      step  how many hue steps to move per iteration
+    \param[in,out]  r0    effect state storage
 */
 void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0);
 
 //! plasma effect
 /*!
-    \param[in] init  set to \c true on first call to initialise things
-    \param[in,out]   r0  effect state storage
+    \param[in]       init  set to \c true on first call to initialise things
+    \param[in,out]   r0    effect state storage
 
     The formulas used in this function are based on code floating the internet in various code
     (google "colorduino", "shiftbrite", et al.). While the original source is never properly
@@ -229,6 +230,17 @@ void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0);
     2009 Ken Corey, 2008 Windell H. Oskay \todo find original reference for this
 */
 void ledfxPlasma(const L init, R4 *r0);
+
+//! rainbow effect
+/*!
+    \param[in]      init  set to \c true on first call to initialise things
+    \param[in]      ix0   start index
+    \param[in]      ix1   end index
+    \param[in,out]  r0    effect state storage
+
+    Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
+*/
+void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0);
 
 //@}
 
@@ -243,6 +255,14 @@ void ledfxPlasma(const L init, R4 *r0);
 
     @{
 */
+
+//! rotor effect
+/*!
+    \param[in]     init  set to \c true on first call to initialise things
+    \param[in,out] r0    effect state storage
+    \param[in,out] r1    effect state storage
+*/
+void ledfxRotor(const L init, R4 *r0, R4 *r1);
 
 //@}
 

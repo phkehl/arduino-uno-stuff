@@ -234,23 +234,23 @@ static U2 sFxChase(const U2 frame)
     const U1 hue = sFxState.r[0];
     for (U1 ix = RING_1_IX0; ix < (RING_1_IX1 + 1); ix++)
     {
-        ledfxSetHSV(ix, hue + (2 * ix), sat, val);
+        ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
     for (U1 ix = RING_2_IX0; ix < (RING_2_IX1 + 1); ix++)
     {
-        ledfxSetHSV(ix, hue + (2 * ix), sat, val);
+        ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
     for (U1 ix = RING_3_IX0; ix < (RING_3_IX1 + 1); ix++)
     {
-        ledfxSetHSV(ix, hue + (2 * ix), sat, val);
+        ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
     for (U1 ix = RING_4_IX0; ix < (RING_4_IX1 + 1); ix++)
     {
-        ledfxSetHSV(ix, hue + (2 * ix), sat, val);
+        ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
     for (U1 ix = RING_5_IX0; ix < (RING_5_IX1 + 1); ix++)
     {
-        ledfxSetHSV(ix, hue + (2 * ix), sat, val);
+        ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
     sFxState.r[0]++;
     return FLUSH_MATRIX;
@@ -289,7 +289,7 @@ static U2 sFxHueNoise2(const U2 frame)
         ledfxClear(0, 0);
     }
     const U1 rnd = hwMathGetRandom();
-    ledfxSetHSV(0, sFxState.r[0], 255, (rnd & 0x0f) == 0x0f ? 255 : 50);
+    ledfxSetIxHSV(0, sFxState.r[0], 255, (rnd & 0x0f) == 0x0f ? 255 : 50);
     ledfxNoiseMovingHue(false, RING_2_IX0, RING_2_IX1, 1, &sFxState.r[1], &sFxState.r[2]);
     ledfxNoiseMovingHue(false, RING_3_IX0, RING_3_IX1, 2, &sFxState.r[3], &sFxState.r[4]);
     ledfxNoiseMovingHue(false, RING_4_IX0, RING_4_IX1, 3, &sFxState.r[5], &sFxState.r[6]);

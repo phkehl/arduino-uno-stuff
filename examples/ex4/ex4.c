@@ -94,8 +94,8 @@ static void sAppTask(void *pArg)
         PIN_TOGGLE(LED_PIN);
 
         // sweep hue value
-        ledfxSetHSV(0, sHue, 255, 255);
-        ledfxSetHSV(1, sHue, 255, 255);
+        ledfxSetIxHSV(0, sHue, 255, 255);
+        ledfxSetIxHSV(1, sHue, 255, 255);
         sHue++;
 
         // write data to the LEDs

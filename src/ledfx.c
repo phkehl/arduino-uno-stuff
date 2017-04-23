@@ -175,7 +175,6 @@ inline void ledfxSetIxHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val)
     }
 }
 
-
 void ledfxSetMatrixHSV(const U2 x, const U2 y, const U1 hue, const U1 sat, const U1 val)
 {
     if ( (x < FF_LEDFX_NUM_X) && (y < FF_LEDFX_NUM_Y) )
@@ -211,7 +210,6 @@ void ledfxFillHSV(const U2 ix0, const U2 ix1, const U1 hue, const U1 sat, const 
     hsv2rgb(hue, sat, val, &red, &green, &blue);
     ledfxFillRGB(ix0, ix1, red, green, blue);
 }
-
 
 // see ledfx.m for some real-world current measurements
 U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed)
@@ -358,8 +356,7 @@ void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
     }
 }
 
-
-static __INLINE R4 sDist(const R4 a, const R4 b, const R4 c, const R4 d)
+static inline R4 sDist(const R4 a, const R4 b, const R4 c, const R4 d)
 {
     // based on: see header file
     const R4 cma = c - a;
@@ -433,6 +430,94 @@ void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0)
         ledfxSetIxHSV(ix, hue, sat, val);
     }
 
+}
+
+void ledfxRain(const L init, LEDFX_RAIN_t *pState)
+{
+    if (init)
+    {
+        memset(pState, 0, sizeof(*pState));
+    }
+
+    if (pState->f <= 0)
+    {
+        pState->f = 100;
+    }
+
+    // clear all
+    ledfxClear(0, 0);
+
+    const U1 maxLen = 6;  // max length of the drop
+    const U1 ds = 30;  // saturation steps
+    const U1 dv = 20;  // value steps
+    const U1 v0 = 255;
+
+    // check all columns
+    for (U1 x = 0; x < FF_LEDFX_NUM_X; x++)
+    {
+        // animate
+        if (pState->pos[x])
+        {
+            const U1 hue = pState->hue[x];
+            const I1 p1 = pState->pos[x];
+            const I1 p0 = p1 - pState->len[x] + 1;
+            U1 sat = 255 - (pState->len[x] * ds);
+            U1 val = v0 - (pState->len[x] * dv);
+            for (I1 p = p0; p <= p1; p++)
+            {
+                sat += ds;
+                val += dv;
+                const I1 y = FF_LEDFX_NUM_Y - p;
+                if ( (y >= 0) && (y < FF_LEDFX_NUM_Y) )
+                {
+                    //DEBUG("prog: rain: %2i %2i %3u %3u %3u/%3u", p1, y, h, s, v, v0);
+                    ledfxSetMatrixHSV(x, (U1)y, hue, sat, val);
+                }
+
+            }
+
+            //matrixSetXYHSV(x, MATRIX_NY - drops[x].pos, drops[x].hue, 255, drops[x].val);
+            if (p0 > (FF_LEDFX_NUM_Y - 1))
+            {
+                pState->pos[x] = 0;
+            }
+            else
+            {
+                pState->pos[x]++;
+            }
+        }
+        // maybe create a new raindrop
+        else
+        {
+            const U4 rnd = hwMathGetRandom();
+            if ((rnd % pState->f) == 0)
+            {
+                pState->pos[x] = 1;
+                pState->hue[x] = rnd >> 8;
+                pState->len[x] = ((rnd >> 16) % maxLen) + 1;
+                pState->n++;
+                //DEBUG("prog: rain: new %u %u f=%u n=%u", drops[x].hue, drops[x].len, pState->f, pState->n);
+            }
+        }
+    }
+
+    // reduce frequency
+    if (pState->n >= 5)
+    {
+        pState->n = 0;
+        if (pState->f > 50)
+        {
+            pState->f -= 10;
+        }
+        else if (pState->f > 20)
+        {
+            pState->f -= 5;
+        }
+        else
+        {
+            pState->f -= 1;
+        }
+    }
 }
 
 

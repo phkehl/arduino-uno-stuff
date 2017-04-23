@@ -264,6 +264,25 @@ void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0);
 */
 void ledfxRotor(const L init, R4 *r0, R4 *r1);
 
+
+//! a raindrop
+typedef struct LEDFX_RAIN_s
+{
+    I1 pos[FF_LEDFX_NUM_X];
+    U1 hue[FF_LEDFX_NUM_X];
+    U1 len[FF_LEDFX_NUM_X];
+    I1 f;
+    U1 n;
+} LEDFX_RAIN_t;
+
+//! rain effect
+/*!
+    \param[in]     init    set to \c true on first call to initialise things
+    \param[in,out] pState  raindrop state memory (effect state storage)
+*/
+void ledfxRain(const L init, LEDFX_RAIN_t *pState);
+
+
 //@}
 
 

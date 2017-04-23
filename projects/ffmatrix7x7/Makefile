@@ -3,7 +3,7 @@
 FFDIR       := ../..
 
 #PROGSPEED   := 57600
-PROGPORT    := /dev/ttyACM0
+PROGPORT    := /dev/ttyUSB0
 
 # see build.mk for more options that can be set here
 

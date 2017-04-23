@@ -10,6 +10,13 @@
 
     <img src="../../projects/ffmatrix7x7/ffmatrix7x7.jpg"/>
 
+    <img src="../../projects/ffmatrix7x7/top.jpg" width="50%"/>
+
+    <img src="../../projects/ffmatrix7x7/bottom.jpg" width="50%"/>
+
+    <img src="../../projects/ffmatrix7x7/schematics.png"/>
+    [Schematics](../../projects/ffmatrix7x7/schematics.pdf)
+
     See ffmatrix7x7.c source code and https://oinkzwurgl.org/projaeggd/flipflipmatrix for details.
 
     @{

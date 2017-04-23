@@ -27,6 +27,13 @@ Supported LED matrix arrangements (x/y 0/0 is at the bottom left, values for #FF
 0 1 2   0 1 2
 \endverbatim
 
+
+    \todo fire, water effects
+    \todo game of life
+    \todo play with different noises: Worley, Simplex, ...
+    \todo fireflys http://www.michaelfogleman.com/sync/
+    \todo better plasma à la http://lodev.org/cgtutor/plasma.html, http://pastebin.com/MQhR526C, http://www.bidouille.org/prog/plasma
+
     @{
 */
 
@@ -154,10 +161,6 @@ U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed);
 /*!
     \name Noise Effects
 
-    \todo play with different noises: Worley, Simplex, ...
-
-    \todo fireflys http://www.michaelfogleman.com/sync/
-
     @{
 */
 
@@ -203,9 +206,6 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
 /*!
     \name Colour Flow Effects
 
-    \todo better plasma à la http://lodev.org/cgtutor/plasma.html, http://pastebin.com/MQhR526C,
-          http://www.bidouille.org/prog/plasma
-
     @{
 */
 
@@ -248,10 +248,6 @@ void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0);
 /* *************************************************************************** */
 /*!
     \name Matrix Only Effects
-
-    \todo fire, water
-
-    \todo game of life
 
     @{
 */

@@ -163,7 +163,7 @@ L fxloopWait(void)
         {
             const U4 dt = (msssNow - sStatus.msss);
             const U2 numDropped = (dt / period) + 1;
-            WARNING("fxloop: %S %"F_U4" frames dropped! %"F_U2"+%"F_U2"ms",
+            WARNING("fxloop: %S %"F_U2" frames dropped! %"F_U2"+%"F_U2"ms",
                 INFO_NAME(sStatus.loopIx), numDropped, period, dt);
             sStatus.frameDrop += numDropped;
             sStatus.frame     += numDropped;

@@ -1,5 +1,7 @@
 # flipflip's Arduino Uno Stuff
 
+https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/
+
 ## Introduction
 
 This is my Arduino Uno™ (and others) stuff. It's a build system, an "operating

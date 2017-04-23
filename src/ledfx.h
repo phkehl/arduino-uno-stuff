@@ -7,13 +7,25 @@
     \defgroup LEDFX LED Effects
     \ingroup FF
 
-    This implements effects for LED matrices and strings. Adjust #FF_LEDFX_NUM_LED and
-    #FF_LEDFX_ORDER for your setup. The "HSV" routines are affected by #FF_HSV2RGB_METHOD.
+    This implements effects for LED matrices and strings. Adjust #FF_LEDFX_NUM_LED, #FF_LEDFX_ORDER,
+    and in case of an LED matrix also #FF_LEDFX_NUM_X, #FF_LEDFX_NUM_Y and #FF_LEDFX_XY_ARR, for
+    your setup. The "HSV" routines are affected by #FF_HSV2RGB_METHOD.
 
     Initialise the hwMathGetRandom() random number generator before using these functions:
-    \code{.c}
-    hwMathSeedRandom(hwGetRandomSeed());
-    \endcode
+\code{.c}
+hwMathSeedRandom(hwGetRandomSeed());
+\endcode
+
+Supported LED matrix arrangements (x/y 0/0 is at the bottom left, values for #FF_LEDFX_XY_ARR):
+
+\verbatim
+ (1)     (2)
+6 7 8   6 7 8
+3 4 5   5 4 3
+0 1 2   0 1 2
+\endverbatim
+
+    @{
 */
 
 #ifndef __LEDFX_H__
@@ -71,6 +83,27 @@ void ledfxSetRGB(const U2 ix, const U1 red, const U1 green, const U1 blue);
     \param[in] val  blue value (0..255)
 */
 void ledfxSetHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val);
+
+//! set matrix pixel given hue, saturation and value (HSV)
+/*!
+    \param[in] x    LED column index (0..(#FF_LEDFX_NUM_X-1))
+    \param[in] y    LED row index (0..(#FF_LEDFX_NUM_Y-1))
+    \param[in] hue  red value (0..255)
+    \param[in] sat  green value (0..255)
+    \param[in] val  blue value (0..255)
+*/
+void ledfxSetMatrixHSV(const U2 x, const U2 y, const U1 hue, const U1 sat, const U1 val);
+
+//! set matrix pixel given red, green and blue (RGB)
+/*!
+    \param[in] x    LED column index (0..(#FF_LEDFX_NUM_X-1))
+    \param[in] y    LED row index (0..(#FF_LEDFX_NUM_Y-1))
+    \param[in] hue  red value (0..255)
+    \param[in] sat  green value (0..255)
+    \param[in] val  blue value (0..255)
+*/
+void ledfxSetMatrixRGB(const U2 x, const U2 y, const U1 red, const U1 green, const U1 blue);
+
 
 //! fill range of pixels given red, green and blue (RGB)
 /*!
@@ -158,6 +191,22 @@ void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2
 void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num, U1 *r0, U1 *r1);
 
 
+//@}
+
+
+/* *************************************************************************** */
+/*!
+    \name Colour Flow Effects
+    @{
+*/
+
+//! concentric moving hue flow
+/*!
+    \param[in] init  set to \c true on first call to initialise things
+    \param[in] step  how many hue steps to move per iteration
+    \param[in,out]   r0  effect state storage
+*/
+void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0);
 
 
 //@}

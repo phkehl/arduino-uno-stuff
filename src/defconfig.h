@@ -128,6 +128,20 @@
 #  define FF_LEDFX_ORDER 123
 #endif
 
+//! LED matrix x dimension (default #FF_LEDFX_NUM_LED)
+#if !defined (FF_LEDFX_NUM_X) || defined(__DOXYGEN__)
+#  define FF_LEDFX_NUM_X FF_LEDFX_NUM_LED
+#endif
+
+//! LED matrix y dimension (default 1)
+#if !defined (FF_LEDFX_NUM_Y) || defined(__DOXYGEN__)
+#  define FF_LEDFX_NUM_Y 1
+#endif
+
+//! LED matrix arrangement (see \ref LEDFX for details)
+#if !defined (FF_LEDFX_XY_ARR) || defined(__DOXYGEN__)
+#  define FF_LEDFX_XY_ARR 1
+#endif
 
 /* *************************************************************************** */
 

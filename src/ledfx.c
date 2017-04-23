@@ -26,7 +26,7 @@
 #define _cosf(x) hwMathFastCosf(x)
 #define _sqrtf(x) hwMathFastSqrtf(x)
 
-//
+// check valid colour ordering
 #if   (FF_LEDFX_ORDER == 123) // RGB
 enum { _R_ = 0, _G_ = 1, _B_ = 2 };
 #elif (FF_LEDFX_ORDER == 132) // RBG
@@ -43,6 +43,21 @@ enum { _B_ = 0, _G_ = 1, _R_ = 2 };
 #  error Illegal value for FF_LEDFX_ORDER
 #endif
 
+// LED matrix arrangement (keep in sync with docu above!)
+#if   (FF_LEDFX_XY_ARR == 1)
+#  define XY_TO_IX(x, y) ( ((y) * (FF_LEDFX_NUM_X)) + (x) )
+#elif (FF_LEDFX_XY_ARR == 2)
+#  define XY_TO_IX(x, y) ( (y) % 2 ? ( (((y) + 1) * (FF_LEDFX_NUM_X)) - (x) - 1 ) : ( ((y) * (FF_LEDFX_NUM_X)) + (x) ) )
+#else
+#  error Illegal value for FF_LEDFX_XY_ARR
+#endif
+
+// check consistent number of LED configuration
+#if ((FF_LEDFX_NUM_LED) != ((FF_LEDFX_NUM_X) * (FF_LEDFX_NUM_Y)))
+#  error FF_LEDFX_NUM_LED is not equal FF_LEDFX_NUM_X * FF_LEDFX_NUM_Y
+#endif
+
+// number of colour channels
 #define _N_ 3
 
 // the frame buffer
@@ -153,6 +168,27 @@ inline void ledfxSetHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val)
     {
         U1 red, green, blue;
         hsv2rgb(hue, sat, val, &red, &green, &blue);
+        sLedfxSetRGB(ix, red, green, blue);
+    }
+}
+
+
+void ledfxSetMatrixHSV(const U2 x, const U2 y, const U1 hue, const U1 sat, const U1 val)
+{
+    if ( (x < FF_LEDFX_NUM_X) && (y < FF_LEDFX_NUM_Y) )
+    {
+        const U2 ix = XY_TO_IX(x, y);
+        U1 red, green, blue;
+        hsv2rgb(hue, sat, val, &red, &green, &blue);
+        sLedfxSetRGB(ix, red, green, blue);
+    }
+}
+
+void ledfxSetMatrixRGB(const U2 x, const U2 y, const U1 red, const U1 green, const U1 blue)
+{
+    if ( (x < FF_LEDFX_NUM_X) && (y < FF_LEDFX_NUM_Y) )
+    {
+        const U2 ix = XY_TO_IX(x, y);
         sLedfxSetRGB(ix, red, green, blue);
     }
 }
@@ -281,6 +317,44 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
 }
 
 /* ************************************************************************** */
+
+void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
+{
+    if (init)
+    {
+        *r0 = 0;
+    }
+    else
+    {
+        (*r0) += step;
+    }
+
+    const I2 x0 = FF_LEDFX_NUM_X / 2;
+    const I2 y0 = FF_LEDFX_NUM_Y / 2;
+    const I2 hueMax = 256/2;
+    const U1 s = 255;
+    const U1 v = 255;
+    I2 dX = x0 + 1;
+    while (dX--)
+    {
+        I2 dY = y0 + 1;
+        while (dY--)
+        {
+            const U1 hue = (U1)(((dX*dX) + (dY*dY))
+               * hueMax / ((x0*x0) + (y0*y0))) + *r0;
+            //DEBUG("ledfxConcentricHueFlow() %2i %2i %2i %2i %3u -> %2i %2i   %2i %2i  %2i %2i  %2i %2i",
+            //      dx, dy, X0, Y0, hue,
+            //      X0 + dx, dy, X0 - dx, dy, dx, Y0 + dy, dx, Y0 - dy);
+
+            // FIXME: possible overflow?
+            ledfxSetMatrixHSV(x0 + dX, y0 + dY, hue, s, v);
+            ledfxSetMatrixHSV(x0 - dX, y0 + dY, hue, s, v);
+            ledfxSetMatrixHSV(x0 + dX, y0 - dY, hue, s, v);
+            ledfxSetMatrixHSV(x0 - dX, y0 - dY, hue, s, v);
+        }
+    }
+}
+
 
 /* ************************************************************************** */
 

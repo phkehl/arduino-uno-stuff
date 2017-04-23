@@ -99,9 +99,9 @@ static U2 sFxloopFunc3(const U2 frame)
 
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
-    { .fxName = "func1", .fxFunc = sFxloopFunc1, .fxPeriod = 250, .fxDuration = 3000 },
-    { .fxName = "func2", .fxFunc = sFxloopFunc2, .fxPeriod = 250, .fxDuration = 4000 },
-    { .fxName = "func3", .fxFunc = sFxloopFunc3, .fxPeriod = 250, .fxDuration = 5000 },
+    FXLOOP_INFO("123456789012345", sFxloopFunc1, 250, 3000),
+    FXLOOP_INFO("func2", sFxloopFunc2, 250, 3000),
+    FXLOOP_INFO("func3", sFxloopFunc3, 250, 3000),
 };
 
 static U4 sAppCnt;

@@ -32,7 +32,7 @@
 */
 typedef U2 (*FXLOOP_FUNC_t)(const U2 frame);
 
-//! effect info
+//! effect info (use FXLOOP_INFO() macro to initialise)
 typedef struct FXLOOP_INFO_s
 {
     CH            fxName[16];  //!< effect name
@@ -40,6 +40,16 @@ typedef struct FXLOOP_INFO_s
     U2            fxPeriod;    //!< update period (= 1 / refresh rate) [ms], how often to call the \c fxFunc
     U4            fxDuration;  //!< how long to play the effect [ms]
 } FXLOOP_INFO_t;
+
+//! create an effect info (#FXLOOP_INFO_t) entry \hideinitializer
+/*!
+    \param[in] name      the name of the effect (a string, e.g. \c "foobar")
+    \param[in] func      the effect function (of type #FXLOOP_FUNC_t)
+    \param[in] period    update period of the effect [ms]
+    \param[in] duration  duration of the effect [ms]
+*/
+#define FXLOOP_INFO(name, func, period, duration) \
+    { .fxName = name "\0", .fxFunc = (func), .fxPeriod = (period), .fxDuration = (duration) }
 
 //! fxloopRun() special meaning return value
 #define FXLOOP_NEXT 0xffff

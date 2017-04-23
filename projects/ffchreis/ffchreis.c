@@ -423,13 +423,13 @@ static void sTouchMeas(void)
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
   //{ .fxName = "test",      .fxFunc = sFxTest,      .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    { .fxName = "noise1",    .fxFunc = sFxNoise1,    .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    { .fxName = "noise2",    .fxFunc = sFxNoise2,    .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    { .fxName = "chase",     .fxFunc = sFxChase,     .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    { .fxName = "kaa",       .fxFunc = sFxKaa,       .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    { .fxName = "huenoise1", .fxFunc = sFxHueNoise1, .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    { .fxName = "huenoise2", .fxFunc = sFxHueNoise2, .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    { .fxName = "huefill",   .fxFunc = sFxHueFill,   .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
+    FXLOOP_INFO("noise1",    sFxNoise1,    FXPERIOD, FXDURATION),
+    FXLOOP_INFO("noise2",    sFxNoise2,    FXPERIOD, FXDURATION),
+    FXLOOP_INFO("chase",     sFxChase,     FXPERIOD, FXDURATION),
+    FXLOOP_INFO("kaa",       sFxKaa,       FXPERIOD, FXDURATION),
+    FXLOOP_INFO("huenoise1", sFxHueNoise1, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("huenoise2", sFxHueNoise2, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("huefill",   sFxHueFill,   FXPERIOD, FXDURATION),
 };
 
 // current limiter status
@@ -466,8 +466,8 @@ static void sAppTask(void *pArg)
 #endif
 
     // run the test program once
-    sFxTest(true);
-    while (sFxTest(false))
+    sFxTest(0);
+    while (sFxTest(1))
     {
         sLedUpdBright();
         ledfxLimitCurrent(MA_PER_LED, PSU_MAX_MA, &sAppCurrent);

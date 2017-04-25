@@ -558,6 +558,33 @@ void ledfxRotor(const bool init, float *r0, float *r1)
 
 }
 
+void ledfxDiagonal(const bool init, uint8_t *r0)
+{
+    if (init)
+    {
+        *r0 = 0;
+    }
+    else
+    {
+        (*r0)++;
+    }
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
+    const uint16_t nxx = FF_LEDFX_NUM_X * FF_LEDFX_NUM_X;
+    const uint16_t nyy = FF_LEDFX_NUM_Y * FF_LEDFX_NUM_Y;
+    for (uint16_t y = 0; y < FF_LEDFX_NUM_Y; y++)
+    {
+        const uint16_t yy = y * y;
+        for (uint16_t x = 0; x < FF_LEDFX_NUM_X; x++)
+        {
+            const uint16_t xx = x * x;
+            const uint16_t hMax = 200;
+            const uint8_t hue = *r0 + (uint8_t)( ( ( xx  + yy  ) * hMax ) / ( nxx + nyy ) );
+            ledfxSetMatrixHSV(x, y, hue, sat, val);
+        }
+    }
+}
+
 void ledfxRain(const bool init, LEDFX_RAIN_t *pState)
 {
     if (init)

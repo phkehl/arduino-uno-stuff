@@ -291,6 +291,13 @@ void ledfxWaves(const bool init, uint8_t *r0, float *r1, float *r2);
 */
 void ledfxRotor(const bool init, float *r0, float *r1);
 
+//! diagonal hue change effect
+/*!
+    \param[in]     init  set to \c true on first call to initialise things
+    \param[in,out] r0    effect state storage
+*/
+void ledfxDiagonal(const bool init, uint8_t *r0);
+
 //! rain effect state
 typedef struct LEDFX_RAIN_s
 {

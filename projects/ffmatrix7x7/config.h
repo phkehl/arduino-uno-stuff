@@ -33,7 +33,7 @@
 // we have this many LEDs
 #define FF_LEDFX_NUM_LED ((FF_LEDFX_NUM_X) * (FF_LEDFX_NUM_Y))
 
-// LEd matrix arrangement
+// LED matrix arrangement
 #define FF_LEDFX_XY_ARR 1
 
 // BRG colour ordering

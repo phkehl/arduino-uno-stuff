@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: LED effects (see \ref LEDFX)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     - Portions copyright by others (see ledfx.h)
 

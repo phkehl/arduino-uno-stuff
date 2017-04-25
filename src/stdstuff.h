@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: types and stuff (see \ref STDSTUFF)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup STDSTUFF Standard Types and Handy Macros
     \ingroup FF

@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: operating system abstraction (see \ref OS)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup OS Operating System
     \ingroup FF

@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: "ffchräis" LED rings application (see \ref PROJECTS_FFCHREIS)
 
-    - Copyright (c) 2016-2017 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016-2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup PROJECTS_FFCHREIS
     @{

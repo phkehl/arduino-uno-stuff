@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: hardware abstraction (see \ref HW)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup HW
     @{

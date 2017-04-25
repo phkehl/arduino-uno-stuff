@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: fourth example application (see \ref EXAMPLES_EX4)
 
-    - Copyright (c) 2016-2017 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016-2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup EXAMPLES_EX4
     @{

@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: fifth example application (see \ref EXAMPLES_EX5)
 
-    - Copyright (c) 2017 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup EXAMPLES_EX5 5th Example Application
     \ingroup EXAMPLES

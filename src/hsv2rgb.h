@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: HSV to RGB conversion (see \ref HSV2RGB)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup HSV2RGB HSV to RGB Conversion
     \ingroup FF

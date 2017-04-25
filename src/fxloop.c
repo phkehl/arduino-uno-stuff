@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: template (see \ref FXLOOP)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup FXLOOP
     @{

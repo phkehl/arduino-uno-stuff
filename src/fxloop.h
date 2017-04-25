@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: effect loops (see \ref FXLOOP)
 
-    - Copyright (c) 2017 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup FXLOOP Effect Loops
     \ingroup FF

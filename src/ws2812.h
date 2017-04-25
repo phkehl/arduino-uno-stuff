@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: WS2812 LED driver (see \ref WS2812)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup WS2812 WS2812 LED Driver
     \ingroup FF

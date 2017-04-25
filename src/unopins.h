@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: Arduino Uno pins (see \ref UNOPINS)
 
-    - Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
+    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup UNOPINS Arduino Uno Pins
     \ingroup FF

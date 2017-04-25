@@ -317,6 +317,27 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
     *r1 -= 7;
 }
 
+void ledfxStrobo(const L init, const U2 ix0, const U2 ix1, U1 *r0)
+{
+    if (init)
+    {
+        *r0 = 0;
+    }
+    else
+    {
+        (*r0)++;
+    }
+    if (*r0 % 2)
+    {
+        ledfxFillRGB(ix0, ix1, 255, 255, 255);
+    }
+    else
+    {
+        ledfxFillRGB(ix0, ix1, 0, 0, 0);
+    }
+}
+
+
 /* ************************************************************************** */
 
 void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
@@ -432,6 +453,111 @@ void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0)
 
 }
 
+void ledfxHueSweep(const L init, const U2 ix0, const U2 ix1, U1 *r0)
+{
+    if (init)
+    {
+        *r0 = 0;
+    }
+    else
+    {
+        (*r0)++;
+    }
+    const U1 sat = 255;
+    const U1 val = 255;
+    ledfxFillHSV(ix0, ix1, *r0, sat, val);
+}
+
+void ledfxWaves(const L init, U1 *r0, R4 *r1, R4 *r2)
+{
+    if (init)
+    {
+        *r0 = 0;    // hue
+        *r1 = 0.0f; // time
+        *r2 = 0.0f; // scale
+    }
+    const U1 sat = 255;
+    for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
+    {
+        const R4 v = _sinf( ((R4)x * _cosf(*r2)) + *r1 );
+        for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
+        {
+            ledfxSetMatrixHSV(x, y, *r0, sat, ( (v + 1.0f) * 125.0f ));
+        }
+    }
+
+    // update hue
+    (*r0)++;
+    // update time
+    *r1 += M_PI / ((R4)FF_LEDFX_NUM_X * 10.0);
+    *r1 = fmodf(*r1, 2.0f * M_PI);
+    // update scale
+    *r2 += M_PI / ((R4)FF_LEDFX_NUM_X * 30.0f);
+    *r2 = fmodf(*r2, 2.0f * M_PI);
+}
+
+
+/* ************************************************************************** */
+
+void ledfxRotor(const L init, R4 *r0, R4 *r1)
+{
+    const U1 sat = 255;
+    const U1 val = 255;
+
+    if (init)
+    {
+        *r0 = (R4)(hwMathGetRandom() & 0xff); // hue offset
+        *r1 = 0.0f; // angle
+    }
+    else
+    {
+        *r0 += 0.25;
+        *r1 += M_PI / 200;
+    }
+
+    // we rotate the coordinate system (or: a the line y = 0.5*x)
+    hwTic(0);
+    const R4 sinAngle = _sinf(*r1);
+    const R4 cosAngle = _cosf(*r1);
+    for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
+    {
+        const R4 cosAngleY = cosAngle * ((R4)y +- ((R4)FF_LEDFX_NUM_Y/2.0f) + 0.5f);
+        for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
+        {
+            const R4 sinAngleX = sinAngle * ((R4)x - ((R4)FF_LEDFX_NUM_X/2.0f) + 0.5f);
+
+            // the distance of the point at (x,y) to the line is (dot product) (in [px])
+            // [ x, y ] * [ sin(a), cos(a) ] = x * sin(a) + y * cos(a)
+            const R4 dist = (sinAngleX + cosAngleY); // distance in [px]
+
+            // (an approximation of) the maximum distance we'll see
+            const R4 maxDist = 1.4142f * ((R4)FF_LEDFX_NUM_X + (R4)FF_LEDFX_NUM_Y) / 2.0f / 2.0f;
+
+            // scale distance to the range -1..+1 (via sin() instead of linear)
+            //const R4 normDist = _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f));
+            // scale distance to the range 0..+1 (symmetric) (via sin() instead of linear)
+            //const R4 normDist = fabsf( _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
+            //const R4 normDist = fabsf( _cosf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
+            const R4 normDist = fabsf( dist * (1.0f/maxDist) );
+
+            // calculate hue
+            const R4 hueSpan = 200.0f;
+            const U1 hue = normDist * (hueSpan / 2.0) + (hueSpan / 2.0)
+                // cycle through hue spectrum
+                + *r0;
+
+            //if (x == 0)
+            //{
+            //    DEBUG("y=%u dist=%.1f maxDist=%.1f normDist=%.1f h=%u", y, dist, maxDist, normDist, h);
+            //}
+
+            ledfxSetMatrixHSV(x, y, hue, sat, val);
+        }
+    }
+    DEBUG("ledfxRotor() render %"F_U, hwToc(0));
+
+}
+
 void ledfxRain(const L init, LEDFX_RAIN_t *pState)
 {
     if (init)
@@ -520,66 +646,106 @@ void ledfxRain(const L init, LEDFX_RAIN_t *pState)
     }
 }
 
-
-/* ************************************************************************** */
-
-void ledfxRotor(const L init, R4 *r0, R4 *r1)
+void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars)
 {
-    const U1 sat = 255;
-    const U1 val = 255;
+    const U1 vBase = 255 / 2;
+    const U1 vMin = 3;
 
+    // initialise
     if (init)
     {
-        *r0 = (R4)(hwMathGetRandom() & 0xff); // hue offset
-        *r1 = 0.0f; // angle
-    }
-    else
-    {
-        *r0 += 0.25;
-        *r1 += M_PI / 200;
+        memset(pStars, 0, nStars * sizeof(*pStars));
+        ledfxClear(0, 0);
     }
 
-    // we rotate the coordinate system (or: a the line y = 0.5*x)
-    hwTic(0);
-    const R4 sinAngle = _sinf(*r1);
-    const R4 cosAngle = _cosf(*r1);
-    for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
+    // create stars as needed
+    for (U2 starIx = 0; starIx < nStars; starIx++)
     {
-        const R4 cosAngleY = cosAngle * ((R4)y +- ((R4)FF_LEDFX_NUM_Y/2.0f) + 0.5f);
-        for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
+        LEDFX_STAR_t *pStar = &pStars[starIx];
+
+        // skip still active star
+        if (pStar->speed)
         {
-            const R4 sinAngleX = sinAngle * ((R4)x - ((R4)FF_LEDFX_NUM_X/2.0f) + 0.5f);
-
-            // the distance of the point at (x,y) to the line is (dot product) (in [px])
-            // [ x, y ] * [ sin(a), cos(a) ] = x * sin(a) + y * cos(a)
-            const R4 dist = (sinAngleX + cosAngleY); // distance in [px]
-
-            // (an approximation of) the maximum distance we'll see
-            const R4 maxDist = 1.4142f * ((R4)FF_LEDFX_NUM_X + (R4)FF_LEDFX_NUM_Y) / 2.0f / 2.0f;
-
-            // scale distance to the range -1..+1 (via sin() instead of linear)
-            //const R4 normDist = _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f));
-            // scale distance to the range 0..+1 (symmetric) (via sin() instead of linear)
-            //const R4 normDist = fabsf( _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
-            //const R4 normDist = fabsf( _cosf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
-            const R4 normDist = fabsf( dist * (1.0f/maxDist) );
-
-            // calculate hue
-            const R4 hueSpan = 200.0f;
-            const U1 hue = normDist * (hueSpan / 2.0) + (hueSpan / 2.0)
-                // cycle through hue spectrum
-                + *r0;
-
-            //if (x == 0)
-            //{
-            //    DEBUG("y=%u dist=%.1f maxDist=%.1f normDist=%.1f h=%u", y, dist, maxDist, normDist, h);
-            //}
-
-            ledfxSetMatrixHSV(x, y, hue, sat, val);
+            continue;
         }
-    }
-    DEBUG("ledfxRotor() render %"F_U, hwToc(0));
 
+        // create new star at a random and free pixel
+        L uniq;
+        do
+        {
+            uniq = TRUE;
+            pStar->ix = hwMathGetRandom() % FF_LEDFX_NUM_LED;
+            if (starIx > 0)
+            {
+                U1 testIx = starIx;
+                while (testIx--)
+                {
+                    if (pStars[testIx].ix == pStar->ix)
+                    {
+                        uniq = FALSE;
+                        break;
+                    }
+                }
+            }
+        } while (uniq == FALSE);
+        const U4 rand = hwMathGetRandom();
+        pStar->hue    = rand & 0xff;
+        pStar->speed  = ((rand >> 8) % 5) + 1;
+        pStar->valMax = vBase + ((rand >> 16) % vBase);
+        pStar->val    = 1;
+
+        DEBUG("ledfxStars() create %02"F_U2": ix=%03"F_U2" hue=%03"F_U1" val=%03"F_U1" valMax=%03"F_U1" speed=%03"F_I1,
+            starIx, pStar->ix, pStar->hue, pStar->val, pStar->valMax, pStar->speed);
+
+        break; // create one per iteration
+    }
+
+    // render and decay
+    for (U2 starIx = 0; starIx < nStars; starIx++)
+    {
+        LEDFX_STAR_t *pStar = &pStars[starIx];
+
+        // skip inactive stars (on start)
+        if (pStar->speed == 0)
+        {
+            continue;
+        }
+
+        // render
+        const U1 sat = 155 + (U1)((U4)100 * (U4)pStar->val / (U4)pStar->valMax);
+        //DEBUG("ledfxStars() render starIx=%u/%u ix=%03u hue=%03u val=%03u valMax=%03u speed=%03i s=%03u", starIx, nStars,
+        //      pStar->ix, pStar->hue, pStar->val, pStar->valMax, pStar->speed, s);
+
+        ledfxSetIxHSV(pStar->ix, pStar->hue, sat, pStar->val);
+
+        // calculate next
+        const I2 val = pStar->val + pStar->speed;
+        if (pStar->speed > 0) // fade in
+        {
+            if (val <= (I2)pStar->valMax)
+            {
+                pStar->val = (U1)val;
+            }
+            else
+            {
+                pStar->speed = -pStar->speed;
+            }
+        }
+        else // fade out
+        {
+            if (val >= vMin)
+            {
+                pStar->val = (U1)val;
+            }
+            else
+            {
+                pStar->val = vMin;
+                pStar->speed = 0;
+                ledfxSetIxRGB(pStar->ix, 0, 0, 0);
+            }
+        }
+
+    }
 }
 
 

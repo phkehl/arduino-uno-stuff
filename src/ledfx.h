@@ -199,6 +199,17 @@ void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2
 */
 void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num, U1 *r0, U1 *r1);
 
+//! (pretty cheap) stoboscope effect
+/*!
+    \param[in]      init  set to \c true on first call to initialise things
+    \param[in]      ix0   start index
+    \param[in]      ix1   end index
+    \param[in,out]  r0    effect state storage
+
+    Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
+*/
+void ledfxStrobo(const L init, const U2 ix0, const U2 ix1, U1 *r0);
+
 //@}
 
 
@@ -242,6 +253,26 @@ void ledfxPlasma(const L init, R4 *r0);
 */
 void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0);
 
+//! (pretty cheap) hue sweep
+/*!
+    \param[in]      init  set to \c true on first call to initialise things
+    \param[in]      ix0   start index
+    \param[in]      ix1   end index
+    \param[in,out]  r0    effect state storage
+
+    Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
+*/
+void ledfxHueSweep(const L init, const U2 ix0, const U2 ix1, U1 *r0);
+
+//! waves effect
+/*!
+    \param[in]      init  set to \c true on first call to initialise things
+    \param[in,out]  r0    effect state storage
+    \param[in,out]  r1    effect state storage
+    \param[in,out]  r2    effect state storage
+*/
+void ledfxWaves(const L init, U1 *r0, R4 *r1, R4 *r2);
+
 //@}
 
 
@@ -260,8 +291,7 @@ void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0);
 */
 void ledfxRotor(const L init, R4 *r0, R4 *r1);
 
-
-//! a raindrop
+//! rain effect state
 typedef struct LEDFX_RAIN_s
 {
     I1 pos[FF_LEDFX_NUM_X];
@@ -277,6 +307,24 @@ typedef struct LEDFX_RAIN_s
     \param[in,out] pState  raindrop state memory (effect state storage)
 */
 void ledfxRain(const L init, LEDFX_RAIN_t *pState);
+
+//! a star
+typedef struct LEDFX_STAR_s
+{
+    U2 ix;
+    U1 hue;
+    U1 val;
+    U1 valMax;
+    I1 speed;
+} LEDFX_STAR_t;
+
+//! stars effect
+/*!
+    \param[in]     init    set to \c true on first call to initialise things
+    \param[in,out] pStars  stars state memory
+    \param[in]     nStars  number of stars (number of \c *pStars)
+*/
+void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars);
 
 
 //@}

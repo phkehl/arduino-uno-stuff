@@ -69,7 +69,7 @@ void appCreateTask(void)
 #define MA_PER_LED 60
 
 // maximum [mA] the power supply can deliver
-#define PSU_MAX_MA 2000
+#define PSU_MAX_MA 2500
 
 // current limiter status
 static U2 sAppCurrent;
@@ -96,6 +96,7 @@ static union
     U1 u[12];
     R4 f[3];
     LEDFX_RAIN_t rain;
+    LEDFX_STAR_t stars[FF_LEDFX_NUM_LED / 5];
 } sFxState;
 
 static inline U2 sFxNoise1(const U2 frame)
@@ -157,18 +158,45 @@ static U2 sFxRain(const U2 frame)
     return FLUSH_MATRIX;
 }
 
+static U2 sFxHueSweep(const U2 frame)
+{
+    ledfxHueSweep(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
+    return FLUSH_MATRIX;
+}
+
+static U2 sFxStars(const U2 frame)
+{
+    ledfxStars(frame == 0 ? true : false, sFxState.stars, NUMOF(sFxState.stars));
+    return FLUSH_MATRIX;
+}
+
+static U2 sFxStrobo(const U2 frame)
+{
+    ledfxStrobo(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
+    return FLUSH_MATRIX;
+}
+
+static U2 sFxWaves(const U2 frame)
+{
+    ledfxWaves(frame == 0 ? true : false, &sFxState.u[0], &sFxState.f[1], &sFxState.f[2]);
+    return FLUSH_MATRIX;
+}
 
 /* ***** application task **************************************************** */
 
 
-#define FXDURATION (U4)5000
+#define FXDURATION (U4)10000
 #define FXPERIOD   50
 
 // the effects
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
   //{ .fxName = "test",      sFxTest,      FXPERIOD, FXDURATION),
-    FXLOOP_INFO("rain",      sFxRain,      FXPERIOD, 60000),
+  //FXLOOP_INFO("strobo",    sFxStrobo,    FXPERIOD, 60000),
+    FXLOOP_INFO("waves",     sFxWaves,     FXPERIOD, FXDURATION),
+    FXLOOP_INFO("stars",     sFxStars,     FXPERIOD, FXDURATION),
+    FXLOOP_INFO("huesweep",  sFxHueSweep,  FXPERIOD, FXDURATION),
+    FXLOOP_INFO("rain",      sFxRain,      FXPERIOD, FXDURATION),
     FXLOOP_INFO("rainbow",   sFxRainbow,   FXPERIOD, FXDURATION),
     FXLOOP_INFO("plasma",    sFxPlasma,    FXPERIOD, FXDURATION), // frame ~50ms
     FXLOOP_INFO("rotor",     sFxRotor,     FXPERIOD, FXDURATION), // frame 7-10ms
@@ -177,6 +205,8 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
     FXLOOP_INFO("noise2",    sFxNoise2,    FXPERIOD, FXDURATION),
     FXLOOP_INFO("huenoise1", sFxHueNoise1, FXPERIOD, FXDURATION),
     FXLOOP_INFO("huefill",   sFxHueFill,   FXPERIOD, FXDURATION),
+
+    // TODO: stars, hsvsweep, strobo, waves, ...
 };
 
 

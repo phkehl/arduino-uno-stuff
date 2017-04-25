@@ -283,13 +283,13 @@ void ledfxNoiseRandomDistinct(const bool init, const uint16_t ix0, const uint16_
 {
     UNUSED(init);
     // \todo move to flash (PGM)
-    const uint8_t hues[] = { 0, (1*255/6), (2*255/6), (3*255/6), (4*255/6), (5*255/6) };
+    static const uint8_t hues[] PROGMEM = { 0, (1*255/6), (2*255/6), (3*255/6), (4*255/6), (5*255/6) };
     const uint16_t range = ( (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1 ) - ix0 + 1;
     for (uint16_t n = 0; n < num; n++)
     {
         const uint32_t rnd = hwMathGetRandom();
         const uint16_t ix = ix0 + (rnd % range);
-        const uint8_t hue = hues[ (rnd >> 8) % NUMOF(hues) ];
+        const uint8_t hue = pgm_read_byte( &hues[ (rnd >> 8) % NUMOF(hues) ] );
         ledfxSetIxHSV(ix, hue, 255, 255);
     }
 }

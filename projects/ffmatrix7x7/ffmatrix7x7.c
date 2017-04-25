@@ -99,11 +99,11 @@ static union
     LEDFX_STAR_t stars[FF_LEDFX_NUM_LED / 5];
 } sFxState;
 
-static inline uint16_t sFxNoise1(const uint16_t frame)
-{
-    ledfxNoiseRandom(frame == 0 ? true : false, 0, 0, 5);
-    return FLUSH_MATRIX;
-}
+//static inline uint16_t sFxNoise1(const uint16_t frame)
+//{
+//    ledfxNoiseRandom(frame == 0 ? true : false, 0, 0, 5);
+//    return FLUSH_MATRIX;
+//}
 
 static inline uint16_t sFxNoise2(const uint16_t frame)
 {
@@ -111,20 +111,9 @@ static inline uint16_t sFxNoise2(const uint16_t frame)
     return FLUSH_MATRIX;
 }
 
-static uint16_t sFxHueNoise1(const uint16_t frame)
+static uint16_t sFxHueNoise(const uint16_t frame)
 {
     ledfxNoiseMovingHue(frame == 0 ? true : false, 0, 0, 5, &sFxState.u[0], &sFxState.u[1]);
-    return FLUSH_MATRIX;
-}
-
-static uint16_t sFxHueFill(const uint16_t frame)
-{
-    UNUSED(frame);
-    const uint8_t hue = sFxState.u[0];
-    const uint8_t sat = 255;
-    const uint8_t val = 255;
-    ledfxFillHSV(0, 0, hue, sat, val);
-    sFxState.u[0]++;
     return FLUSH_MATRIX;
 }
 
@@ -158,11 +147,11 @@ static uint16_t sFxRain(const uint16_t frame)
     return FLUSH_MATRIX;
 }
 
-static uint16_t sFxHueSweep(const uint16_t frame)
-{
-    ledfxHueSweep(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
-    return FLUSH_MATRIX;
-}
+//static uint16_t sFxHueSweep(const uint16_t frame)
+//{
+//    ledfxHueSweep(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
+//    return FLUSH_MATRIX;
+//}
 
 static uint16_t sFxStars(const uint16_t frame)
 {
@@ -170,11 +159,11 @@ static uint16_t sFxStars(const uint16_t frame)
     return FLUSH_MATRIX;
 }
 
-static uint16_t sFxStrobo(const uint16_t frame)
-{
-    ledfxStrobo(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
-    return FLUSH_MATRIX;
-}
+//static uint16_t sFxStrobo(const uint16_t frame)
+//{
+//    ledfxStrobo(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
+//    return FLUSH_MATRIX;
+//}
 
 static uint16_t sFxWaves(const uint16_t frame)
 {
@@ -182,31 +171,37 @@ static uint16_t sFxWaves(const uint16_t frame)
     return FLUSH_MATRIX;
 }
 
+static uint16_t sFxDiagonal(const uint16_t frame)
+{
+    ledfxDiagonal(frame == 0 ? true : false, &sFxState.u[0]);
+    return FLUSH_MATRIX;
+}
+
+
 /* ***** application task **************************************************** */
 
 
-#define FXDURATION (uint32_t)10000
+#define FXDURATION (uint32_t)60000
 #define FXPERIOD   50
+
+// TODO: fix duration
 
 // the effects
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
-  //{ .fxName = "test",      sFxTest,      FXPERIOD, FXDURATION),
-  //FXLOOP_INFO("strobo",    sFxStrobo,    FXPERIOD, 60000),
-    FXLOOP_INFO("waves",     sFxWaves,     FXPERIOD, FXDURATION),
-    FXLOOP_INFO("stars",     sFxStars,     FXPERIOD, FXDURATION),
-    FXLOOP_INFO("huesweep",  sFxHueSweep,  FXPERIOD, FXDURATION),
-    FXLOOP_INFO("rain",      sFxRain,      FXPERIOD, FXDURATION),
-    FXLOOP_INFO("rainbow",   sFxRainbow,   FXPERIOD, FXDURATION),
-    FXLOOP_INFO("plasma",    sFxPlasma,    FXPERIOD, FXDURATION), // frame ~50ms
-    FXLOOP_INFO("rotor",     sFxRotor,     FXPERIOD, FXDURATION), // frame 7-10ms
-    FXLOOP_INFO("kaa's eye", sFxKaasEye,   FXPERIOD, FXDURATION),
-    FXLOOP_INFO("noise1",    sFxNoise1,    FXPERIOD, FXDURATION),
-    FXLOOP_INFO("noise2",    sFxNoise2,    FXPERIOD, FXDURATION),
-    FXLOOP_INFO("huenoise1", sFxHueNoise1, FXPERIOD, FXDURATION),
-    FXLOOP_INFO("huefill",   sFxHueFill,   FXPERIOD, FXDURATION),
-
-    // TODO: stars, hsvsweep, strobo, waves, ...
+  //FXLOOP_INFO("noise 1",    sFxNoise1,    FXPERIOD, 10000),
+    FXLOOP_INFO("diagonal",   sFxDiagonal,  FXPERIOD, FXDURATION), // 10..250
+    FXLOOP_INFO("noise 2",    sFxNoise2,    FXPERIOD, FXDURATION),
+    FXLOOP_INFO("rotor",      sFxRotor,     FXPERIOD, FXDURATION), // 10..250, frame 7-10ms
+    FXLOOP_INFO("plasma",     sFxPlasma,    FXPERIOD, FXDURATION), // 50..250, frame ~50ms
+    FXLOOP_INFO("kaa's eye",  sFxKaasEye,   FXPERIOD, FXDURATION), // 15..150
+    FXLOOP_INFO("rain",       sFxRain,      FXPERIOD, FXDURATION), // 30..250
+    FXLOOP_INFO("rainbow",    sFxRainbow,   FXPERIOD, FXDURATION), // 15..250
+    FXLOOP_INFO("stars",      sFxStars,     FXPERIOD, FXDURATION), // 5..250
+    FXLOOP_INFO("hue noise",  sFxHueNoise,  FXPERIOD, FXDURATION), // 30..250
+    FXLOOP_INFO("waves",      sFxWaves,     FXPERIOD, FXDURATION), // 50..250
+  //FXLOOP_INFO("strobo",     sFxStrobo,    FXPERIOD, 60000),
+  //FXLOOP_INFO("huesweep",   sFxHueSweep,  FXPERIOD, FXDURATION),
 };
 
 
@@ -276,7 +271,8 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("%"PRIu16"mA "), sAppCurrent);
+    const int n = snprintf_P(str, size, PSTR("%"PRIu16"mA "), sAppCurrent);
+    fxloopStatus(&str[n], size - n);
     str[size-1] = '\0';
 }
 

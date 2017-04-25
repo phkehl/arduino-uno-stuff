@@ -49,7 +49,7 @@ static void sAppTask(void *pArg);
 // starts the user application task
 void appCreateTask(void)
 {
-    static U1 stack[200];
+    static uint8_t stack[200];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }

@@ -33,24 +33,24 @@ typedef enum RUN_e
 typedef struct STATUS_s
 {
     RUN_t          loopState;   // current loop state
-    U1             loopIx;      // currently selected effect
+    uint8_t             loopIx;      // currently selected effect
     FXLOOP_FUNC_t  fxFunc;      // currently selected effect function
-    U4             duration;    // how long to play the effect
-    U4             runtime;     // how long the effect has been playing
-    U2             frame;       // frame counter
-    U2             frameDrop;   // frame drop counter
-    U2             period;      // refresh period
-    U4             msss;
+    uint32_t             duration;    // how long to play the effect
+    uint32_t             runtime;     // how long the effect has been playing
+    uint16_t             frame;       // frame counter
+    uint16_t             frameDrop;   // frame drop counter
+    uint16_t             period;      // refresh period
+    uint32_t             msss;
     const FXLOOP_INFO_t *fxInfo;
-    U1             numFx;
+    uint8_t             numFx;
 } STATUS_t;
 
 static STATUS_t sStatus;
 
 #define INFO_NAME(ix)      (/* STFU */const wchar_t *)&sStatus.fxInfo[ix].fxName
 #define INFO_FUNC(ix)      (FXLOOP_FUNC_t)pgm_read_word(&sStatus.fxInfo[ix].fxFunc)
-#define INFO_PERIOD(ix)    (U4)pgm_read_word(&sStatus.fxInfo[ix].fxPeriod)
-#define INFO_DURATION(ix)  (U4)pgm_read_dword(&sStatus.fxInfo[ix].fxDuration)
+#define INFO_PERIOD(ix)    (uint32_t)pgm_read_word(&sStatus.fxInfo[ix].fxPeriod)
+#define INFO_DURATION(ix)  (uint32_t)pgm_read_dword(&sStatus.fxInfo[ix].fxDuration)
 
 void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const bool verbose)
 {
@@ -65,19 +65,19 @@ void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const boo
     if (verbose)
     {
         // print the effects that available
-        for (U1 ix = 0; ix < sStatus.numFx; ix++)
+        for (uint8_t ix = 0; ix < sStatus.numFx; ix++)
         {
-            const U2 period = INFO_PERIOD(ix);
-            const U1 hz = period ? 1000 / period : 0;
-            PRINT_F("fxloop: %2"F_U" %-16S %5"F_U4"ms @ %3"F_U2"ms/%2"F_U1"Hz",
+            const uint16_t period = INFO_PERIOD(ix);
+            const uint8_t hz = period ? 1000 / period : 0;
+            PRINT_F("fxloop: %2"PRIu16" %-16S %5"PRIu32"ms @ %3"PRIu16"ms/%2"PRIu8"Hz",
                 ix + 1, INFO_NAME(ix), INFO_DURATION(ix), period, hz);
         }
     }
 }
 
-U2 fxloopRun(const L forceNext)
+uint16_t fxloopRun(const bool forceNext)
 {
-    U2 funcRes = 0;
+    uint16_t funcRes = 0;
 
     switch (sStatus.loopState)
     {
@@ -104,7 +104,7 @@ U2 fxloopRun(const L forceNext)
             sStatus.frameDrop = 0;
             sStatus.duration  = INFO_DURATION(sStatus.loopIx);
 
-            PRINT("fxloop: %"F_U1"/%"F_U1" %S %"F_U4"ms",
+            PRINT("fxloop: %"PRIu8"/%"PRIu8" %S %"PRIu32"ms",
                 sStatus.loopIx + 1, sStatus.numFx, INFO_NAME(sStatus.loopIx), sStatus.duration);
 
             // run program initialisation
@@ -142,13 +142,13 @@ U2 fxloopRun(const L forceNext)
 }
 
 
-L fxloopWait(void)
+bool fxloopWait(void)
 {
     // delay to achieve desired update period (refresh rate)
     if (sStatus.loopState != RUN_NEXT)
     {
         // target refresh rate (period in [ms])
-        const U2 period = INFO_PERIOD(sStatus.loopIx);
+        const uint16_t period = INFO_PERIOD(sStatus.loopIx);
         sStatus.period = period;
 
         // delay until next frame
@@ -158,12 +158,12 @@ L fxloopWait(void)
         sStatus.runtime += period;
 
         // if we were too late, drop one frame and sleep until next period
-        const U4 msssNow = osTaskGetTicks();
+        const uint32_t msssNow = osTaskGetTicks();
         if ( (msssNow - sStatus.msss) > 10 ) // other tasks may schedule in before us so that we may be slightly late
         {
-            const U4 dt = (msssNow - sStatus.msss);
-            const U2 numDropped = (dt / period) + 1;
-            WARNING("fxloop: %S %"F_U2" frames dropped! %"F_U2"+%"F_U2"ms",
+            const uint32_t dt = (msssNow - sStatus.msss);
+            const uint16_t numDropped = (dt / period) + 1;
+            WARNING("fxloop: %S %"PRIu16" frames dropped! %"PRIu16"+%"PRIu16"ms",
                 INFO_NAME(sStatus.loopIx), numDropped, period, dt);
             sStatus.frameDrop += numDropped;
             sStatus.frame     += numDropped;
@@ -182,8 +182,8 @@ L fxloopWait(void)
 
 void fxloopStatus(char *str, const size_t size)
 {
-    const U1 hz = sStatus.period ? 1000 / sStatus.period : 0;
-    snprintf_P(str, size, PSTR("fx#%"F_U1" %S %"F_U4"/%"F_U4" %"F_U2"/%"F_U2" %"F_U2"ms/%"F_U1"Hz"),
+    const uint8_t hz = sStatus.period ? 1000 / sStatus.period : 0;
+    snprintf_P(str, size, PSTR("fx#%"PRIu8" %S %"PRIu32"/%"PRIu32" %"PRIu16"/%"PRIu16" %"PRIu16"ms/%"PRIu8"Hz"),
         sStatus.loopIx + 1,
         INFO_NAME(sStatus.loopIx),
         sStatus.runtime, sStatus.duration,

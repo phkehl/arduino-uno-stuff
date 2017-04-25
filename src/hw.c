@@ -83,20 +83,20 @@ static void sHwRxTxInit(void) { }
 
 #if (FF_HW_TX_BUFSIZE > 0)
 
-static CH sHwTxBuf[FF_HW_TX_BUFSIZE]; //!< output buffer
-static U1 sHwTxBufHead;               //!< write-to-buffer pointer (index)
-static U1 sHwTxBufTail;               //!< read-from-buffer pointer (index)
-static U1 sHwTxBufSize;               //!< size of buffered data
-static U1 sHwTxBufPeak;               //!< peak output buffer size
-static U  sHwTxBufDrop;               //!< number of dropped bytes
+static char sHwTxBuf[FF_HW_TX_BUFSIZE]; //!< output buffer
+static uint8_t sHwTxBufHead;               //!< write-to-buffer pointer (index)
+static uint8_t sHwTxBufTail;               //!< read-from-buffer pointer (index)
+static uint8_t sHwTxBufSize;               //!< size of buffered data
+static uint8_t sHwTxBufPeak;               //!< peak output buffer size
+static uint16_t  sHwTxBufDrop;               //!< number of dropped bytes
 
-static U1 sHwTxFlush(void)
+static uint8_t sHwTxFlush(void)
 {
     // send queued characters
     if (sHwTxBufSize)
     {
         // character to send
-        const CH c = /*~*/sHwTxBuf[sHwTxBufTail];
+        const char c = /*~*/sHwTxBuf[sHwTxBufTail];
 
         // cancel and arm the tx complete interrupt and load next byte into the data register
         if (osTaskIsSchedulerRunning())
@@ -129,9 +129,9 @@ static U1 sHwTxFlush(void)
     \returns 1 on error (no more space in output buffer),
              0 if okay (character queued for output)
 */
-static I sHwOutputPutChar(CH c, FILE *pFile)
+static int16_t sHwOutputPutChar(char c, FILE *pFile)
 {
-    I res = 1;
+    int16_t res = 1;
     UNUSED(pFile);
 
     CS_ENTER;
@@ -217,12 +217,12 @@ void hwTxFlush(void) { }
 
 #if (FF_HW_RX_BUFSIZE > 0)
 
-static volatile CH svHwRxBuf[FF_HW_RX_BUFSIZE]; //!< data rx buffer
-static volatile U1 svHwRxBufHead;               //!< write-to-buffer pointer (index)
-static volatile U1 svHwRxBufTail;               //!< read-from-buffer pointer (index)
-static volatile U1 svHwRxBufSize;               //!< size of buffered data
-static volatile U1 svHwRxBufPeak;               //!< peak input buffer size
-static volatile U  svHwRxBufDrop;               //!< number of dropped bytes
+static volatile char svHwRxBuf[FF_HW_RX_BUFSIZE]; //!< data rx buffer
+static volatile uint8_t svHwRxBufHead;               //!< write-to-buffer pointer (index)
+static volatile uint8_t svHwRxBufTail;               //!< read-from-buffer pointer (index)
+static volatile uint8_t svHwRxBufSize;               //!< size of buffered data
+static volatile uint8_t svHwRxBufPeak;               //!< peak input buffer size
+static volatile uint16_t  svHwRxBufDrop;               //!< number of dropped bytes
 
 static OS_SEMAPHORE_t sHwRxReadySem;
 
@@ -237,7 +237,7 @@ static OS_SEMAPHORE_t sHwRxReadySem;
 
     \returns  the character
 */
-static CH sHwInputGetChar(FILE *pFile)
+static char sHwInputGetChar(FILE *pFile)
 {
     // wait until character is available
     while (svHwRxBufSize == 0)
@@ -250,7 +250,7 @@ static CH sHwInputGetChar(FILE *pFile)
         // or block
     }
 
-    CH c;
+    char c;
 
     CS_ENTER;
 
@@ -273,7 +273,7 @@ ISR(USART_RX_vect) // UART, rx complete
 {
     osIsrEnter();
 
-    const CH c = UDR0; // always read this or this ISR will fire continuously
+    const char c = UDR0; // always read this or this ISR will fire continuously
     if ( (svHwRxBufSize == 0) || (svHwRxBufHead != svHwRxBufTail) )
     {
         svHwRxBuf[svHwRxBufHead] = c;
@@ -295,7 +295,7 @@ ISR(USART_RX_vect) // UART, rx complete
     osIsrLeave();
 }
 
-inline U1 hwGetRxBufSize(const U4 timeout)
+inline uint8_t hwGetRxBufSize(const uint32_t timeout)
 {
     if (svHwRxBufSize == 0)
     {
@@ -304,7 +304,7 @@ inline U1 hwGetRxBufSize(const U4 timeout)
     return svHwRxBufSize;
 }
 
-CH hwReadNextChar(void)
+char hwReadNextChar(void)
 {
     return svHwRxBufSize > 0 ? fgetc(stdin) : '\0';
 }
@@ -331,8 +331,8 @@ static void sHwRxInit(void)
 }
 
 #else
-inline U1 hwGetRxBufSize(const U4 timeout) { return 0; }
-CH hwReadNextChar(void) { return '\0'; }
+inline uint8_t hwGetRxBufSize(const uint32_t timeout) { return 0; }
+char hwReadNextChar(void) { return '\0'; }
 static void sHwRxInit(void) { }
 #endif // (FF_HW_RX_BUFSIZE > 0)
 
@@ -383,25 +383,25 @@ inline void hwLedLoadOff(void) { }
 
 /* ***** exception handling & reset debugging ******************************* */
 
-const CH skHwPanicStr0[] PROGMEM = "NONE";
-const CH skHwPanicStr1[] PROGMEM = "HW";
-const CH skHwPanicStr2[] PROGMEM = "OS";
-const CH skHwPanicStr3[] PROGMEM = "OTHER";
+const char skHwPanicStr0[] PROGMEM = "NONE";
+const char skHwPanicStr1[] PROGMEM = "HW";
+const char skHwPanicStr2[] PROGMEM = "OS";
+const char skHwPanicStr3[] PROGMEM = "OTHER";
 
 const PGM_P const skHwPanicStr[] PROGMEM =
 {
     skHwPanicStr0, skHwPanicStr1, skHwPanicStr2, skHwPanicStr3
 };
 
-void hwPanic(const HW_PANIC_t reason, const U4 u0, const U4 u1)
+void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
 {
     cli();
     osTaskSuspendScheduler();
     wdt_reset();
     wdt_disable();
 
-    U n = 0, time = 0;
-    U msss = osTaskGetTicks();
+    uint16_t n = 0, time = 0;
+    uint16_t msss = osTaskGetTicks();
 
     switch (reason)
     {
@@ -424,17 +424,17 @@ void hwPanic(const HW_PANIC_t reason, const U4 u0, const U4 u1)
     if (n > 0)
     {
         DEBUG(":-(");
-        ERROR("PANIC @ %"F_U4": 0x%"F_Ux" %S (0x%08"F_U4x", 0x%08"F_U4x")",
-              (U4)msss, (U)reason,
+        ERROR("PANIC @ %"PRIu32": 0x%"PRIx16" %S (0x%08"PRIx32", 0x%08"PRIx32")",
+              (uint32_t)msss, (uint16_t)reason,
               (PGM_P)pgm_read_word(&skHwPanicStr[reason]), u0, u1);
 
 
         sHwLedLoadInit();
-        U4 timeLeft = time ? time : 1;
-        const U4 period = (n * 400) + (5 * 400);
+        uint32_t timeLeft = time ? time : 1;
+        const uint32_t period = (n * 400) + (5 * 400);
         while (timeLeft)
         {
-            I i = n;
+            int16_t i = n;
             while (i--)
             {
                 hwLedLoadOn();
@@ -501,33 +501,33 @@ static void sHwDebugFuses(void)
     // bit macros are in /usr/lib/avr/include/avr/iom328p.h, [AVR8271, chapter 27.2 "Fuse Bits"]
 
     // FUSE_CKSEL0, FUSE_CKSEL1, FUSE_CKSEL2, FUSE_CKSEL3, FUSE_SU%0, FUSE_SUT1, FUSE_CKOUT, FUSE_CKDIV8
-    const U1 low  = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
+    const uint8_t low  = boot_lock_fuse_bits_get(GET_LOW_FUSE_BITS);
 
     // FUSE_BOOTRST, FUSE_BOOTSZ0, FUSE_BOOTSZ1, FUSE_EESAVE, FUSE_WDTON, FUSE_SPIEN, FUSE_DWEN, FUSE_RSTDISBL
-    const U1 high = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+    const uint8_t high = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
 
     // FUSE_BODLEVEL0, FUSE_BODLEVEL1, FUSE_BODLEVEL2
-    const U1 ext  = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS);
+    const uint8_t ext  = boot_lock_fuse_bits_get(GET_EXTENDED_FUSE_BITS);
 
     // there are no definitions for these in the header files it seems
-    const U1 lock = boot_lock_fuse_bits_get(GET_LOCK_BITS);
+    const uint8_t lock = boot_lock_fuse_bits_get(GET_LOCK_BITS);
 
-    DEBUG("hw: fuses: low=0x%02"F_U1x" high=0x%02"F_U1x" ext=0x%02"F_U1x" lock=0x%02"F_U1x,
+    DEBUG("hw: fuses: low=0x%02"PRIx8" high=0x%02"PRIx8" ext=0x%02"PRIx8" lock=0x%02"PRIx8,
         low, high, ext, lock);
 
     // [AVR8271, chapter 27.3 "Signature Bytes"]
-    //DEBUG("hw: signature: 0x%02"F_U1x" 0x%02"F_U1x" 0x%02"F_U1x, __signature[2], __signature[1], __signature[0]);
-    const U1 sig0 = boot_signature_byte_get(SIGNATURE_0);
-    const U1 sig1 = boot_signature_byte_get(SIGNATURE_1);
-    const U1 sig2 = boot_signature_byte_get(SIGNATURE_2);
-    DEBUG("hw: signature: 0x%02"F_U1x" 0x%02"F_U1x" 0x%02"F_U1x, sig0, sig1, sig2);
+    //DEBUG("hw: signature: 0x%02"PRIx8" 0x%02"PRIx8" 0x%02"PRIx8, __signature[2], __signature[1], __signature[0]);
+    const uint8_t sig0 = boot_signature_byte_get(SIGNATURE_0);
+    const uint8_t sig1 = boot_signature_byte_get(SIGNATURE_1);
+    const uint8_t sig2 = boot_signature_byte_get(SIGNATURE_2);
+    DEBUG("hw: signature: 0x%02"PRIx8" 0x%02"PRIx8" 0x%02"PRIx8, sig0, sig1, sig2);
 }
 
 static void sHwCheckResetCause(void)
 {
     // cannot check reset cause if we're using a boot loader,
     // i.e. if the boot reset vector is enabled (FUSE_BOOTRST=0)
-    //const U1 high = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
+    //const uint8_t high = boot_lock_fuse_bits_get(GET_HIGH_FUSE_BITS);
     //if ( (high & ~FUSE_BOOTRST) == 0 )
     //{
     //    //return;
@@ -560,11 +560,11 @@ inline void hwAssertWatchdog(void)
 
 /* ***** utility functions ************************************************** */
 
-void hwDelay(const U4 usDelay)
+void hwDelay(const uint32_t usDelay)
 {
     CS_ENTER;
 
-    U4 d = usDelay;
+    uint32_t d = usDelay;
     while (d >= 10)
     {
         // the argument to _delay_us() must be a compile-time constant
@@ -575,15 +575,15 @@ void hwDelay(const U4 usDelay)
     CS_LEAVE;
 }
 
-static volatile U4 sHwRandomSeed = 0;
+static volatile uint32_t sHwRandomSeed = 0;
 
 ISR(WDT_vect)
 {
     sHwRandomSeed <<= 8;
-    sHwRandomSeed ^= (U4)TCNT1;
+    sHwRandomSeed ^= (uint32_t)TCNT1;
 }
 
-U4 hwGetRandomSeed(void)
+uint32_t hwGetRandomSeed(void)
 {
     // temporarily disable the watchdog reset and use the
     // watchdog timer jitter to generate a better seed
@@ -602,8 +602,8 @@ U4 hwGetRandomSeed(void)
 #if (FF_HW_USE_WATCHDOG > 0)
     wdt_enable(WDTO_8S);    // and enable the default watchdog again
 #endif
-    const U4 seed = sHwRandomSeed; // this should now be fairly random
-    DEBUG("hw: seed 0x%08"F_U4x, seed);
+    const uint32_t seed = sHwRandomSeed; // this should now be fairly random
+    DEBUG("hw: seed 0x%08"PRIx32, seed);
     return seed;
 }
 
@@ -612,7 +612,7 @@ U4 hwGetRandomSeed(void)
 
 #define HW_TICTOC_FREQ (F_CPU/1024)
 #define HW_NUM_TICTOC_COUNTERS 4
-static U sHwTicTocRegs[FF_HW_NUM_TICTOC];
+static uint16_t sHwTicTocRegs[FF_HW_NUM_TICTOC];
 
 static void sHwTicTocInit(void)
 {
@@ -622,29 +622,29 @@ static void sHwTicTocInit(void)
     TCCR1C = 0;
 }
 
-void hwTic(const U reg)
+void hwTic(const uint16_t reg)
 {
     if (reg < FF_HW_NUM_TICTOC)
     {
-        sHwTicTocRegs[reg] = (U)TCNT1;
+        sHwTicTocRegs[reg] = (uint16_t)TCNT1;
     }
 }
 
-U hwToc(const U reg)
+uint16_t hwToc(const uint16_t reg)
 {
-    U res = 0;
+    uint16_t res = 0;
     if (reg < FF_HW_NUM_TICTOC)
     {
-        const U delta = (U)TCNT1 - sHwTicTocRegs[reg];
-        res = ((U4)delta * 1000 * 10) / (U4)HW_TICTOC_FREQ;
+        const uint16_t delta = (uint16_t)TCNT1 - sHwTicTocRegs[reg];
+        res = ((uint32_t)delta * 1000 * 10) / (uint32_t)HW_TICTOC_FREQ;
     }
     return res;
 }
 
 #else
 static void sHwTicTocInit(void) { }
-void hwTic(const U reg) { UNUSED(reg); }
-U hwToc(const U reg) { UNUSED(reg); return 0; }
+void hwTic(const uint16_t reg) { UNUSED(reg); }
+uint16_t hwToc(const uint16_t reg) { UNUSED(reg); return 0; }
 #endif // (FF_HW_NUM_TICTOC > 0)
 
 
@@ -662,10 +662,10 @@ ISR(ADC_vect) // ADC conversion complete
     osIsrLeave();
 }
 
-void hwAdcInit(const HW_ADC_t pins, const L useAref)
+void hwAdcInit(const HW_ADC_t pins, const bool useAref)
 {
     // setup selected pin(s) for input
-    U1 didr = 0;
+    uint8_t didr = 0;
     if (pins & HW_ADC_A0)
     {
         PIN_INPUT(A0);
@@ -724,10 +724,10 @@ void hwAdcInit(const HW_ADC_t pins, const L useAref)
 
 }
 
-I4 hwAdcGetScaled(const HW_ADC_t pin, const I4 min, const I4 max)
+int32_t hwAdcGetScaled(const HW_ADC_t pin, const int32_t min, const int32_t max)
 {
     // select ADC channel
-    U1 mux = 0;
+    uint8_t mux = 0;
     switch (pin)
     {
         case HW_ADC_A0: mux = 0         | 0         | 0        ; break;
@@ -751,11 +751,11 @@ I4 hwAdcGetScaled(const HW_ADC_t pin, const I4 min, const I4 max)
     {
         if (min == max)
         {
-            return (I4)ADC;
+            return (int32_t)ADC;
         }
         else
         {
-            return (((I4)ADC * (max - min)) / ((I4)1023)) + min;
+            return (((int32_t)ADC * (max - min)) / ((int32_t)1023)) + min;
         }
     }
     else
@@ -767,32 +767,32 @@ I4 hwAdcGetScaled(const HW_ADC_t pin, const I4 min, const I4 max)
 
 /* **** fast (or not) math functions **************************************** */
 
-inline R4 hwMathFastCosf(const R4 phi)
+inline float hwMathFastCosf(const float phi)
 {
     // TODO: implement
     return cosf(phi);
 }
 
 
-inline R4 hwMathFastSinf(const R4 phi)
+inline float hwMathFastSinf(const float phi)
 {
     // TODO: implement
     return sinf(phi);
 }
 
 
-inline R4 hwMathFastSqrtf(const R4 x)
+inline float hwMathFastSqrtf(const float x)
 {
     // TODO: implement
     return sqrtf(x);
 }
 
-inline void hwMathSeedRandom(const U4 seed)
+inline void hwMathSeedRandom(const uint32_t seed)
 {
     srandom(seed);
 }
 
-inline U4 hwMathGetRandom(void)
+inline uint32_t hwMathGetRandom(void)
 {
     return random();
 }
@@ -812,7 +812,7 @@ void hwInit(void)
     sHwTxInit();
     sHwRxInit();
 
-    DEBUG("hw: init (rx %"F_U1", tx %"F_U1")", FF_HW_RX_BUFSIZE, FF_HW_TX_BUFSIZE);
+    DEBUG("hw: init (rx %"PRIu8", tx %"PRIu8")", FF_HW_RX_BUFSIZE, FF_HW_TX_BUFSIZE);
 
     sHwCheckResetCause();
     sHwDebugFuses();
@@ -823,23 +823,23 @@ void hwInit(void)
     sHwTicTocInit();
 }
 
-void hwStatus(CH *str, const U size)
+void hwStatus(char *str, const uint16_t size)
 {
 #if ( (FF_HW_RX_BUFSIZE > 0) && (FF_HW_TX_BUFSIZE > 0) )
     snprintf_P(str, size,
-        PSTR("rxbuf=%"F_U1"/%"F_U1"/%"F_U1" (%"F_U") txbuf=%"F_U1"/%"F_U1"/%"F_U1" (%"F_U")"),
+        PSTR("rxbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16") txbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         svHwRxBufSize, svHwRxBufPeak, sizeof(svHwRxBuf), svHwRxBufDrop,
         sHwTxBufSize, sHwTxBufPeak, sizeof(sHwTxBuf), sHwTxBufDrop);
     svHwRxBufPeak = 0;
     sHwTxBufPeak = 0;
 #elif (FF_HW_RX_BUFSIZE > 0)
     snprintf_P(str, size,
-        PSTR("rxbuf=%"F_U1"/%"F_U1"/%"F_U1" (%"F_U")"),
+        PSTR("rxbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         svHwRxBufSize, svHwRxBufPeak, sizeof(svHwRxBuf), svHwRxBufDrop);
     svHwRxBufPeak = 0;
 #elif (FF_HW_TX_BUFSIZE > 0)
     snprintf_P(str, size,
-        PSTR("txbuf=%"F_U1"/%"F_U1"/%"F_U1" (%"F_U")"),
+        PSTR("txbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         sHwTxBufSize, sHwTxBufPeak, sizeof(sHwTxBuf), sHwTxBufDrop);
     sHwTxBufPeak = 0;
 #endif

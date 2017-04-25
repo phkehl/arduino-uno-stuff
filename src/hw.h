@@ -27,7 +27,7 @@
 void hwInit(void);
 
 // make string containing the hardware status
-void hwStatus(CH *str, const U size);
+void hwStatus(char *str, const uint16_t size);
 
 
 /* ************************************************************************** */
@@ -68,7 +68,7 @@ void hwTxFlush(void);
 
     \returns the number of pending input bytes
 */
-U1 hwGetRxBufSize(const U4 timeout);
+uint8_t hwGetRxBufSize(const uint32_t timeout);
 
 //! get next pending input character
 /*!
@@ -77,7 +77,7 @@ U1 hwGetRxBufSize(const U4 timeout);
 
     \returns next input character
 */
-CH hwReadNextChar(void);
+char hwReadNextChar(void);
 
 //@}
 
@@ -105,7 +105,7 @@ typedef enum HW_PANIC_e
     \param u0      user display word 0
     \param u1      user display word 1
 */
-void hwPanic(const HW_PANIC_t reason, const U4 u0, const U4 u1);
+void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1);
 
 //! assert the watchdog
 /*!
@@ -135,7 +135,7 @@ void hwAssertWatchdog(void);
 
     \param[in] usDelay  delay in [us]
 */
-void hwDelay(const U4 usDelay);
+void hwDelay(const uint32_t usDelay);
 
 //! get good random number (slow!)
 /*!
@@ -149,7 +149,7 @@ void hwDelay(const U4 usDelay);
 
     \returns a fairly random number
 */
-U4 hwGetRandomSeed(void);
+uint32_t hwGetRandomSeed(void);
 
 //! start runtime measurement
 /*!
@@ -157,7 +157,7 @@ U4 hwGetRandomSeed(void);
 
     \param[in] reg  register (< #FF_HW_NUM_TICTOC)
 */
-void hwTic(const U reg);
+void hwTic(const uint16_t reg);
 
 //! stop runtime measurement
 /*!
@@ -167,7 +167,7 @@ void hwTic(const U reg);
 
     \return  the measurement [0.1ticks]
 */
-U hwToc(const U reg);
+uint16_t hwToc(const uint16_t reg);
 
 //@}
 
@@ -195,7 +195,7 @@ typedef enum HW_ADC_e
     \param[in] useAref  \c true if AREF pin is supplied with a reference voltage,
                         \c false if normal V_CC is to be used (typically: false)
 */
-void hwAdcInit(const HW_ADC_t pins, const L useAref);
+void hwAdcInit(const HW_ADC_t pins, const bool useAref);
 
 //! read input on ADC pin and scale output value accordingly
 /*!
@@ -205,7 +205,7 @@ void hwAdcInit(const HW_ADC_t pins, const L useAref);
 
     \returns value scaled from min..max, or raw ADC value if min == max
 */
-I4 hwAdcGetScaled(const HW_ADC_t pin, const I4 min, const I4 max);
+int32_t hwAdcGetScaled(const HW_ADC_t pin, const int32_t min, const int32_t max);
 
 
 /* ***** fast math functions ************************************************ */
@@ -223,7 +223,7 @@ I4 hwAdcGetScaled(const HW_ADC_t pin, const I4 min, const I4 max);
     \param phi  angle 0..2pi
     \return cos(phi) [rad]
 */
-R4 hwMathFastCosf(const R4 phi);
+float hwMathFastCosf(const float phi);
 
 //! fast sinf()
 /*!
@@ -234,7 +234,7 @@ R4 hwMathFastCosf(const R4 phi);
     \param phi  angle 0..2pi
     \return sin(phi) [rad]
 */
-R4 hwMathFastSinf(const R4 phi);
+float hwMathFastSinf(const float phi);
 
 //! fast sqrtf()
 /*!
@@ -245,7 +245,7 @@ R4 hwMathFastSinf(const R4 phi);
     \param x  value
     \return sqrt(x)
 */
-R4 hwMathFastSqrtf(const R4 x);
+float hwMathFastSqrtf(const float x);
 
 //! seed random number generator
 /*!
@@ -253,7 +253,7 @@ R4 hwMathFastSqrtf(const R4 x);
 
     \param seed  seed value
 */
-void hwMathSeedRandom(const U4 seed);
+void hwMathSeedRandom(const uint32_t seed);
 
 //! get random number
 /*!
@@ -261,7 +261,7 @@ void hwMathSeedRandom(const U4 seed);
 
     \return  random number
 */
-U4 hwMathGetRandom(void);
+uint32_t hwMathGetRandom(void);
 
 //@}
 

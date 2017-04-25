@@ -37,15 +37,15 @@
     \note This will block the system and system ticks may be skipped.
 
     \param[in] pin   pin number for the data signal
-    \param[in] data  data (const U1 *)
-    \param[in] size  data size (U1)
+    \param[in] data  data (const uint8_t *)
+    \param[in] size  data size (uint8_t)
 
     \hideinitializer
 */
 #define ws2812Send(pin, data, size) \
     _ws2812Send(&PIN_TO_PORT(pin), &PIN_TO_DDR(pin), PIN_TO_MASK(pin), data, size)
 
-void _ws2812Send(volatile U1 *pPort, volatile U1 *pDdr, uint8_t mask, const U1 *data, const U1 size);
+void _ws2812Send(volatile uint8_t *pPort, volatile uint8_t *pDdr, uint8_t mask, const uint8_t *data, const uint8_t size);
 
 
 

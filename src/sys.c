@@ -23,13 +23,13 @@
 
 /* ************************************************************************** */
 
-static U1 sSysTaskStack[FF_SYS_STACK_SIZE];
+static uint8_t sSysTaskStack[FF_SYS_STACK_SIZE];
 
 static void sSysTask(void *pArg);
 
 void sysInit(void)
 {
-    DEBUG("sys: init (stack %"F_U", mon %"F_U")", (U)sizeof(sSysTaskStack), (U)FF_SYS_MON_PERIOD);
+    DEBUG("sys: init (stack %"PRIu16", mon %"PRIu16")", (uint16_t)sizeof(sSysTaskStack), (uint16_t)FF_SYS_MON_PERIOD);
 }
 
 void sysCreateSystemTask(void)
@@ -38,8 +38,8 @@ void sysCreateSystemTask(void)
     osTaskCreate("sys", 3, &task, sSysTaskStack, sizeof(sSysTaskStack), sSysTask,  NULL);
 }
 
-//U2 sysGetInitStackPointer(void) __FORCEINLINE;
-inline U2 sysGetInitStackPointer(void)
+//uint16_t sysGetInitStackPointer(void) __FORCEINLINE;
+inline uint16_t sysGetInitStackPointer(void)
 {
     // use the mon task's stack for the initialisation
     // leave the top 32 bytes alone, it's initialised by the task creation function with the context
@@ -66,9 +66,9 @@ static void sSysTask(void *pArg)
 {
     UNUSED(pArg);
 
-    U4 msss = osTaskGetTicks();
+    uint32_t msss = osTaskGetTicks();
 
-    U2 tick = 0;
+    uint16_t tick = 0;
 
     while (ENDLESS)
     {
@@ -84,7 +84,7 @@ static void sSysTask(void *pArg)
 
         if ((tick % 100) == 0)
         {
-            //DEBUG("sys.. %"F_U2" %"F_U4, tick, msss); hwTxFlush();
+            //DEBUG("sys.. %"PRIu16" %"PRIu32, tick, msss); hwTxFlush();
 
             hwAssertWatchdog();
         }
@@ -95,12 +95,12 @@ static void sSysTask(void *pArg)
 #if (FF_SYS_MON_VERBOSE > 0)
         if ((tick % (100 * FF_SYS_MON_PERIOD)) == 0)
         {
-            //DEBUG("mon... %"F_U2" %"F_U4, tick, msss); hwTxFlush();
+            //DEBUG("mon... %"PRIu16" %"PRIu32, tick, msss); hwTxFlush();
             tick = 0;
 
             // os status
             {
-                CH str[64];
+                char str[64];
                 osStatus(str, sizeof(str));
                 PRINT("mon: os: %s", str);
                 hwTxFlush();
@@ -111,7 +111,7 @@ static void sSysTask(void *pArg)
 
             // hardware and application status
             {
-                CH str[64];
+                char str[64];
                 hwStatus(str, sizeof(str));
                 PRINT("mon: hw: %s", str);
                 hwTxFlush();

@@ -49,21 +49,13 @@ void appInit(void)
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
-
-    //for (U2 hue = 0; hue <= 255; hue++)
-    //{
-    //    U1 R, G, B;
-    //    hsv2rgb(hue, 255, 255, &R, &G, &B);
-    //    PRINT("%"F_U1" %"F_U1" %"F_U1" %"F_U1,
-    //        hue, R, G, B);
-    //}
 }
 
 
 // starts the user application task
 void appCreateTask(void)
 {
-    static U1 stack[250];
+    static uint8_t stack[250];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -73,7 +65,7 @@ void appCreateTask(void)
 
 /* ***** application task **************************************************** */
 
-static U4 sAppCnt = 0;
+static uint32_t sAppCnt = 0;
 
 // application task
 static void sAppTask(void *pArg)
@@ -81,7 +73,7 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
-    static U1 sHue = 0;
+    static uint8_t sHue = 0;
     ledfxSetBrightness(50);
 
     // keep running...
@@ -112,7 +104,7 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("sAppCnt=%"F_U4), sAppCnt);
+    snprintf_P(str, size, PSTR("sAppCnt=%"PRIu32), sAppCnt);
 }
 
 

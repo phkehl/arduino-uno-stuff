@@ -56,16 +56,16 @@ Supported LED matrix arrangements (x/y 0/0 is at the bottom left, values for #FF
 
     Setting both \c from and \c to to 0 will clear all.
 */
-void ledfxClear(const U2 ix0, const U2 ix1);
+void ledfxClear(const uint16_t ix0, const uint16_t ix1);
 
 //! get number of LEDs in frame buffer
-U2 ledfxNumLeds(void);
+uint16_t ledfxNumLeds(void);
 
 //! get pointer to frame buffer
-const U1 *ledfxGetFrameBuffer(void);
+const uint8_t *ledfxGetFrameBuffer(void);
 
 //! get size of frame buffer
-U2 ledfxGetFrameBufferSize(void);
+uint16_t ledfxGetFrameBufferSize(void);
 
 //! set global maximum brightness
 /*!
@@ -73,7 +73,7 @@ U2 ledfxGetFrameBufferSize(void);
 
     \todo something's not quite working here..
 */
-void ledfxSetBrightness(const U1 brightness);
+void ledfxSetBrightness(const uint8_t brightness);
 
 //! set pixel given red, green and blue (RGB)
 /*!
@@ -82,7 +82,7 @@ void ledfxSetBrightness(const U1 brightness);
     \param[in] green  green value (0..255)
     \param[in] blue   blue value (0..255)
 */
-void ledfxSetIxRGB(const U2 ix, const U1 red, const U1 green, const U1 blue);
+void ledfxSetIxRGB(const uint16_t ix, const uint8_t red, const uint8_t green, const uint8_t blue);
 
 //! set pixel given hue, saturation and value (HSV)
 /*!
@@ -91,7 +91,7 @@ void ledfxSetIxRGB(const U2 ix, const U1 red, const U1 green, const U1 blue);
     \param[in] sat  saturation value (0..255)
     \param[in] val  (brightness) value (0..255)
 */
-void ledfxSetIxHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val);
+void ledfxSetIxHSV(const uint16_t ix, const uint8_t hue, const uint8_t sat, const uint8_t val);
 
 //! set matrix pixel given hue, saturation and value (HSV)
 /*!
@@ -101,7 +101,7 @@ void ledfxSetIxHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val);
     \param[in] sat  saturation value (0..255)
     \param[in] val  (brightness) value (0..255)
 */
-void ledfxSetMatrixHSV(const U2 x, const U2 y, const U1 hue, const U1 sat, const U1 val);
+void ledfxSetMatrixHSV(const uint16_t x, const uint16_t y, const uint8_t hue, const uint8_t sat, const uint8_t val);
 
 //! set matrix pixel given red, green and blue (RGB)
 /*!
@@ -111,7 +111,7 @@ void ledfxSetMatrixHSV(const U2 x, const U2 y, const U1 hue, const U1 sat, const
     \param[in] green  green value (0..255)
     \param[in] blue   blue value (0..255)
 */
-void ledfxSetMatrixRGB(const U2 x, const U2 y, const U1 red, const U1 green, const U1 blue);
+void ledfxSetMatrixRGB(const uint16_t x, const uint16_t y, const uint8_t red, const uint8_t green, const uint8_t blue);
 
 //! fill range of pixels given red, green and blue (RGB)
 /*!
@@ -123,7 +123,7 @@ void ledfxSetMatrixRGB(const U2 x, const U2 y, const U1 red, const U1 green, con
 
     Setting both \c ix0 and \c ix1 to to 0 will fill all.
 */
-void ledfxFillRGB(const U2 ix0, const U2 ix1, const U1 red, const U1 green, const U1 blue);
+void ledfxFillRGB(const uint16_t ix0, const uint16_t ix1, const uint8_t red, const uint8_t green, const uint8_t blue);
 
 //! fill range of pixels given hue, saturation and value (HSV)
 /*!
@@ -135,7 +135,7 @@ void ledfxFillRGB(const U2 ix0, const U2 ix1, const U1 red, const U1 green, cons
 
     Setting both \c ix0 and \c ix1 to to 0 will fill all.
 */
-void ledfxFillHSV(const U2 ix0, const U2 ix1, const U1 hue, const U1 sat, const U1 val);
+void ledfxFillHSV(const uint16_t ix0, const uint16_t ix1, const uint8_t hue, const uint8_t sat, const uint8_t val);
 
 //! limit maximum current drawn by the LEDs
 /*!
@@ -152,7 +152,7 @@ void ledfxFillHSV(const U2 ix0, const U2 ix1, const U1 hue, const U1 sat, const 
 
     \returns the number of LEDs limited
 */
-U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed);
+uint16_t ledfxLimitCurrent(const uint16_t maPerLed, const uint16_t maMax, uint16_t *pMaUsed);
 
 //@}
 
@@ -173,7 +173,7 @@ U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed);
 
     Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
 */
-void ledfxNoiseRandom(const L init, const U2 ix0, const U2 ix1, const U2 num);
+void ledfxNoiseRandom(const bool init, const uint16_t ix0, const uint16_t ix1, const uint16_t num);
 
 //! random distinct colour noise
 /*!
@@ -184,7 +184,7 @@ void ledfxNoiseRandom(const L init, const U2 ix0, const U2 ix1, const U2 num);
 
     Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
 */
-void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2 num);
+void ledfxNoiseRandomDistinct(const bool init, const uint16_t ix0, const uint16_t ix1, const uint16_t num);
 
 //! moving hue noise
 /*!
@@ -197,7 +197,7 @@ void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2
 
     Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
 */
-void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num, U1 *r0, U1 *r1);
+void ledfxNoiseMovingHue(const bool init, const uint16_t ix0, const uint16_t ix1, const uint16_t num, uint8_t *r0, uint8_t *r1);
 
 //! (pretty cheap) stoboscope effect
 /*!
@@ -208,7 +208,7 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
 
     Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
 */
-void ledfxStrobo(const L init, const U2 ix0, const U2 ix1, U1 *r0);
+void ledfxStrobo(const bool init, const uint16_t ix0, const uint16_t ix1, uint8_t *r0);
 
 //@}
 
@@ -228,7 +228,7 @@ void ledfxStrobo(const L init, const U2 ix0, const U2 ix1, U1 *r0);
     \param[in]      step  how many hue steps to move per iteration
     \param[in,out]  r0    effect state storage
 */
-void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0);
+void ledfxConcentricHueFlow(const bool init, const int8_t step, uint8_t *r0);
 
 //! plasma effect
 /*!
@@ -240,7 +240,7 @@ void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0);
     referenced it all seems to be attributed to: copyright (c) 2011 Sam C. Lin, 2009 Ben Combee,
     2009 Ken Corey, 2008 Windell H. Oskay \todo find original reference for this
 */
-void ledfxPlasma(const L init, R4 *r0);
+void ledfxPlasma(const bool init, float *r0);
 
 //! rainbow effect
 /*!
@@ -251,7 +251,7 @@ void ledfxPlasma(const L init, R4 *r0);
 
     Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
 */
-void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0);
+void ledfxRainbow(const bool init, const uint16_t ix0, const uint16_t ix1, uint8_t *r0);
 
 //! (pretty cheap) hue sweep
 /*!
@@ -262,7 +262,7 @@ void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0);
 
     Setting both \c ix0 and \c ix1 to to 0 will apply the effect to all LEDs.
 */
-void ledfxHueSweep(const L init, const U2 ix0, const U2 ix1, U1 *r0);
+void ledfxHueSweep(const bool init, const uint16_t ix0, const uint16_t ix1, uint8_t *r0);
 
 //! waves effect
 /*!
@@ -271,7 +271,7 @@ void ledfxHueSweep(const L init, const U2 ix0, const U2 ix1, U1 *r0);
     \param[in,out]  r1    effect state storage
     \param[in,out]  r2    effect state storage
 */
-void ledfxWaves(const L init, U1 *r0, R4 *r1, R4 *r2);
+void ledfxWaves(const bool init, uint8_t *r0, float *r1, float *r2);
 
 //@}
 
@@ -289,16 +289,16 @@ void ledfxWaves(const L init, U1 *r0, R4 *r1, R4 *r2);
     \param[in,out] r0    effect state storage
     \param[in,out] r1    effect state storage
 */
-void ledfxRotor(const L init, R4 *r0, R4 *r1);
+void ledfxRotor(const bool init, float *r0, float *r1);
 
 //! rain effect state
 typedef struct LEDFX_RAIN_s
 {
-    I1 pos[FF_LEDFX_NUM_X];
-    U1 hue[FF_LEDFX_NUM_X];
-    U1 len[FF_LEDFX_NUM_X];
-    I1 f;
-    U1 n;
+    int8_t pos[FF_LEDFX_NUM_X];
+    uint8_t hue[FF_LEDFX_NUM_X];
+    uint8_t len[FF_LEDFX_NUM_X];
+    int8_t f;
+    uint8_t n;
 } LEDFX_RAIN_t;
 
 //! rain effect
@@ -306,16 +306,16 @@ typedef struct LEDFX_RAIN_s
     \param[in]     init    set to \c true on first call to initialise things
     \param[in,out] pState  raindrop state memory (effect state storage)
 */
-void ledfxRain(const L init, LEDFX_RAIN_t *pState);
+void ledfxRain(const bool init, LEDFX_RAIN_t *pState);
 
 //! a star
 typedef struct LEDFX_STAR_s
 {
-    U2 ix;
-    U1 hue;
-    U1 val;
-    U1 valMax;
-    I1 speed;
+    uint16_t ix;
+    uint8_t hue;
+    uint8_t val;
+    uint8_t valMax;
+    int8_t speed;
 } LEDFX_STAR_t;
 
 //! stars effect
@@ -324,7 +324,7 @@ typedef struct LEDFX_STAR_s
     \param[in,out] pStars  stars state memory
     \param[in]     nStars  number of stars (number of \c *pStars)
 */
-void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars);
+void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars);
 
 
 //@}

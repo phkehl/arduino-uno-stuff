@@ -49,7 +49,7 @@ static void sAppTask(void *pArg);
 // starts the user application task
 void appCreateTask(void)
 {
-    static U1 stack[250];
+    static uint8_t stack[250];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -58,7 +58,7 @@ void appCreateTask(void)
 
 /* ***** application task **************************************************** */
 
-static U4 sAppCnt = 0;
+static uint32_t sAppCnt = 0;
 
 // application task
 static void sAppTask(void *pArg)
@@ -85,8 +85,8 @@ static void sAppTask(void *pArg)
 
         // waste some CPU
         PIN_HIGH(LED2_PIN);
-        U4 foo = 0;
-        for (U ix = 0; ix < 12345; ix++)
+        uint32_t foo = 0;
+        for (uint16_t ix = 0; ix < 12345; ix++)
         {
             foo += ix;
         }
@@ -100,7 +100,7 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("sAppCnt=%"F_U4), sAppCnt);
+    snprintf_P(str, size, PSTR("sAppCnt=%"PRIu32), sAppCnt);
 }
 
 

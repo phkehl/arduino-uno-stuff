@@ -38,7 +38,7 @@ void appInit(void)
 // starts the user application task
 void appCreateTask(void)
 {
-    static U1 stack[250];
+    static uint8_t stack[250];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -46,7 +46,7 @@ void appCreateTask(void)
 
 /* ***** application functions *********************************************** */
 
-static U2 sFxloopFunc1(const U2 frame)
+static uint16_t sFxloopFunc1(const uint16_t frame)
 {
     if (frame == 0)
     {
@@ -54,12 +54,12 @@ static U2 sFxloopFunc1(const U2 frame)
     }
     else
     {
-        DEBUG("sFxloopFunc1() frame %"F_U2, frame);
+        DEBUG("sFxloopFunc1() frame %"PRIu16, frame);
 
         if ((frame % 5) == 0)
         {
             // waste CPU time so that we miss a frame
-            U4 x = 1000000;
+            uint32_t x = 1000000;
             while (x--)
             {
             }
@@ -68,7 +68,7 @@ static U2 sFxloopFunc1(const U2 frame)
     return frame;
 }
 
-static U2 sFxloopFunc2(const U2 frame)
+static uint16_t sFxloopFunc2(const uint16_t frame)
 {
     if (frame == 0)
     {
@@ -76,12 +76,12 @@ static U2 sFxloopFunc2(const U2 frame)
     }
     else
     {
-        DEBUG("sFxloopFunc2() frame %"F_U2, frame);
+        DEBUG("sFxloopFunc2() frame %"PRIu16, frame);
     }
     return frame;
 }
 
-static U2 sFxloopFunc3(const U2 frame)
+static uint16_t sFxloopFunc3(const uint16_t frame)
 {
     if (frame == 0)
     {
@@ -89,7 +89,7 @@ static U2 sFxloopFunc3(const U2 frame)
     }
     else
     {
-        DEBUG("sFxloopFunc3() frame %"F_U2, frame);
+        DEBUG("sFxloopFunc3() frame %"PRIu16, frame);
     }
     return frame;
 }
@@ -104,7 +104,7 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
     FXLOOP_INFO("func3", sFxloopFunc3, 250, 3000),
 };
 
-static U4 sAppCnt;
+static uint32_t sAppCnt;
 
 // application task
 static void sAppTask(void *pArg)
@@ -120,17 +120,17 @@ static void sAppTask(void *pArg)
         sAppCnt++;
 
         // run one iteration of the effect
-        const U2 res = fxloopRun(false);
-        DEBUG("res=%"F_U2, res);
+        const uint16_t res = fxloopRun(false);
+        DEBUG("res=%"PRIu16, res);
 
         // do other stuff.. such as wasting some CPU time
-        U2 n = 10000;
+        uint16_t n = 10000;
         while (n--)
         {
         }
 
         // delay until it's time to run the next iteration of the effect
-        const L fxWillChange = fxloopWait();
+        const bool fxWillChange = fxloopWait();
 
         if (fxWillChange)
         {
@@ -145,7 +145,7 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    const int n = snprintf_P(str, size, PSTR("cnt=%"F_U4" "), sAppCnt);
+    const int n = snprintf_P(str, size, PSTR("cnt=%"PRIu32" "), sAppCnt);
     fxloopStatus(&str[n], size - n);
 }
 

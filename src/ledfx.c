@@ -66,18 +66,18 @@ enum { _B_ = 0, _G_ = 1, _R_ = 2 };
 // the frame buffer
 typedef union LEDFX_FB_u
 {
-    U1 ix[FF_LEDFX_NUM_LED][_N_];
-    U1 raw [FF_LEDFX_NUM_LED * _N_];
+    uint8_t ix[FF_LEDFX_NUM_LED][_N_];
+    uint8_t raw [FF_LEDFX_NUM_LED * _N_];
 } LEDFX_FB_t;
 
 static LEDFX_FB_t sLedfxFrameBuf;
 
-static U1 sLedfxBrightness;
+static uint8_t sLedfxBrightness;
 
 
 /* ************************************************************************** */
 
-void ledfxClear(const U2 ix0, const U2 ix1)
+void ledfxClear(const uint16_t ix0, const uint16_t ix1)
 {
     if ( (ix0 == 0) && (ix1 == 0) )
     {
@@ -85,8 +85,8 @@ void ledfxClear(const U2 ix0, const U2 ix1)
     }
     else
     {
-        const U2 _ix1 = MIN(ix1, FF_LEDFX_NUM_LED - 1);
-        for (U2 ix = ix0; ix <= _ix1; ix++)
+        const uint16_t _ix1 = MIN(ix1, FF_LEDFX_NUM_LED - 1);
+        for (uint16_t ix = ix0; ix <= _ix1; ix++)
         {
             sLedfxFrameBuf.ix[ix][0] = 0;
             sLedfxFrameBuf.ix[ix][1] = 0;
@@ -95,35 +95,35 @@ void ledfxClear(const U2 ix0, const U2 ix1)
     }
 }
 
-inline U2 ledfxNumLeds(void)
+inline uint16_t ledfxNumLeds(void)
 {
     return FF_LEDFX_NUM_LED;
 }
 
-inline const U1 *ledfxGetFrameBuffer(void)
+inline const uint8_t *ledfxGetFrameBuffer(void)
 {
     return sLedfxFrameBuf.raw;
 }
 
-inline U2 ledfxGetFrameBufferSize(void)
+inline uint16_t ledfxGetFrameBufferSize(void)
 {
-    return (U2)sizeof(sLedfxFrameBuf.raw);
+    return (uint16_t)sizeof(sLedfxFrameBuf.raw);
 }
 
-void ledfxSetBrightness(const U1 brightness)
+void ledfxSetBrightness(const uint8_t brightness)
 {
     sLedfxBrightness = brightness < 255 ? brightness : 0;
 }
 
-static inline void sLedfxSetRGB(const U2 ix, const U1 red, const U1 green, const U1 blue)
+static inline void sLedfxSetRGB(const uint16_t ix, const uint8_t red, const uint8_t green, const uint8_t blue)
 {
     if (sLedfxBrightness)
     {
-        const U4 thrs = 256 / sLedfxBrightness;
-        const U4 brgt = sLedfxBrightness;
+        const uint32_t thrs = 256 / sLedfxBrightness;
+        const uint32_t brgt = sLedfxBrightness;
         if (red)
         {
-            const U4 in = red;
+            const uint32_t in = red;
             sLedfxFrameBuf.ix[ix][_R_] = (in <= thrs) ? 1 : ((in * brgt) >> 8);
         }
         else
@@ -132,7 +132,7 @@ static inline void sLedfxSetRGB(const U2 ix, const U1 red, const U1 green, const
         }
         if (green)
         {
-            const U4 in = green;
+            const uint32_t in = green;
             sLedfxFrameBuf.ix[ix][_G_] = (in <= thrs) ? 1 : ((in * brgt) >> 8);
         }
         else
@@ -141,7 +141,7 @@ static inline void sLedfxSetRGB(const U2 ix, const U1 red, const U1 green, const
         }
         if (blue)
         {
-            const U4 in = blue;
+            const uint32_t in = blue;
             sLedfxFrameBuf.ix[ix][_B_] = (in <= thrs) ? 1 : ((in * brgt) >> 8);
         }
         else
@@ -157,7 +157,7 @@ static inline void sLedfxSetRGB(const U2 ix, const U1 red, const U1 green, const
     }
 }
 
-inline void ledfxSetIxRGB(const U2 ix, const U1 red, const U1 green, const U1 blue) 
+inline void ledfxSetIxRGB(const uint16_t ix, const uint8_t red, const uint8_t green, const uint8_t blue) 
 {
     if (ix < FF_LEDFX_NUM_LED)
     {
@@ -165,68 +165,68 @@ inline void ledfxSetIxRGB(const U2 ix, const U1 red, const U1 green, const U1 bl
     }
 }
 
-inline void ledfxSetIxHSV(const U2 ix, const U1 hue, const U1 sat, const U1 val)
+inline void ledfxSetIxHSV(const uint16_t ix, const uint8_t hue, const uint8_t sat, const uint8_t val)
 {
     if (ix < FF_LEDFX_NUM_LED)
     {
-        U1 red, green, blue;
+        uint8_t red, green, blue;
         hsv2rgb(hue, sat, val, &red, &green, &blue);
         sLedfxSetRGB(ix, red, green, blue);
     }
 }
 
-void ledfxSetMatrixHSV(const U2 x, const U2 y, const U1 hue, const U1 sat, const U1 val)
+void ledfxSetMatrixHSV(const uint16_t x, const uint16_t y, const uint8_t hue, const uint8_t sat, const uint8_t val)
 {
     if ( (x < FF_LEDFX_NUM_X) && (y < FF_LEDFX_NUM_Y) )
     {
-        const U2 ix = XY_TO_IX(x, y);
-        U1 red, green, blue;
+        const uint16_t ix = XY_TO_IX(x, y);
+        uint8_t red, green, blue;
         hsv2rgb(hue, sat, val, &red, &green, &blue);
         sLedfxSetRGB(ix, red, green, blue);
     }
 }
 
-void ledfxSetMatrixRGB(const U2 x, const U2 y, const U1 red, const U1 green, const U1 blue)
+void ledfxSetMatrixRGB(const uint16_t x, const uint16_t y, const uint8_t red, const uint8_t green, const uint8_t blue)
 {
     if ( (x < FF_LEDFX_NUM_X) && (y < FF_LEDFX_NUM_Y) )
     {
-        const U2 ix = XY_TO_IX(x, y);
+        const uint16_t ix = XY_TO_IX(x, y);
         sLedfxSetRGB(ix, red, green, blue);
     }
 }
 
-void ledfxFillRGB(const U2 ix0, const U2 ix1, const U1 red, const U1 green, const U1 blue)
+void ledfxFillRGB(const uint16_t ix0, const uint16_t ix1, const uint8_t red, const uint8_t green, const uint8_t blue)
 {
-    U2 _ix0 = ix0;
-    U2 _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
-    for (U2 ix = _ix0; ix <= _ix1; ix++)
+    uint16_t _ix0 = ix0;
+    uint16_t _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
+    for (uint16_t ix = _ix0; ix <= _ix1; ix++)
     {
         ledfxSetIxRGB(ix, red, green, blue);
     }
 }
-void ledfxFillHSV(const U2 ix0, const U2 ix1, const U1 hue, const U1 sat, const U1 val)
+void ledfxFillHSV(const uint16_t ix0, const uint16_t ix1, const uint8_t hue, const uint8_t sat, const uint8_t val)
 {
-    U1 red, green, blue;
+    uint8_t red, green, blue;
     hsv2rgb(hue, sat, val, &red, &green, &blue);
     ledfxFillRGB(ix0, ix1, red, green, blue);
 }
 
 // see ledfx.m for some real-world current measurements
-U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed)
+uint16_t ledfxLimitCurrent(const uint16_t maPerLed, const uint16_t maMax, uint16_t *pMaUsed)
 {
-    const U4 maxVal = ( ((U4)maMax * _N_ * 256 * 10) + 5 ) / ( (U4)maPerLed * 10 );
+    const uint32_t maxVal = ( ((uint32_t)maMax * _N_ * 256 * 10) + 5 ) / ( (uint32_t)maPerLed * 10 );
 
-    U4 usedVal = 0;
-    U2 numLimit = 0;
-    L limit = false;
-    for (U2 ix = 0; ix < FF_LEDFX_NUM_LED; ix++)
+    uint32_t usedVal = 0;
+    uint16_t numLimit = 0;
+    bool limit = false;
+    for (uint16_t ix = 0; ix < FF_LEDFX_NUM_LED; ix++)
     {
         if (!limit)
         {
-            const U2 deltaVal = (U2)sLedfxFrameBuf.ix[ix][_R_]
-                              + (U2)sLedfxFrameBuf.ix[ix][_G_]
-                              + (U2)sLedfxFrameBuf.ix[ix][_B_];
-            const U4 newVal = usedVal + deltaVal;
+            const uint16_t deltaVal = (uint16_t)sLedfxFrameBuf.ix[ix][_R_]
+                              + (uint16_t)sLedfxFrameBuf.ix[ix][_G_]
+                              + (uint16_t)sLedfxFrameBuf.ix[ix][_B_];
+            const uint32_t newVal = usedVal + deltaVal;
             if (newVal > maxVal)
             {
                 limit = true;
@@ -235,7 +235,7 @@ U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed)
             {
                 usedVal = newVal;
             }
-            //DEBUG("ix=%"F_U2" d=%"F_U2" n=%"F_U4" -> u=%"F_U4, ix, deltaVal, newVal, usedVal); hwTxFlush();
+            //DEBUG("ix=%"PRIu16" d=%"PRIu16" n=%"PRIu32" -> u=%"PRIu32, ix, deltaVal, newVal, usedVal); hwTxFlush();
         }
         if (limit)
         {
@@ -252,14 +252,14 @@ U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed)
         }
     }
 
-    const U2 maUsed = ( (((1000 * usedVal) >> 8) * maPerLed) + 500 ) / (_N_ * 1000);
+    const uint16_t maUsed = ( (((1000 * usedVal) >> 8) * maPerLed) + 500 ) / (_N_ * 1000);
     if (pMaUsed)
     {
         *pMaUsed = maUsed;
     }
 
-    //DEBUG("ledfx limiter: maPerLed=%"F_U2" maMax=%"F_U2" maxVal=%"F_U4" usedVal=%"F_U4" maUsed=%"F_U2" numLimit=%"F_U2"/%"F_U2,
-    //    maPerLed, maMax, maxVal, usedVal, maUsed, numLimit, (U2)FF_LEDFX_NUM_LED);
+    //DEBUG("ledfx limiter: maPerLed=%"PRIu16" maMax=%"PRIu16" maxVal=%"PRIu32" usedVal=%"PRIu32" maUsed=%"PRIu16" numLimit=%"PRIu16"/%"PRIu16,
+    //    maPerLed, maMax, maxVal, usedVal, maUsed, numLimit, (uint16_t)FF_LEDFX_NUM_LED);
 
     return numLimit;
 }
@@ -267,34 +267,34 @@ U2 ledfxLimitCurrent(const U2 maPerLed, const U2 maMax, U2 *pMaUsed)
 
 /* ************************************************************************** */
 
-void ledfxNoiseRandom(const L init, const U2 ix0, const U2 ix1, const U2 num)
+void ledfxNoiseRandom(const bool init, const uint16_t ix0, const uint16_t ix1, const uint16_t num)
 {
     UNUSED(init);
-    const U2 range = ( (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1 ) - ix0 + 1;
-    for (U2 n = 0; n < num; n++)
+    const uint16_t range = ( (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1 ) - ix0 + 1;
+    for (uint16_t n = 0; n < num; n++)
     {
-        const U4 rnd = hwMathGetRandom();
-        const U2 ix = ix0 + (rnd % range);
+        const uint32_t rnd = hwMathGetRandom();
+        const uint16_t ix = ix0 + (rnd % range);
         ledfxSetIxHSV(ix, rnd >> 8, 255, 255);
     }
 }
 
-void ledfxNoiseRandomDistinct(const L init, const U2 ix0, const U2 ix1, const U2 num)
+void ledfxNoiseRandomDistinct(const bool init, const uint16_t ix0, const uint16_t ix1, const uint16_t num)
 {
     UNUSED(init);
     // \todo move to flash (PGM)
-    const U1 hues[] = { 0, (1*255/6), (2*255/6), (3*255/6), (4*255/6), (5*255/6) };
-    const U2 range = ( (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1 ) - ix0 + 1;
-    for (U2 n = 0; n < num; n++)
+    const uint8_t hues[] = { 0, (1*255/6), (2*255/6), (3*255/6), (4*255/6), (5*255/6) };
+    const uint16_t range = ( (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1 ) - ix0 + 1;
+    for (uint16_t n = 0; n < num; n++)
     {
-        const U4 rnd = hwMathGetRandom();
-        const U2 ix = ix0 + (rnd % range);
-        const U1 hue = hues[ (rnd >> 8) % NUMOF(hues) ];
+        const uint32_t rnd = hwMathGetRandom();
+        const uint16_t ix = ix0 + (rnd % range);
+        const uint8_t hue = hues[ (rnd >> 8) % NUMOF(hues) ];
         ledfxSetIxHSV(ix, hue, 255, 255);
     }
 }
 
-void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num, U1 *r0, U1 *r1)
+void ledfxNoiseMovingHue(const bool init, const uint16_t ix0, const uint16_t ix1, const uint16_t num, uint8_t *r0, uint8_t *r1)
 {
     if (init)
     {
@@ -302,14 +302,14 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
         *r1 = 0;
     }
 
-    U2 _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
+    uint16_t _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
     ledfxFillHSV(ix0, _ix1, *r1, 255, 50);
 
-    const U2 range = ( (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1 ) - ix0 + 1;
-    for (U2 n = 0; n < num; n++)
+    const uint16_t range = ( (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1 ) - ix0 + 1;
+    for (uint16_t n = 0; n < num; n++)
     {
-        const U4 rnd = hwMathGetRandom();
-        const U2 ix = ix0 + (rnd % range);
+        const uint32_t rnd = hwMathGetRandom();
+        const uint16_t ix = ix0 + (rnd % range);
         ledfxSetIxHSV(ix, *r1, 255, 255);
     }
 
@@ -317,7 +317,7 @@ void ledfxNoiseMovingHue(const L init, const U2 ix0, const U2 ix1, const U2 num,
     *r1 -= 7;
 }
 
-void ledfxStrobo(const L init, const U2 ix0, const U2 ix1, U1 *r0)
+void ledfxStrobo(const bool init, const uint16_t ix0, const uint16_t ix1, uint8_t *r0)
 {
     if (init)
     {
@@ -340,7 +340,7 @@ void ledfxStrobo(const L init, const U2 ix0, const U2 ix1, U1 *r0)
 
 /* ************************************************************************** */
 
-void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
+void ledfxConcentricHueFlow(const bool init, const int8_t step, uint8_t *r0)
 {
     if (init)
     {
@@ -351,18 +351,18 @@ void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
         (*r0) += step;
     }
 
-    const I2 x0 = FF_LEDFX_NUM_X / 2;
-    const I2 y0 = FF_LEDFX_NUM_Y / 2;
-    const I2 hueMax = 256/2;
-    const U1 sat = 255;
-    const U1 val = 255;
-    I2 dX = x0 + 1;
+    const int16_t x0 = FF_LEDFX_NUM_X / 2;
+    const int16_t y0 = FF_LEDFX_NUM_Y / 2;
+    const int16_t hueMax = 256/2;
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
+    int16_t dX = x0 + 1;
     while (dX--)
     {
-        I2 dY = y0 + 1;
+        int16_t dY = y0 + 1;
         while (dY--)
         {
-            const U1 hue = (U1)(((dX*dX) + (dY*dY))
+            const uint8_t hue = (uint8_t)(((dX*dX) + (dY*dY))
                * hueMax / ((x0*x0) + (y0*y0))) + *r0;
             //DEBUG("ledfxConcentricHueFlow() %2i %2i %2i %2i %3u -> %2i %2i   %2i %2i  %2i %2i  %2i %2i",
             //      dx, dy, X0, Y0, hue,
@@ -377,59 +377,59 @@ void ledfxConcentricHueFlow(const L init, const I1 step, U1 *r0)
     }
 }
 
-static inline R4 sDist(const R4 a, const R4 b, const R4 c, const R4 d)
+static inline float sDist(const float a, const float b, const float c, const float d)
 {
     // based on: see header file
-    const R4 cma = c - a;
-    const R4 dmb = d - b;
+    const float cma = c - a;
+    const float dmb = d - b;
     return _sqrtf( (cma * cma) + (dmb * dmb) );
 }
 
-void ledfxPlasma(const L init, R4 *r0)
+void ledfxPlasma(const bool init, float *r0)
 {
-    const U1 sat = 255;
-    const U1 val = 255;
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
 
     if (init)
     {
         hwTic(0);
         // based on: see header file
         *r0 = 128000.0f; // pallete shift, FIXME: 128000, obviously.. :-/
-        //for (U1 y = 0; y < MATRIX_NY; y++)
+        //for (uint8_t y = 0; y < MATRIX_NY; y++)
         //{
-        //    for (U1 x = 0; x < MATRIX_NX; x++)
+        //    for (uint8_t x = 0; x < MATRIX_NX; x++)
         //    {
-        //        pState->plasma[x][y] = (U1)(
-        //            256.0f + ( 256.0f * _sinf( (R4)x * (16.0f / 24.0f) ) ) +
-        //            256.0f + ( 256.0f * _sinf( (R4)y * (8.0f / 16.0f) ) )
+        //        pState->plasma[x][y] = (uint8_t)(
+        //            256.0f + ( 256.0f * _sinf( (float)x * (16.0f / 24.0f) ) ) +
+        //            256.0f + ( 256.0f * _sinf( (float)y * (8.0f / 16.0f) ) )
         //            ) / 2;
         //    }
         //}
-        DEBUG("ledfxPlasma() init %"F_U4, hwToc(0)); // 15ms
+        DEBUG("ledfxPlasma() init %"PRIu32, hwToc(0)); // 15ms
     }
 
     hwTic(0);
-    for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
+    for (uint16_t y = 0; y < FF_LEDFX_NUM_Y; y++)
     {
-        for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
+        for (uint16_t x = 0; x < FF_LEDFX_NUM_X; x++)
         {
             // based on source: see progPlasma() docu
-            const R4 value =
-                _sinf( sDist((R4)x + *r0, y, 128.0f, 128.0) * (1.0f / 8.0f)) +
+            const float value =
+                _sinf( sDist((float)x + *r0, y, 128.0f, 128.0) * (1.0f / 8.0f)) +
                 _sinf( sDist(x, y, 64.0f, 64.0f) * (1.0f / 8.0f) ) +
-                _sinf( sDist(x, (R4)y + (*r0 / 7.0f), 192.0f, 64.0f) * (1.0f / 7.0f) ) +
+                _sinf( sDist(x, (float)y + (*r0 / 7.0f), 192.0f, 64.0f) * (1.0f / 7.0f) ) +
                 _sinf( sDist(x, y, 192.0f, 100.0f) * (1.0 / 8.0) );
-            const U1 hue = (U1)((U4)(value * 128.0) & 0xff);
+            const uint8_t hue = (uint8_t)((uint32_t)(value * 128.0) & 0xff);
             ledfxSetMatrixHSV(x, y, hue, sat, val);
         }
     }
     (*r0) -= 0.25; // smooth (the original code used -= 1)
     // AVR: ~45ms
     // ~250ms --> ~55ms
-    DEBUG("ledfxPlasma() render %"F_U, hwToc(0));
+    DEBUG("ledfxPlasma() render %"PRIu16, hwToc(0));
 }
 
-void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0)
+void ledfxRainbow(const bool init, const uint16_t ix0, const uint16_t ix1, uint8_t *r0)
 {
     if (init)
     {
@@ -439,21 +439,21 @@ void ledfxRainbow(const L init, const U2 ix0, const U2 ix1, U1 *r0)
     {
         (*r0)++;
     }
-    const U1 sat = 255;
-    const U1 val = 255;
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
 
-    U2 _ix0 = ix0;
-    U2 _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
-    for (U2 ix = _ix0; ix <= _ix1; ix++)
+    uint16_t _ix0 = ix0;
+    uint16_t _ix1 = (ix0 == 0) && (ix1 == 0) ? (FF_LEDFX_NUM_LED - 1) : ix1;
+    for (uint16_t ix = _ix0; ix <= _ix1; ix++)
     {
-        const U1 hue = (U4)(*r0) + ((U4)ix * 256 / 2 / FF_LEDFX_NUM_LED);
-        //const U1 hue = *r0 + (((U2)ix * ((256 << 6) / FF_LEDFX_NUM_LED)) >> 6);
+        const uint8_t hue = (uint32_t)(*r0) + ((uint32_t)ix * 256 / 2 / FF_LEDFX_NUM_LED);
+        //const uint8_t hue = *r0 + (((uint16_t)ix * ((256 << 6) / FF_LEDFX_NUM_LED)) >> 6);
         ledfxSetIxHSV(ix, hue, sat, val);
     }
 
 }
 
-void ledfxHueSweep(const L init, const U2 ix0, const U2 ix1, U1 *r0)
+void ledfxHueSweep(const bool init, const uint16_t ix0, const uint16_t ix1, uint8_t *r0)
 {
     if (init)
     {
@@ -463,12 +463,12 @@ void ledfxHueSweep(const L init, const U2 ix0, const U2 ix1, U1 *r0)
     {
         (*r0)++;
     }
-    const U1 sat = 255;
-    const U1 val = 255;
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
     ledfxFillHSV(ix0, ix1, *r0, sat, val);
 }
 
-void ledfxWaves(const L init, U1 *r0, R4 *r1, R4 *r2)
+void ledfxWaves(const bool init, uint8_t *r0, float *r1, float *r2)
 {
     if (init)
     {
@@ -476,11 +476,11 @@ void ledfxWaves(const L init, U1 *r0, R4 *r1, R4 *r2)
         *r1 = 0.0f; // time
         *r2 = 0.0f; // scale
     }
-    const U1 sat = 255;
-    for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
+    const uint8_t sat = 255;
+    for (uint16_t x = 0; x < FF_LEDFX_NUM_X; x++)
     {
-        const R4 v = _sinf( ((R4)x * _cosf(*r2)) + *r1 );
-        for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
+        const float v = _sinf( ((float)x * _cosf(*r2)) + *r1 );
+        for (uint16_t y = 0; y < FF_LEDFX_NUM_Y; y++)
         {
             ledfxSetMatrixHSV(x, y, *r0, sat, ( (v + 1.0f) * 125.0f ));
         }
@@ -489,24 +489,24 @@ void ledfxWaves(const L init, U1 *r0, R4 *r1, R4 *r2)
     // update hue
     (*r0)++;
     // update time
-    *r1 += M_PI / ((R4)FF_LEDFX_NUM_X * 10.0);
+    *r1 += M_PI / ((float)FF_LEDFX_NUM_X * 10.0);
     *r1 = fmodf(*r1, 2.0f * M_PI);
     // update scale
-    *r2 += M_PI / ((R4)FF_LEDFX_NUM_X * 30.0f);
+    *r2 += M_PI / ((float)FF_LEDFX_NUM_X * 30.0f);
     *r2 = fmodf(*r2, 2.0f * M_PI);
 }
 
 
 /* ************************************************************************** */
 
-void ledfxRotor(const L init, R4 *r0, R4 *r1)
+void ledfxRotor(const bool init, float *r0, float *r1)
 {
-    const U1 sat = 255;
-    const U1 val = 255;
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
 
     if (init)
     {
-        *r0 = (R4)(hwMathGetRandom() & 0xff); // hue offset
+        *r0 = (float)(hwMathGetRandom() & 0xff); // hue offset
         *r1 = 0.0f; // angle
     }
     else
@@ -517,32 +517,32 @@ void ledfxRotor(const L init, R4 *r0, R4 *r1)
 
     // we rotate the coordinate system (or: a the line y = 0.5*x)
     hwTic(0);
-    const R4 sinAngle = _sinf(*r1);
-    const R4 cosAngle = _cosf(*r1);
-    for (U2 y = 0; y < FF_LEDFX_NUM_Y; y++)
+    const float sinAngle = _sinf(*r1);
+    const float cosAngle = _cosf(*r1);
+    for (uint16_t y = 0; y < FF_LEDFX_NUM_Y; y++)
     {
-        const R4 cosAngleY = cosAngle * ((R4)y +- ((R4)FF_LEDFX_NUM_Y/2.0f) + 0.5f);
-        for (U2 x = 0; x < FF_LEDFX_NUM_X; x++)
+        const float cosAngleY = cosAngle * ((float)y +- ((float)FF_LEDFX_NUM_Y/2.0f) + 0.5f);
+        for (uint16_t x = 0; x < FF_LEDFX_NUM_X; x++)
         {
-            const R4 sinAngleX = sinAngle * ((R4)x - ((R4)FF_LEDFX_NUM_X/2.0f) + 0.5f);
+            const float sinAngleX = sinAngle * ((float)x - ((float)FF_LEDFX_NUM_X/2.0f) + 0.5f);
 
             // the distance of the point at (x,y) to the line is (dot product) (in [px])
             // [ x, y ] * [ sin(a), cos(a) ] = x * sin(a) + y * cos(a)
-            const R4 dist = (sinAngleX + cosAngleY); // distance in [px]
+            const float dist = (sinAngleX + cosAngleY); // distance in [px]
 
             // (an approximation of) the maximum distance we'll see
-            const R4 maxDist = 1.4142f * ((R4)FF_LEDFX_NUM_X + (R4)FF_LEDFX_NUM_Y) / 2.0f / 2.0f;
+            const float maxDist = 1.4142f * ((float)FF_LEDFX_NUM_X + (float)FF_LEDFX_NUM_Y) / 2.0f / 2.0f;
 
             // scale distance to the range -1..+1 (via sin() instead of linear)
-            //const R4 normDist = _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f));
+            //const float normDist = _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f));
             // scale distance to the range 0..+1 (symmetric) (via sin() instead of linear)
-            //const R4 normDist = fabsf( _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
-            //const R4 normDist = fabsf( _cosf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
-            const R4 normDist = fabsf( dist * (1.0f/maxDist) );
+            //const float normDist = fabsf( _sinf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
+            //const float normDist = fabsf( _cosf( dist * (1.0f/maxDist) * (M_PI/2.0f)) );
+            const float normDist = fabsf( dist * (1.0f/maxDist) );
 
             // calculate hue
-            const R4 hueSpan = 200.0f;
-            const U1 hue = normDist * (hueSpan / 2.0) + (hueSpan / 2.0)
+            const float hueSpan = 200.0f;
+            const uint8_t hue = normDist * (hueSpan / 2.0) + (hueSpan / 2.0)
                 // cycle through hue spectrum
                 + *r0;
 
@@ -554,11 +554,11 @@ void ledfxRotor(const L init, R4 *r0, R4 *r1)
             ledfxSetMatrixHSV(x, y, hue, sat, val);
         }
     }
-    DEBUG("ledfxRotor() render %"F_U, hwToc(0));
+    DEBUG("ledfxRotor() render %"PRIu16, hwToc(0));
 
 }
 
-void ledfxRain(const L init, LEDFX_RAIN_t *pState)
+void ledfxRain(const bool init, LEDFX_RAIN_t *pState)
 {
     if (init)
     {
@@ -573,31 +573,31 @@ void ledfxRain(const L init, LEDFX_RAIN_t *pState)
     // clear all
     ledfxClear(0, 0);
 
-    const U1 maxLen = 6;  // max length of the drop
-    const U1 ds = 30;  // saturation steps
-    const U1 dv = 20;  // value steps
-    const U1 v0 = 255;
+    const uint8_t maxLen = 6;  // max length of the drop
+    const uint8_t ds = 30;  // saturation steps
+    const uint8_t dv = 20;  // value steps
+    const uint8_t v0 = 255;
 
     // check all columns
-    for (U1 x = 0; x < FF_LEDFX_NUM_X; x++)
+    for (uint8_t x = 0; x < FF_LEDFX_NUM_X; x++)
     {
         // animate
         if (pState->pos[x])
         {
-            const U1 hue = pState->hue[x];
-            const I1 p1 = pState->pos[x];
-            const I1 p0 = p1 - pState->len[x] + 1;
-            U1 sat = 255 - (pState->len[x] * ds);
-            U1 val = v0 - (pState->len[x] * dv);
-            for (I1 p = p0; p <= p1; p++)
+            const uint8_t hue = pState->hue[x];
+            const int8_t p1 = pState->pos[x];
+            const int8_t p0 = p1 - pState->len[x] + 1;
+            uint8_t sat = 255 - (pState->len[x] * ds);
+            uint8_t val = v0 - (pState->len[x] * dv);
+            for (int8_t p = p0; p <= p1; p++)
             {
                 sat += ds;
                 val += dv;
-                const I1 y = FF_LEDFX_NUM_Y - p;
+                const int8_t y = FF_LEDFX_NUM_Y - p;
                 if ( (y >= 0) && (y < FF_LEDFX_NUM_Y) )
                 {
                     //DEBUG("prog: rain: %2i %2i %3u %3u %3u/%3u", p1, y, h, s, v, v0);
-                    ledfxSetMatrixHSV(x, (U1)y, hue, sat, val);
+                    ledfxSetMatrixHSV(x, (uint8_t)y, hue, sat, val);
                 }
 
             }
@@ -615,7 +615,7 @@ void ledfxRain(const L init, LEDFX_RAIN_t *pState)
         // maybe create a new raindrop
         else
         {
-            const U4 rnd = hwMathGetRandom();
+            const uint32_t rnd = hwMathGetRandom();
             if ((rnd % pState->f) == 0)
             {
                 pState->pos[x] = 1;
@@ -646,10 +646,10 @@ void ledfxRain(const L init, LEDFX_RAIN_t *pState)
     }
 }
 
-void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars)
+void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars)
 {
-    const U1 vBase = 255 / 2;
-    const U1 vMin = 3;
+    const uint8_t vBase = 255 / 2;
+    const uint8_t vMin = 3;
 
     // initialise
     if (init)
@@ -659,7 +659,7 @@ void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars)
     }
 
     // create stars as needed
-    for (U2 starIx = 0; starIx < nStars; starIx++)
+    for (uint16_t starIx = 0; starIx < nStars; starIx++)
     {
         LEDFX_STAR_t *pStar = &pStars[starIx];
 
@@ -670,14 +670,14 @@ void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars)
         }
 
         // create new star at a random and free pixel
-        L uniq;
+        bool uniq;
         do
         {
             uniq = TRUE;
             pStar->ix = hwMathGetRandom() % FF_LEDFX_NUM_LED;
             if (starIx > 0)
             {
-                U1 testIx = starIx;
+                uint8_t testIx = starIx;
                 while (testIx--)
                 {
                     if (pStars[testIx].ix == pStar->ix)
@@ -688,20 +688,20 @@ void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars)
                 }
             }
         } while (uniq == FALSE);
-        const U4 rand = hwMathGetRandom();
+        const uint32_t rand = hwMathGetRandom();
         pStar->hue    = rand & 0xff;
         pStar->speed  = ((rand >> 8) % 5) + 1;
         pStar->valMax = vBase + ((rand >> 16) % vBase);
         pStar->val    = 1;
 
-        DEBUG("ledfxStars() create %02"F_U2": ix=%03"F_U2" hue=%03"F_U1" val=%03"F_U1" valMax=%03"F_U1" speed=%03"F_I1,
+        DEBUG("ledfxStars() create %02"PRIu16": ix=%03"PRIu16" hue=%03"PRIu8" val=%03"PRIu8" valMax=%03"PRIu8" speed=%03"PRIi8,
             starIx, pStar->ix, pStar->hue, pStar->val, pStar->valMax, pStar->speed);
 
         break; // create one per iteration
     }
 
     // render and decay
-    for (U2 starIx = 0; starIx < nStars; starIx++)
+    for (uint16_t starIx = 0; starIx < nStars; starIx++)
     {
         LEDFX_STAR_t *pStar = &pStars[starIx];
 
@@ -712,19 +712,19 @@ void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars)
         }
 
         // render
-        const U1 sat = 155 + (U1)((U4)100 * (U4)pStar->val / (U4)pStar->valMax);
+        const uint8_t sat = 155 + (uint8_t)((uint32_t)100 * (uint32_t)pStar->val / (uint32_t)pStar->valMax);
         //DEBUG("ledfxStars() render starIx=%u/%u ix=%03u hue=%03u val=%03u valMax=%03u speed=%03i s=%03u", starIx, nStars,
         //      pStar->ix, pStar->hue, pStar->val, pStar->valMax, pStar->speed, s);
 
         ledfxSetIxHSV(pStar->ix, pStar->hue, sat, pStar->val);
 
         // calculate next
-        const I2 val = pStar->val + pStar->speed;
+        const int16_t val = pStar->val + pStar->speed;
         if (pStar->speed > 0) // fade in
         {
-            if (val <= (I2)pStar->valMax)
+            if (val <= (int16_t)pStar->valMax)
             {
-                pStar->val = (U1)val;
+                pStar->val = (uint8_t)val;
             }
             else
             {
@@ -735,7 +735,7 @@ void ledfxStars(const L init, LEDFX_STAR_t *pStars, const U2 nStars)
         {
             if (val >= vMin)
             {
-                pStar->val = (U1)val;
+                pStar->val = (uint8_t)val;
             }
             else
             {

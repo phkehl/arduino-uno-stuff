@@ -23,7 +23,7 @@
 // : x from 0 - 255 : y = round(pow( 2.0, x+64/40.0) - 1)  FIXME: this doesn't seem right
 // From: http://www.kasperkamperman.com/blog/arduino/arduino-programming-hsb-to-rgb/
 
-static const U1 skHsv2rgbDimCurve[256] =
+static const uint8_t skHsv2rgbDimCurve[256] =
 {
       0,   1,   1,   2,   2,   2,   2,   2,   2,   3,   3,   3,   3,   3,   3,   3,
       3,   3,   3,   3,   3,   3,   3,   4,   4,   4,   4,   4,   4,   4,   4,   4,
@@ -45,30 +45,30 @@ static const U1 skHsv2rgbDimCurve[256] =
 #endif // (FF_HSV2RGB_METHOD == 2)
 
 
-inline void hsv2rgb(const U1 hue, const U1 sat, const U1 val, U1 *R, U1 *G, U1 *B)
+inline void hsv2rgb(const uint8_t hue, const uint8_t sat, const uint8_t val, uint8_t *R, uint8_t *G, uint8_t *B)
 {
 #if (FF_HSV2RGB_METHOD == 1)
-    const U1 Sat = sat;
-    const U1 Val = val;
+    const uint8_t Sat = sat;
+    const uint8_t Val = val;
 #elif (FF_HSV2RGB_METHOD == 2)
-    const U1 Sat = 255 - skHsv2rgbDimCurve[255-sat];
-    const U1 Val = skHsv2rgbDimCurve[val];
+    const uint8_t Sat = 255 - skHsv2rgbDimCurve[255-sat];
+    const uint8_t Val = skHsv2rgbDimCurve[val];
 #else
 #  error Illegal value for FF_HSV2RGB_METHOD!
 #endif
 
-    const U4 s = (6 * (U4)hue) >> 8;               // the segment 0..5 (360/60 * [0..255] / 256)
-    const U4 t = (6 * (U4)hue) & 0xff;             // within the segment 0..255 (360/60 * [0..255] % 256)
-    const U4 l = ((U4)Val * (255 - (U4)Sat)) >> 8; // lower level
-    const U4 r = ((U4)Val * (U4)Sat * t) >> 16;    // ramp
+    const uint32_t s = (6 * (uint32_t)hue) >> 8;               // the segment 0..5 (360/60 * [0..255] / 256)
+    const uint32_t t = (6 * (uint32_t)hue) & 0xff;             // within the segment 0..255 (360/60 * [0..255] % 256)
+    const uint32_t l = ((uint32_t)Val * (255 - (uint32_t)Sat)) >> 8; // lower level
+    const uint32_t r = ((uint32_t)Val * (uint32_t)Sat * t) >> 16;    // ramp
     switch (s)
     {
-        case 0: *R = (U1)Val;        *G = (U1)(l + r);    *B = (U1)l;          break;
-        case 1: *R = (U1)(Val - r);  *G = (U1)Val;        *B = (U1)l;          break;
-        case 2: *R = (U1)l;          *G = (U1)Val;        *B = (U1)(l + r);    break;
-        case 3: *R = (U1)l;          *G = (U1)(Val - r);  *B = (U1)Val;        break;
-        case 4: *R = (U1)(l + r);    *G = (U1)l;          *B = (U1)Val;        break;
-        case 5: *R = (U1)Val;        *G = (U1)l;          *B = (U1)(Val - r);  break;
+        case 0: *R = (uint8_t)Val;        *G = (uint8_t)(l + r);    *B = (uint8_t)l;          break;
+        case 1: *R = (uint8_t)(Val - r);  *G = (uint8_t)Val;        *B = (uint8_t)l;          break;
+        case 2: *R = (uint8_t)l;          *G = (uint8_t)Val;        *B = (uint8_t)(l + r);    break;
+        case 3: *R = (uint8_t)l;          *G = (uint8_t)(Val - r);  *B = (uint8_t)Val;        break;
+        case 4: *R = (uint8_t)(l + r);    *G = (uint8_t)l;          *B = (uint8_t)Val;        break;
+        case 5: *R = (uint8_t)Val;        *G = (uint8_t)l;          *B = (uint8_t)(Val - r);  break;
         default: *R = 0; *G = 0; *B = 0;
     }
 }

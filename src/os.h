@@ -60,8 +60,8 @@ typedef void (* OS_TASKFUNC_t)(void *);
     \param[in] taskFunc   task function
     \param[in] taskParam  task parameter, passed-through to the \c taskFunc
 */
-void osTaskCreate(const CH *taskName, const U priority, OS_TASK_t *pTask,
-    U1 *pStack, const U stackSize, OS_TASKFUNC_t taskFunc, void *taskParam);
+void osTaskCreate(const char *taskName, const uint16_t priority, OS_TASK_t *pTask,
+    uint8_t *pStack, const uint16_t stackSize, OS_TASKFUNC_t taskFunc, void *taskParam);
 
 //! start the scheduler, i.e. the tasks
 void osTaskStartScheduler(void);
@@ -76,23 +76,23 @@ void osTaskResumeScheduler(void);
 /*!
     \returns \c true if the scheduler is running, \c false otherwise
 */
-L osTaskIsSchedulerRunning(void);
+bool osTaskIsSchedulerRunning(void);
 
 //! get ticks since start
-U4 osTaskGetTicks(void);
+uint32_t osTaskGetTicks(void);
 
 //! delay task
 /*!
     \param[in] timeout  number of ticks to wait
 */
-void osTaskDelay(const U4 timeout);
+void osTaskDelay(const uint32_t timeout);
 
 //! delay task until specific time
 /*!
     \param[in,out] pPrevTick  time reference on input, set to actual wake time on output
     \param[in]     incrTicks  number of ticks to wait relative to \c pPrevTick
 */
-void osTaskDelayUntil(U4 *pPrevTick, const U4 incrTicks);
+void osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks);
 
 //! interrupt enter routine, call first in all ISRs
 void osIsrEnter(void);
@@ -137,7 +137,7 @@ typedef ATOM_SEM OS_SEMAPHORE_t;
     \param[in,out] pSem      the semaphore
     \param[in]     iniCount  initial count
 */
-void osSemaphoreCreate(OS_SEMAPHORE_t *pSem, const U iniCount);
+void osSemaphoreCreate(OS_SEMAPHORE_t *pSem, const uint16_t iniCount);
 
 //! take semaphore (decrement count)
 /*!
@@ -151,7 +151,7 @@ void osSemaphoreCreate(OS_SEMAPHORE_t *pSem, const U iniCount);
     \returns \c true if the semaphore was taken (decremented),
              \c false on timeout or if the call would block with \c timeout >= 0
 */
-L osSemaphoreTake(OS_SEMAPHORE_t *pSem, const I4 timeout);
+bool osSemaphoreTake(OS_SEMAPHORE_t *pSem, const int32_t timeout);
 
 //! give semaphore (increment count)
 /*!
@@ -199,7 +199,7 @@ void osMutexCreate(OS_MUTEX_t *pMutex);
     \returns \c true if the mutex was available,
              \c false on timeout or if the call would block with \c timeout >= 0
 */
-L osMutexClaim(OS_MUTEX_t *pMutex, const I4 timeout);
+bool osMutexClaim(OS_MUTEX_t *pMutex, const int32_t timeout);
 
 //! release mutex (give lock)
 /*!
@@ -239,13 +239,13 @@ typedef void (* OS_TIMERFUNC_t)(void *);
     \param[in] timeout  timeout in system ticks
     \param[in] repeat   repeat timer every this often (or 0 for single-shot timer)
 */
-void osTimerArm(OS_TIMER_t *pTimer, OS_TIMERFUNC_t cb, void *pArg, U4 timeout, U2 repeat);
+void osTimerArm(OS_TIMER_t *pTimer, OS_TIMERFUNC_t cb, void *pArg, uint32_t timeout, uint16_t repeat);
 
 //! kill timer
 /*!
     \param[in] pTimer  the timer
 */
-L osTimerKill(OS_TIMER_t *pTimer);
+bool osTimerKill(OS_TIMER_t *pTimer);
 
 //@}
 
@@ -263,9 +263,9 @@ L osTimerKill(OS_TIMER_t *pTimer);
 //! a queue
 typedef ATOM_QUEUE OS_QUEUE_t;
 
-void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const U length, const U itemSize);
-L osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const I4 timeout);
-L osQueueReceive(OS_QUEUE_t *pQueue, void *pItem, const I4 timeout, void *pMsg);
+void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint16_t length, const uint16_t itemSize);
+bool osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const int32_t timeout);
+bool osQueueReceive(OS_QUEUE_t *pQueue, void *pItem, const int32_t timeout, void *pMsg);
 void osQueueDelete(OS_QUEUE_t *pQueue);
 
 //@}

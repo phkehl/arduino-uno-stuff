@@ -43,7 +43,7 @@ void ws2801Init(void);
     \param[in] data  data
     \param[in] size  data size
 */
-void ws2801Send(const U1 *data, const U1 size);
+void ws2801Send(const uint8_t *data, const uint8_t size);
 
 
 /* *************************************************************************** */

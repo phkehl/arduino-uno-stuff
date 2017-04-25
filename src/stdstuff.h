@@ -18,54 +18,6 @@
 #include <stddef.h>        // libc: standard type definitions
 #include <stdbool.h>       // libc: boolean types and values
 
-//! \name Data Types
-//@{
-typedef int8_t            I1; //!<  8 bit signed
-typedef int16_t           I2; //!< 16 bit signed
-typedef int32_t           I4; //!< 32 bit signed
-
-typedef uint8_t           U1; //!<  8 bit unsigned
-typedef uint16_t          U2; //!< 16 bit unsigned
-typedef uint32_t          U4; //!< 32 bit unsigned
-
-typedef float             R4; //!< 32 bit float
-//typedef double            R8; // same as float on AVR
-
-typedef char              CH; //!< 8 bit character
-typedef int               I;  //!< signed integer
-typedef unsigned int      U;  //!< unsigned integer
-typedef bool              L;  //!< boolean
-//@}
-
-#define I1_MINT8_MIN
-#define I1_MAX INT8_MAX
-#define I2_MINT16_MIN
-#define I2_MAX INT16_MAX
-#define I4_MINT32_MIN
-#define I4_MAX INT32_MAX
-
-#define U1_MAX UINT8_MAX
-#define U2_MAX UINT16_MAX
-#define U4_MAX UINT32_MAX
-
-//! \name printf() Formats
-//@{
-#define   F_U4   PRIu32 //!< decimal format for an #U4 \hideinitializer
-#define   F_U4x  PRIx32 //!< hexadecimal format for an #U4 \hideinitializer
-#define   F_U2   PRIu16 //!< decimal format for an #U2 \hideinitializer
-#define   F_U2x  PRIx16 //!< hexadecimal format for an #U2 \hideinitializer
-#define   F_U1   PRIu8  //!< decimal format for an #U1 \hideinitializer
-#define   F_U1x  PRIx8  //!< hexadecimal format for an #U1 \hideinitializer
-#define   F_I4   PRIi32 //!< decimal format for an #I2 \hideinitializer
-#define   F_I2   PRIi16 //!< decimal format for an #I2 \hideinitializer
-#define   F_I1   PRIi8  //!< decimal format for an #I1 \hideinitializer
-#define   F_U    PRIu16 //!< decimal format for an #U \hideinitializer
-#define   F_Ux   PRIx16 //!< hexadecimal format for an #U \hideinitializer
-#define   F_I    PRIi16 //!< decimal format for an #I \hideinitializer
-#define   F_R4   "f"    //!< decimal normal format for an #R4 \hideinitializer
-#define   F_R4g  "g"    //!< decimal or engineering format for an #R4 \hideinitializer
-//@}
-
 #ifdef __DOXYGEN__
 #define NULL 0 //!< the null pointer (from stddef.h) \hideinitializer
 #endif
@@ -82,7 +34,7 @@ typedef bool              L;  //!< boolean
 #define NUMOF(x) (sizeof(x)/sizeof(*(x)))       //!< number of elements in vector \hideinitializer
 #define ENDLESS true          //!< for endless while loops \hideinitializer
 #define FALLTHROUGH           //!< switch fall-through marker \hideinitializer
-#define __PAD(n) U1 __PADNAME(__LINE__)[n]  //!< struct padding macro \hideinitializer
+#define __PAD(n) uint8_t __PADNAME(__LINE__)[n]  //!< struct padding macro \hideinitializer
 #define __PADFILL { 0 }           //!< to fill structure padding in initialisers \hideinitializer
 #define MIN(a, b)  ((b) < (a) ? (b) : (a)) //!< smaller value of a and b \hideinitializer
 #define MAX(a, b)  ((b) > (a) ? (b) : (a)) //!< bigger value of a and b \hideinitializer
@@ -124,7 +76,7 @@ typedef bool              L;  //!< boolean
 
 //! \name Flags
 //@{
-#define INI_FLAGS(name, num) U1 name[((num) + 7) / 8]
+#define INI_FLAGS(name, num) uint8_t name[((num) + 7) / 8]
 #define SET_FLAG(name, ix) (name[(ix) / 8] |= BIT((ix) % 8))
 #define CLR_FLAG(name, ix) (name[(ix) / 8] &= ~BIT((ix) % 8))
 #define GET_FLAG(name, ix) (name[(ix) / 8] & BIT((ix) % 8))

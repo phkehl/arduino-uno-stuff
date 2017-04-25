@@ -57,7 +57,7 @@ void appInit(void)
 // starts the user application task
 void appCreateTask(void)
 {
-    static U1 stack[250];
+    static uint8_t stack[250];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -72,7 +72,7 @@ void appCreateTask(void)
 #define PSU_MAX_MA 2500
 
 // current limiter status
-static U2 sAppCurrent;
+static uint16_t sAppCurrent;
 
 // send data to LEDs
 static /*inline*/ void sLedFlush(void)
@@ -93,90 +93,90 @@ enum { NO_FLUSH = 0, FLUSH_MATRIX = 1 };
 // effect state "registers"
 static union
 {
-    U1 u[12];
-    R4 f[3];
+    uint8_t u[12];
+    float f[3];
     LEDFX_RAIN_t rain;
     LEDFX_STAR_t stars[FF_LEDFX_NUM_LED / 5];
 } sFxState;
 
-static inline U2 sFxNoise1(const U2 frame)
+static inline uint16_t sFxNoise1(const uint16_t frame)
 {
     ledfxNoiseRandom(frame == 0 ? true : false, 0, 0, 5);
     return FLUSH_MATRIX;
 }
 
-static inline U2 sFxNoise2(const U2 frame)
+static inline uint16_t sFxNoise2(const uint16_t frame)
 {
     ledfxNoiseRandomDistinct(frame == 0 ? true : false, 0, 0, 5);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxHueNoise1(const U2 frame)
+static uint16_t sFxHueNoise1(const uint16_t frame)
 {
     ledfxNoiseMovingHue(frame == 0 ? true : false, 0, 0, 5, &sFxState.u[0], &sFxState.u[1]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxHueFill(const U2 frame)
+static uint16_t sFxHueFill(const uint16_t frame)
 {
     UNUSED(frame);
-    const U1 hue = sFxState.u[0];
-    const U1 sat = 255;
-    const U1 val = 255;
+    const uint8_t hue = sFxState.u[0];
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
     ledfxFillHSV(0, 0, hue, sat, val);
     sFxState.u[0]++;
     return FLUSH_MATRIX;
 }
 
-static U2 sFxKaasEye(const U2 frame)
+static uint16_t sFxKaasEye(const uint16_t frame)
 {
     ledfxConcentricHueFlow(frame == 0 ? true : false, 1, &sFxState.u[0]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxPlasma(const U2 frame)
+static uint16_t sFxPlasma(const uint16_t frame)
 {
     ledfxPlasma(frame == 0 ? true : false, &sFxState.f[0]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxRotor(const U2 frame)
+static uint16_t sFxRotor(const uint16_t frame)
 {
     ledfxRotor(frame == 0 ? true : false, &sFxState.f[0], &sFxState.f[1]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxRainbow(const U2 frame)
+static uint16_t sFxRainbow(const uint16_t frame)
 {
     ledfxRainbow(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxRain(const U2 frame)
+static uint16_t sFxRain(const uint16_t frame)
 {
     ledfxRain(frame == 0 ? true : false, &sFxState.rain);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxHueSweep(const U2 frame)
+static uint16_t sFxHueSweep(const uint16_t frame)
 {
     ledfxHueSweep(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxStars(const U2 frame)
+static uint16_t sFxStars(const uint16_t frame)
 {
     ledfxStars(frame == 0 ? true : false, sFxState.stars, NUMOF(sFxState.stars));
     return FLUSH_MATRIX;
 }
 
-static U2 sFxStrobo(const U2 frame)
+static uint16_t sFxStrobo(const uint16_t frame)
 {
     ledfxStrobo(frame == 0 ? true : false, 0, 0, &sFxState.u[0]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxWaves(const U2 frame)
+static uint16_t sFxWaves(const uint16_t frame)
 {
     ledfxWaves(frame == 0 ? true : false, &sFxState.u[0], &sFxState.f[1], &sFxState.f[2]);
     return FLUSH_MATRIX;
@@ -185,7 +185,7 @@ static U2 sFxWaves(const U2 frame)
 /* ***** application task **************************************************** */
 
 
-#define FXDURATION (U4)10000
+#define FXDURATION (uint32_t)10000
 #define FXPERIOD   50
 
 // the effects
@@ -221,9 +221,9 @@ static void sAppTask(void *pArg)
 
 
 #if 0
-    for (U y = 0; y < FF_LEDFX_NUM_Y; y++)
+    for (uint16_t y = 0; y < FF_LEDFX_NUM_Y; y++)
     {
-        for (U x = 0; x < FF_LEDFX_NUM_X; x++)
+        for (uint16_t x = 0; x < FF_LEDFX_NUM_X; x++)
         {
             ledfxSetMatrixHSV(x, y, 0, 255, 255);
         }
@@ -257,7 +257,7 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        const U2 res = fxloopRun(false);
+        const uint16_t res = fxloopRun(false);
 
         // update matrix?
         if (res == FLUSH_MATRIX)
@@ -276,7 +276,7 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("%"F_U2"mA "), sAppCurrent);
+    snprintf_P(str, size, PSTR("%"PRIu16"mA "), sAppCurrent);
     str[size-1] = '\0';
 }
 

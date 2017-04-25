@@ -54,7 +54,7 @@ void appInit(void)
 // starts the user application task
 void appCreateTask(void)
 {
-    static U1 stack[250];
+    static uint8_t stack[250];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -67,8 +67,8 @@ void appCreateTask(void)
 
 /* ***** application task **************************************************** */
 
-static U2 sAppCurrent;
-static U4 sAppTick;
+static uint16_t sAppCurrent;
+static uint32_t sAppTick;
 
 // application task
 static void sAppTask(void *pArg)
@@ -85,7 +85,7 @@ static void sAppTask(void *pArg)
         PIN_HIGH(LED_PIN);
 
         // randomly set 5 LEDs on the strip, initialise every ~5 seconds
-        const L init = (sAppTick % 1000) == 0;
+        const bool init = (sAppTick % 1000) == 0;
         if (init)
         {
             ledfxClear(0, 0);
@@ -111,7 +111,7 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("sAppCurrent=%"F_U2), sAppCurrent);
+    snprintf_P(str, size, PSTR("sAppCurrent=%"PRIu16), sAppCurrent);
 }
 
 

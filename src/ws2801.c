@@ -46,15 +46,15 @@ void ws2801Init(void)
 #  error Illegal value for FF_WS2801_SPI_SPEED!
 #endif
 
-    DEBUG("ws2801: %"F_U"kHz", (U)FF_WS2801_SPI_SPEED);
+    DEBUG("ws2801: %"PRIu16"kHz", (uint16_t)FF_WS2801_SPI_SPEED);
 }
 
-void ws2801Send(const U1 *data, const U1 size)
+void ws2801Send(const uint8_t *data, const uint8_t size)
 {
     CS_ENTER;
     PIN_LOW(10);
 
-    U n = size;
+    uint16_t n = size;
     while (n--)
     {
         SPDR = *data++;

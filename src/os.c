@@ -31,7 +31,7 @@
 
 
 #if (FF_OS_HEAP_SIZE > 0)
-static CH sOsHeapMem[FF_OS_HEAP_SIZE]; // heap memory
+static char sOsHeapMem[FF_OS_HEAP_SIZE]; // heap memory
 #endif
 
 enum
@@ -65,7 +65,7 @@ enum
 static ATOM_TCB *spLastCreatedTask = NULL;
 
 // idle thread stack
-static U1 sOsIdleTaskStack[FF_OS_IDLE_STACK_SIZE];
+static uint8_t sOsIdleTaskStack[FF_OS_IDLE_STACK_SIZE];
 
 void osInit(void)
 {
@@ -78,11 +78,11 @@ void osInit(void)
     __malloc_heap_end   = (void *)RAMEND;
 #endif
 
-    DEBUG("os: init (heap %"F_U"@%p, idl stack %"F_U"@%p, prio %"F_U1")",
-        (U)FF_OS_HEAP_SIZE, __malloc_heap_start, (U)sizeof(sOsIdleTaskStack),
-        sOsIdleTaskStack, (U1)IDLE_THREAD_PRIORITY);
+    DEBUG("os: init (heap %"PRIu16"@%p, idl stack %"PRIu16"@%p, prio %"PRIu8")",
+        (uint16_t)FF_OS_HEAP_SIZE, __malloc_heap_start, (uint16_t)sizeof(sOsIdleTaskStack),
+        sOsIdleTaskStack, (uint8_t)IDLE_THREAD_PRIORITY);
 
-    const U1 res = atomOSInit(sOsIdleTaskStack, sizeof(sOsIdleTaskStack), true);
+    const uint8_t res = atomOSInit(sOsIdleTaskStack, sizeof(sOsIdleTaskStack), true);
     if (res == ATOM_OK)
     {
         // setup and enable the system tick timer (TCCR = Timer/Counter Control Register)
@@ -110,7 +110,7 @@ void osInit(void)
 }
 
 
-//static volatile U2 svOsRuntimeCounter = 0;
+//static volatile uint16_t svOsRuntimeCounter = 0;
 
 // task tick routine, runs the scheduler
 //ISR(TIMER0_COMPA_vect, ISR_NAKED)
@@ -124,8 +124,8 @@ ISR(TIMER0_COMPA_vect)
     ATOM_TCB *pTCB = atomCurrentContext();
     if (pTCB != NULL)
     {
-        //const U4 rtcnt = hwGetRuntimeCounter();
-        //const U2 delta = (rtcnt - svOsRuntimeCounter);
+        //const uint32_t rtcnt = hwGetRuntimeCounter();
+        //const uint16_t delta = (rtcnt - svOsRuntimeCounter);
         //pTCB->runtime += delta;
         //svOsRuntimeCounter = rtcnt;
 
@@ -139,13 +139,13 @@ ISR(TIMER0_COMPA_vect)
 }
 
 
-//static U1 sOsIsrStack[150];
-//static I sOsPreIsrSP;
+//static uint8_t sOsIsrStack[150];
+//static int16_t sOsPreIsrSP;
 
 inline void osIsrEnter(void)
 {
     // sOsPreIsrSP = SP;
-    // SP = (I)&sOsIsrStack[sizeof(sOsIsrStack)-1];
+    // SP = (int16_t)&sOsIsrStack[sizeof(sOsIsrStack)-1];
     atomIntEnter();
 }
 
@@ -156,8 +156,8 @@ inline void osIsrLeave(void)
     // SP = sOsPreIsrSP;
 }
 
-static U1 sOsCriticalNesting = 0;
-static U1 sOsCriticalState = 0;
+static uint8_t sOsCriticalNesting = 0;
+static uint8_t sOsCriticalState = 0;
 
 inline void osCsEnter(void)
 {
@@ -193,11 +193,11 @@ extern struct __freelist *__flp;
 void osStatus(char *str, const size_t size)
 {
     // memory never allocated so far
-    const U unalloc = __brkval ? (char *)__malloc_heap_end - (char *)__brkval : FF_OS_HEAP_SIZE;
-    //DEBUG("unalloc %"F_U" %p %p", unalloc, __malloc_heap_end, __brkval);
+    const uint16_t unalloc = __brkval ? (char *)__malloc_heap_end - (char *)__brkval : FF_OS_HEAP_SIZE;
+    //DEBUG("unalloc %"PRIu16" %p %p", unalloc, __malloc_heap_end, __brkval);
 
-    U totFree = unalloc; // total free heap memory
-    U minFree = unalloc; // biggest free chunk
+    uint16_t totFree = unalloc; // total free heap memory
+    uint16_t minFree = unalloc; // biggest free chunk
 
     // go through chunks in malloc()'s free list
     struct __freelist *current;
@@ -205,23 +205,23 @@ void osStatus(char *str, const size_t size)
     {
         totFree += 2; // memory block header
         totFree += current->sz;
-        //DEBUG("freelist %"F_U" %p", (U)current->sz, current);
+        //DEBUG("freelist %"PRIu16" %p", (uint16_t)current->sz, current);
         if (current->sz > minFree)
         {
             minFree = current->sz;
         }
     }
 
-    snprintf_P(str, size, PSTR("msss=%"F_U4" heap=%"F_U"/%"F_U"/%"F_U),
+    snprintf_P(str, size, PSTR("msss=%"PRIu32" heap=%"PRIu16"/%"PRIu16"/%"PRIu16),
         osTaskGetTicks(), minFree, totFree,
-        (U)FF_OS_HEAP_SIZE/*(U)(__malloc_heap_end - __malloc_heap_start)*/);
+        (uint16_t)FF_OS_HEAP_SIZE/*(uint16_t)(__malloc_heap_end - __malloc_heap_start)*/);
 }
 
 #else
 
 void osStatus(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("msss=%"F_U4), osTaskGetTicks());
+    snprintf_P(str, size, PSTR("msss=%"PRIu32), osTaskGetTicks());
 }
 
 #endif // (FF_OS_HEAP_SIZE > 0)
@@ -229,7 +229,7 @@ void osStatus(char *str, const size_t size)
 
 void osPrintTaskList(void)
 {
-    U1 num = 0;
+    uint8_t num = 0;
 
     // count number of tasks
     CS_ENTER;
@@ -244,39 +244,39 @@ void osPrintTaskList(void)
     CS_LEAVE;
 
     ATOM_TCB *tasks[num];
-    U2 rtTot = 0;
-    U2 rtAll[num];
-    //U2 pc[num];
+    uint16_t rtTot = 0;
+    uint16_t rtAll[num];
+    //uint16_t pc[num];
 
     // sum up total runtime and create list of TCBs
     CS_ENTER;
 
     ATOM_TCB *pTask = atomGetIdleTCB();
-    for (U1 ix = 0; ix < num; ix++)
+    for (uint8_t ix = 0; ix < num; ix++)
     {
         rtTot += pTask->runtime;
         rtAll[ix] = pTask->runtime;
         pTask->runtime = 0;
         tasks[ix] = pTask;
         pTask = pTask->next;
-        //pc[ix] = *( (U2 *)((U1 *)pTask->stack_bottom - sizeof(U2)) );
+        //pc[ix] = *( (uint16_t *)((uint8_t *)pTask->stack_bottom - sizeof(uint16_t)) );
     }
 
     CS_LEAVE;
 
-    for (U1 ix = 0; ix < num; ix++)
+    for (uint8_t ix = 0; ix < num; ix++)
     {
         const OS_TASK_t *pkTask = tasks[ix];
 #  ifdef ATOM_STACK_CHECKING
-        U4 used, free;
+        uint32_t used, free;
         atomThreadStackCheck(pkTask, &used, &free);
 #  else
-        U4 free = 0;
+        uint32_t free = 0;
 #  endif
-        const U2 load = (U2)(((R4)rtAll[ix] * 100.0f / (R4)rtTot * 10.0f) + 0.5);
-        const U1 loadInt = load / 10;
-        const U1 loadFrac = load - (10 * loadInt);
-        PRINT("mon: tsk: %"F_U1" %s %c %"F_U1" %2"F_U4" %2"F_U1".%"F_U1,// " PC %p",
+        const uint16_t load = (uint16_t)(((float)rtAll[ix] * 100.0f / (float)rtTot * 10.0f) + 0.5);
+        const uint8_t loadInt = load / 10;
+        const uint8_t loadFrac = load - (10 * loadInt);
+        PRINT("mon: tsk: %"PRIu8" %s %c %"PRIu8" %2"PRIu32" %2"PRIu8".%"PRIu8,// " PC %p",
             ix, pkTask->name,
             pkTask->suspended ? 'S' : 'R', pkTask->priority, free, loadInt, loadFrac);//, pc[ix]);
         hwTxFlush();
@@ -286,20 +286,20 @@ void osPrintTaskList(void)
 
 /* ***** scheduler functions ************************************************ */
 
-typedef void (*ATOM_TASKFUNC_t)(U4);
+typedef void (*ATOM_TASKFUNC_t)(uint32_t);
 
-void osTaskCreate(const CH *taskName, const U priority, OS_TASK_t *pTask,
-    U1 *pStack, const U stackSize, OS_TASKFUNC_t taskFunc, void *taskParam)
+void osTaskCreate(const char *taskName, const uint16_t priority, OS_TASK_t *pTask,
+    uint8_t *pStack, const uint16_t stackSize, OS_TASKFUNC_t taskFunc, void *taskParam)
 {
     if ( (priority >= IDLE_THREAD_PRIORITY) ||
-        (atomThreadCreate((ATOM_TCB *)pTask, (U1)priority, (ATOM_TASKFUNC_t)taskFunc,
-            (U2)(void *)taskParam, pStack, stackSize, true) != ATOM_OK))
+        (atomThreadCreate((ATOM_TCB *)pTask, (uint8_t)priority, (ATOM_TASKFUNC_t)taskFunc,
+            (uint16_t)(void *)taskParam, pStack, stackSize, true) != ATOM_OK))
     {
-        hwPanic(HW_PANIC_OS, OS_PANIC_TASK, (((U4)taskName[0]) << 16) | (((U4)taskName[1]) << 8) | ((U4)taskName[2]));
+        hwPanic(HW_PANIC_OS, OS_PANIC_TASK, (((uint32_t)taskName[0]) << 16) | (((uint32_t)taskName[1]) << 8) | ((uint32_t)taskName[2]));
     }
     else
     {
-        DEBUG("os: task '%s' (stack %" F_U "@%p, prio %" F_U", tcb %p)",
+        DEBUG("os: task '%s' (stack %" PRIu16 "@%p, prio %" PRIu16", tcb %p)",
               taskName, stackSize, pStack, priority, pTask);
 
         pTask->name = taskName;
@@ -311,7 +311,7 @@ void osTaskCreate(const CH *taskName, const U priority, OS_TASK_t *pTask,
 }
 
 
-static L sOsTaskSchedulerRunning = false;
+static bool sOsTaskSchedulerRunning = false;
 
 
 void osTaskStartScheduler(void)
@@ -340,22 +340,22 @@ void osTaskResumeScheduler(void)
 }
 
 
-L osTaskIsSchedulerRunning(void)
+bool osTaskIsSchedulerRunning(void)
 {
     return sOsTaskSchedulerRunning;
 }
 
 
-void osTaskDelay(const U4 timeout)
+void osTaskDelay(const uint32_t timeout)
 {
     atomTimerDelay(timeout);
 }
 
 
-inline void osTaskDelayUntil(U4 *pPrevTick, const U4 incrTicks)
+inline void osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks)
 {
-    const U4 targetTick = *pPrevTick + incrTicks;
-    const U4 tickNow = osTaskGetTicks();
+    const uint32_t targetTick = *pPrevTick + incrTicks;
+    const uint32_t tickNow = osTaskGetTicks();
     if (tickNow < targetTick)
     {
         osTaskDelay(targetTick - tickNow);
@@ -364,7 +364,7 @@ inline void osTaskDelayUntil(U4 *pPrevTick, const U4 incrTicks)
 }
 
 
-inline U4 osTaskGetTicks(void)
+inline uint32_t osTaskGetTicks(void)
 {
     return atomTimeGet();
 }
@@ -372,18 +372,18 @@ inline U4 osTaskGetTicks(void)
 
 /* ***** semaphores ********************************************************* */
 
-void osSemaphoreCreate(OS_SEMAPHORE_t *pSem, const U iniCount)
+void osSemaphoreCreate(OS_SEMAPHORE_t *pSem, const uint16_t iniCount)
 {
-    const U1 res = atomSemCreate((ATOM_SEM *)pSem, iniCount);
+    const uint8_t res = atomSemCreate((ATOM_SEM *)pSem, iniCount);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_SEM_CREATE, res);
     }
 }
 
-L osSemaphoreTake(OS_SEMAPHORE_t *pSem, const I4 timeout)
+bool osSemaphoreTake(OS_SEMAPHORE_t *pSem, const int32_t timeout)
 {
-    U res = atomSemGet((ATOM_SEM *)pSem, (I)timeout);
+    uint16_t res = atomSemGet((ATOM_SEM *)pSem, (int16_t)timeout);
     if (res == ATOM_OK)
     {
         return true;
@@ -402,7 +402,7 @@ L osSemaphoreTake(OS_SEMAPHORE_t *pSem, const I4 timeout)
 
 void osSemaphoreGive(OS_SEMAPHORE_t *pSem)
 {
-    const U1 res = atomSemPut((ATOM_SEM *)pSem);
+    const uint8_t res = atomSemPut((ATOM_SEM *)pSem);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_SEM_GIVE, res);
@@ -411,7 +411,7 @@ void osSemaphoreGive(OS_SEMAPHORE_t *pSem)
 
 void osSemaphoreDelete(OS_SEMAPHORE_t *pSem)
 {
-    const U1 res = atomSemDelete((ATOM_SEM *)pSem);
+    const uint8_t res = atomSemDelete((ATOM_SEM *)pSem);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_SEM_DELETE, res);
@@ -424,7 +424,7 @@ void osSemaphoreDelete(OS_SEMAPHORE_t *pSem)
 
 void osMutexCreate(OS_MUTEX_t *pMutex)
 {
-    const U1 res = atomMutexCreate((ATOM_MUTEX *)pMutex);
+    const uint8_t res = atomMutexCreate((ATOM_MUTEX *)pMutex);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_MX_CREATE, res);
@@ -432,10 +432,10 @@ void osMutexCreate(OS_MUTEX_t *pMutex)
 }
 
 
-L osMutexClaim(OS_MUTEX_t *pMutex, const I4 timeout)
+bool osMutexClaim(OS_MUTEX_t *pMutex, const int32_t timeout)
 {
 
-    const U res = atomMutexGet((ATOM_MUTEX *)pMutex, (I)timeout);
+    const uint16_t res = atomMutexGet((ATOM_MUTEX *)pMutex, (int16_t)timeout);
     if (res == ATOM_OK)
     {
         return true;
@@ -455,7 +455,7 @@ L osMutexClaim(OS_MUTEX_t *pMutex, const I4 timeout)
 
 void osMutexRelease(OS_MUTEX_t *pMutex)
 {
-    const U1 res = atomMutexPut((ATOM_MUTEX *)pMutex);
+    const uint8_t res = atomMutexPut((ATOM_MUTEX *)pMutex);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_MX_RELEASE, res);
@@ -465,7 +465,7 @@ void osMutexRelease(OS_MUTEX_t *pMutex)
 
 void osMutexDelete(OS_MUTEX_t *pMutex)
 {
-    const U1 res = atomMutexDelete((ATOM_MUTEX *)pMutex);
+    const uint8_t res = atomMutexDelete((ATOM_MUTEX *)pMutex);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_MX_DELETE, res);
@@ -476,18 +476,18 @@ void osMutexDelete(OS_MUTEX_t *pMutex)
 
 /* ***** queue functions **************************************************** */
 
-void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const U length, const U itemSize)
+void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint16_t length, const uint16_t itemSize)
 {
-    const U1 res = atomQueueCreate((ATOM_QUEUE *)pQueue, pBuf, length, itemSize);
+    const uint8_t res = atomQueueCreate((ATOM_QUEUE *)pQueue, pBuf, length, itemSize);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_Q_CREATE, res);
     }
 }
 
-L osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const I4 timeout)
+bool osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const int32_t timeout)
 {
-    const U1 res = atomQueuePut((ATOM_QUEUE *)pQueue, timeout, pkMsg);
+    const uint8_t res = atomQueuePut((ATOM_QUEUE *)pQueue, timeout, pkMsg);
     if (res == ATOM_OK)
     {
         return true;
@@ -505,9 +505,9 @@ L osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const I4 timeout)
 }
 
 
-L osQueueReceive(OS_QUEUE_t *pQueue, void *pItem, const I4 timeout, void *pMsg)
+bool osQueueReceive(OS_QUEUE_t *pQueue, void *pItem, const int32_t timeout, void *pMsg)
 {
-    const U1 res = atomQueueGet((ATOM_QUEUE *)pQueue, timeout, pMsg);
+    const uint8_t res = atomQueueGet((ATOM_QUEUE *)pQueue, timeout, pMsg);
     if (res == ATOM_OK)
     {
         return true;
@@ -527,7 +527,7 @@ L osQueueReceive(OS_QUEUE_t *pQueue, void *pItem, const I4 timeout, void *pMsg)
 
 void osQueueDelete(OS_QUEUE_t *pQueue)
 {
-    const U1 res = atomQueueDelete((ATOM_QUEUE *)pQueue);
+    const uint8_t res = atomQueueDelete((ATOM_QUEUE *)pQueue);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_Q_DELETE, res);
@@ -538,22 +538,22 @@ void osQueueDelete(OS_QUEUE_t *pQueue)
 
 /* ***** timer functions **************************************************** */
 
-void osTimerArm(OS_TIMER_t *pTimer, OS_TIMERFUNC_t cb, void *pArg, U4 timeout, U2 repeat)
+void osTimerArm(OS_TIMER_t *pTimer, OS_TIMERFUNC_t cb, void *pArg, uint32_t timeout, uint16_t repeat)
 {
     pTimer->cb_func   = cb;
     pTimer->cb_data   = pArg;
     pTimer->cb_ticks  = timeout;
     pTimer->cb_repeat = repeat;
-    const U1 res = atomTimerRegister((ATOM_TIMER *)pTimer);
+    const uint8_t res = atomTimerRegister((ATOM_TIMER *)pTimer);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_TIMER_ARM, res);
     }
 }
 
-L osTimerKill(OS_TIMER_t *pTimer)
+bool osTimerKill(OS_TIMER_t *pTimer)
 {
-    const U1 res = atomTimerCancel((ATOM_TIMER *)pTimer);
+    const uint8_t res = atomTimerCancel((ATOM_TIMER *)pTimer);
     if (res == ATOM_OK)
     {
         return true;

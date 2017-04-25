@@ -82,7 +82,7 @@ void appInit(void)
 // starts the user application task
 void appCreateTask(void)
 {
-    static U1 stack[250];
+    static uint8_t stack[250];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -132,7 +132,7 @@ static /*inline*/ void sLedFlush(void)
 static inline void sLedUpdBright(void)
 {
     //PIN_HIGH(FLUSH_LED_PIN);
-    //const U1 brightness = (U1)hwAdcGetScaled(HW_ADC_A5, 1, 255);
+    //const uint8_t brightness = (uint8_t)hwAdcGetScaled(HW_ADC_A5, 1, 255);
     //PIN_LOW(FLUSH_LED_PIN);
     //ledfxSetBrightness(brightness);
     ledfxSetBrightness(5);
@@ -146,11 +146,11 @@ enum { NO_FLUSH = 0, FLUSH_MATRIX = 1 };
 // effect state
 static union
 {
-    U1 r[10];
+    uint8_t r[10];
 
 } sFxState;
 
-static U2 sFxTest(const U2 frame)
+static uint16_t sFxTest(const uint16_t frame)
 {
     if (frame == 0)
     {
@@ -158,7 +158,7 @@ static U2 sFxTest(const U2 frame)
         sFxState.r[1] = 0; // step
         return NO_FLUSH;
     }
-    static const U1 v[] PROGMEM = { 0, 10, 50, 100, 150, 200, 250, 255 };
+    static const uint8_t v[] PROGMEM = { 0, 10, 50, 100, 150, 200, 250, 255 };
 
     if (sFxState.r[1] >= NUMOF(v))
     {
@@ -171,38 +171,38 @@ static U2 sFxTest(const U2 frame)
         return NO_FLUSH;
     }
 
-    const U1 mode = sFxState.r[0];
-    const U1 step = sFxState.r[1];
+    const uint8_t mode = sFxState.r[0];
+    const uint8_t step = sFxState.r[1];
 
-    const U1 vStep = (U1)pgm_read_byte(&v[step]);
+    const uint8_t vStep = (uint8_t)pgm_read_byte(&v[step]);
     switch (mode)
     {
         case 0:
-            DEBUG_F("RGB %3"F_U1, vStep);
+            DEBUG_F("RGB %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, vStep, vStep);
             break;
         case 1:
-            DEBUG_F("R %3"F_U1, vStep);
+            DEBUG_F("R %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, 0, 0);
             break;
         case 2:
-            DEBUG_F("G %3"F_U1, vStep);
+            DEBUG_F("G %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, 0, vStep, 0);
             break;
         case 3:
-            DEBUG_F("B %3"F_U1, vStep);
+            DEBUG_F("B %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, 0, 0, vStep);
             break;
         case 4:
-            DEBUG_F("RG %3"F_U1, vStep);
+            DEBUG_F("RG %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, vStep, 0);
             break;
         case 5:
-            DEBUG_F("RB %3"F_U1, vStep);
+            DEBUG_F("RB %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, 0, vStep);
             break;
         case 6:
-            DEBUG_F("GB %3"F_U1, vStep);
+            DEBUG_F("GB %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, 0, vStep, vStep);
             break;
     }
@@ -211,41 +211,41 @@ static U2 sFxTest(const U2 frame)
     return FLUSH_MATRIX;
 }
 
-static inline U2 sFxNoise1(const U2 frame)
+static inline uint16_t sFxNoise1(const uint16_t frame)
 {
     ledfxNoiseRandom(frame == 0 ? true : false, 0, 0, 5);
     return FLUSH_MATRIX;
 }
 
-static inline U2 sFxNoise2(const U2 frame)
+static inline uint16_t sFxNoise2(const uint16_t frame)
 {
     ledfxNoiseRandomDistinct(frame == 0 ? true : false, 0, 0, 5);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxChase(const U2 frame)
+static uint16_t sFxChase(const uint16_t frame)
 {
     UNUSED(frame);
-    const U1 sat = 255;
-    const U1 val = 255;
-    const U1 hue = sFxState.r[0];
-    for (U1 ix = RING_1_IX0; ix < (RING_1_IX1 + 1); ix++)
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
+    const uint8_t hue = sFxState.r[0];
+    for (uint8_t ix = RING_1_IX0; ix < (RING_1_IX1 + 1); ix++)
     {
         ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
-    for (U1 ix = RING_2_IX0; ix < (RING_2_IX1 + 1); ix++)
+    for (uint8_t ix = RING_2_IX0; ix < (RING_2_IX1 + 1); ix++)
     {
         ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
-    for (U1 ix = RING_3_IX0; ix < (RING_3_IX1 + 1); ix++)
+    for (uint8_t ix = RING_3_IX0; ix < (RING_3_IX1 + 1); ix++)
     {
         ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
-    for (U1 ix = RING_4_IX0; ix < (RING_4_IX1 + 1); ix++)
+    for (uint8_t ix = RING_4_IX0; ix < (RING_4_IX1 + 1); ix++)
     {
         ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
-    for (U1 ix = RING_5_IX0; ix < (RING_5_IX1 + 1); ix++)
+    for (uint8_t ix = RING_5_IX0; ix < (RING_5_IX1 + 1); ix++)
     {
         ledfxSetIxHSV(ix, hue + (2 * ix), sat, val);
     }
@@ -253,12 +253,12 @@ static U2 sFxChase(const U2 frame)
     return FLUSH_MATRIX;
 }
 
-static U2 sFxKaa(const U2 frame)
+static uint16_t sFxKaa(const uint16_t frame)
 {
     UNUSED(frame);
-    const U1 hue = sFxState.r[0];
-    const U1 sat = 255;
-    const U1 val = 255;
+    const uint8_t hue = sFxState.r[0];
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
     ledfxFillHSV(RING_1_IX0, RING_1_IX1, hue,      sat, val);
     ledfxFillHSV(RING_2_IX0, RING_2_IX1, hue + 10, sat, val);
     ledfxFillHSV(RING_3_IX0, RING_3_IX1, hue + 20, sat, val);
@@ -268,13 +268,13 @@ static U2 sFxKaa(const U2 frame)
     return FLUSH_MATRIX;
 }
 
-static U2 sFxHueNoise1(const U2 frame)
+static uint16_t sFxHueNoise1(const uint16_t frame)
 {
     ledfxNoiseMovingHue(frame == 0 ? true : false, 0, 0, 5, &sFxState.r[0], &sFxState.r[1]);
     return FLUSH_MATRIX;
 }
 
-static U2 sFxHueNoise2(const U2 frame)
+static uint16_t sFxHueNoise2(const uint16_t frame)
 {
     if (frame == 0)
     {
@@ -285,7 +285,7 @@ static U2 sFxHueNoise2(const U2 frame)
         sFxState.r[7] = 80; sFxState.r[8] = 127 + 80;
         ledfxClear(0, 0);
     }
-    const U1 rnd = hwMathGetRandom();
+    const uint8_t rnd = hwMathGetRandom();
     ledfxSetIxHSV(0, sFxState.r[0], 255, (rnd & 0x0f) == 0x0f ? 255 : 50);
     ledfxNoiseMovingHue(false, RING_2_IX0, RING_2_IX1, 1, &sFxState.r[1], &sFxState.r[2]);
     ledfxNoiseMovingHue(false, RING_3_IX0, RING_3_IX1, 2, &sFxState.r[3], &sFxState.r[4]);
@@ -295,12 +295,12 @@ static U2 sFxHueNoise2(const U2 frame)
     return FLUSH_MATRIX;
 }
 
-static U2 sFxHueFill(const U2 frame)
+static uint16_t sFxHueFill(const uint16_t frame)
 {
     UNUSED(frame);
-    const U1 hue = sFxState.r[0];
-    const U1 sat = 255;
-    const U1 val = 255;
+    const uint8_t hue = sFxState.r[0];
+    const uint8_t sat = 255;
+    const uint8_t val = 255;
     ledfxFillHSV(0, 0, hue, sat, val);
     sFxState.r[0]++;
     return FLUSH_MATRIX;
@@ -313,8 +313,8 @@ static U2 sFxHueFill(const U2 frame)
 #endif
 
 static OS_SEMAPHORE_t sAppTouchDone;
-static volatile U1 svCount;
-static volatile U svTime;
+static volatile uint8_t svCount;
+static volatile uint16_t svTime;
 
 ISR(PCINT2_vect)
 {
@@ -328,11 +328,11 @@ ISR(PCINT2_vect)
 
 static void sTouchMeas(void)
 {
-    const U4 start = osTaskGetTicks();
-    //DEBUG("touch start %"F_U4, start);
+    const uint32_t start = osTaskGetTicks();
+    //DEBUG("touch start %"PRIu32, start);
 
     osSemaphoreCreate(&sAppTouchDone, 0);
-    U4 count = 0;
+    uint32_t count = 0;
 
     CS_ENTER;
 
@@ -394,17 +394,17 @@ static void sTouchMeas(void)
     while (ENDLESS)
     {
         osTaskDelay(500);
-        DEBUG("pin=%"F_U1, (U1)PIN_GET(TOUCH_RECV_PIN));
-        //DEBUG("pin=%"F_U1, (U1)(PIND & BIT(PD3) ? 1 : 0));
-        //DEBUG("pin=%"F_U1x, PIND);
+        DEBUG("pin=%"PRIu8, (uint8_t)PIN_GET(TOUCH_RECV_PIN));
+        //DEBUG("pin=%"PRIu8, (uint8_t)(PIND & BIT(PD3) ? 1 : 0));
+        //DEBUG("pin=%"PRIx8, PIND);
     }
 #endif
     // wait for response..
-    L res = osSemaphoreTake(&sAppTouchDone, 10);
+    bool res = osSemaphoreTake(&sAppTouchDone, 10);
 
-    const U4 stop = osTaskGetTicks();
-    DEBUG("touch stop %"F_U4" res=%"F_U1" cnt=%"F_U1" time=%"F_U" count=%"F_U4,
-        stop - start, (U1)res, svCount, svTime, count);
+    const uint32_t stop = osTaskGetTicks();
+    DEBUG("touch stop %"PRIu32" res=%"PRIu8" cnt=%"PRIu8" time=%"PRIu16" count=%"PRIu32,
+        stop - start, (uint8_t)res, svCount, svTime, count);
 
     osSemaphoreDelete(&sAppTouchDone);
 }
@@ -430,7 +430,7 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 };
 
 // current limiter status
-static U2 sAppCurrent;
+static uint16_t sAppCurrent;
 
 static void sTimerCb(void *pArg)
 {
@@ -457,10 +457,10 @@ static void sAppTask(void *pArg)
     {
         osTaskDelay(200);
         sTouchMeas();
-        //DEBUG("count=%"F_U1, svCount);
+        //DEBUG("count=%"PRIu8, svCount);
         //hwTic(0);
         //osTaskDelay(3);
-        //DEBUG("delay=%"F_U, hwToc(0));
+        //DEBUG("delay=%"PRIu16, hwToc(0));
 
     }
 #endif
@@ -485,7 +485,7 @@ static void sAppTask(void *pArg)
     {
         //PIN_TOGGLE(LED_PIN);
 
-        const U2 res = fxloopRun(false);
+        const uint16_t res = fxloopRun(false);
 
         // update matrix?
         if (res == FLUSH_MATRIX)
@@ -507,7 +507,7 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    const int n = snprintf_P(str, size, PSTR("sAppCurrent=%"F_U2" "),
+    const int n = snprintf_P(str, size, PSTR("sAppCurrent=%"PRIu16" "),
         sAppCurrent);
     fxloopStatus(&str[n], size - n);
 }

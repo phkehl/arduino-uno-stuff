@@ -38,7 +38,7 @@
       - 1.99ms, 250ns + 1000ns (1375ns) / 875ns + 375ns (750ns)
 */
 
-void _ws2812Send(volatile U1 *pPort, volatile U1 *pDdr, uint8_t mask, const U1 *data, const U1 size)
+void _ws2812Send(volatile uint8_t *pPort, volatile uint8_t *pDdr, uint8_t mask, const uint8_t *data, const uint8_t size)
 {
     // enable output
     *pDdr |= mask;

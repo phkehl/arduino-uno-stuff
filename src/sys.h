@@ -25,7 +25,7 @@ void sysInit(void);
 void sysCreateSystemTask(void);
 
 // return a pointer suitable for the initial stack pointer
-U2 sysGetInitStackPointer(void);
+uint16_t sysGetInitStackPointer(void);
 
 
 /* *************************************************************************** */

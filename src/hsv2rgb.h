@@ -36,7 +36,7 @@
     \param[out] G    green (0..255)
     \param[out] B    blue (0..255)
 */
-void hsv2rgb(const U1 hue, const U1 sat, const U1 val, U1 *R, U1 *G, U1 *B);
+void hsv2rgb(const uint8_t hue, const uint8_t sat, const uint8_t val, uint8_t *R, uint8_t *G, uint8_t *B);
 
 
 /* *************************************************************************** */

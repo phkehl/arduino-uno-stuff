@@ -86,6 +86,7 @@ uint16_t fxloopRun(const bool forceNext)
         case RUN_NEXT:
             sStatus.loopIx++;
             sStatus.loopIx %= sStatus.numFx;
+            sStatus.msss = osTaskGetTicks();
 
             funcRes = FXLOOP_NEXT;
 

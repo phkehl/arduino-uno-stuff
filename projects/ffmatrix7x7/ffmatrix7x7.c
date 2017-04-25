@@ -214,37 +214,6 @@ static void sAppTask(void *pArg)
     // initialise random number generator
     hwMathSeedRandom(hwGetRandomSeed());
 
-
-#if 0
-    for (uint16_t y = 0; y < FF_LEDFX_NUM_Y; y++)
-    {
-        for (uint16_t x = 0; x < FF_LEDFX_NUM_X; x++)
-        {
-            ledfxSetMatrixHSV(x, y, 0, 255, 255);
-        }
-    }
-    while (ENDLESS)
-    {
-        osTaskDelay(100);
-    }
-#endif
-
-#if 0
-    ledfxSetMatrixRGB(0, 0, 255, 0, 0);
-    ledfxSetMatrixRGB(3, 1, 0, 255, 0);
-    ledfxSetMatrixRGB(2, 2, 0, 0, 255);
-    ledfxSetMatrixRGB(6, 3, 0, 255, 255); // xxx
-    ledfxSetMatrixRGB(2, 4, 255, 0, 255);
-
-    ledfxSetMatrixRGB(6, 5, 255, 255, 255);
-    ledfxSetMatrixRGB(6, 6, 255, 255, 255);
-    sLedFlush();
-    while (ENDLESS)
-    {
-        osTaskDelay(100);
-    }
-#endif
-
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
 

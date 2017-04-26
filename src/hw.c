@@ -730,12 +730,18 @@ int32_t hwAdcGetScaled(const HW_ADC_t pin, const int32_t min, const int32_t max)
     uint8_t mux = 0;
     switch (pin)
     {
-        case HW_ADC_A0: mux = 0         | 0         | 0        ; break;
-        case HW_ADC_A1: mux = 0         | 0         | BIT(MUX0); break;
-        case HW_ADC_A2: mux = 0         | BIT(MUX1) | 0        ; break;
-        case HW_ADC_A3: mux = 0         | BIT(MUX1) | BIT(MUX0); break;
-        case HW_ADC_A4: mux = BIT(MUX2) | 0         | 0        ; break;
-        case HW_ADC_A5: mux = BIT(MUX2) | 0         | BIT(MUX0); break;
+        //case HW_ADC_A0:
+        case HW_ADC_PC0: mux = 0         | 0         | 0        ; break;
+        //case HW_ADC_A1:
+        case HW_ADC_PC1: mux = 0         | 0         | BIT(MUX0); break;
+        //case HW_ADC_A2:
+        case HW_ADC_PC2: mux = 0         | BIT(MUX1) | 0        ; break;
+        //case HW_ADC_A3:
+        case HW_ADC_PC3: mux = 0         | BIT(MUX1) | BIT(MUX0); break;
+        //case HW_ADC_A4:
+        case HW_ADC_PC4: mux = BIT(MUX2) | 0         | 0        ; break;
+        //case HW_ADC_A5:
+        case HW_ADC_PC5: mux = BIT(MUX2) | 0         | BIT(MUX0); break;
     }
     ADMUX = (ADMUX & 0xf0) | mux;
 

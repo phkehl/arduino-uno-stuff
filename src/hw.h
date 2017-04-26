@@ -181,12 +181,18 @@ uint16_t hwToc(const uint16_t reg);
 //! ADC input pins
 typedef enum HW_ADC_e
 {
-    HW_ADC_A0 = BIT(0), //!< pin A0 (PC0)
-    HW_ADC_A1 = BIT(1), //!< pin A1 (PC1)
-    HW_ADC_A2 = BIT(2), //!< pin A2 (PC2)
-    HW_ADC_A3 = BIT(3), //!< pin A3 (PC3)
-    HW_ADC_A4 = BIT(4), //!< pin A4 (PC4)
-    HW_ADC_A5 = BIT(5), //!< pin A5 (PC5)
+    HW_ADC_A0  = BIT(0), //!< pin A0 (PC0)
+    HW_ADC_PC0 = BIT(0), //!< pin PC0 (A0)
+    HW_ADC_A1  = BIT(1), //!< pin A1 (PC1)
+    HW_ADC_PC1 = BIT(1), //!< pin PC1 (A1)
+    HW_ADC_A2  = BIT(2), //!< pin A2 (PC2)
+    HW_ADC_PC2 = BIT(2), //!< pin PC2 (A2)
+    HW_ADC_A3  = BIT(3), //!< pin A3 (PC3)
+    HW_ADC_PC3 = BIT(3), //!< pin PC3 (A3)
+    HW_ADC_A4  = BIT(4), //!< pin A4 (PC4)
+    HW_ADC_PC4 = BIT(4), //!< pin PC4 (A4)
+    HW_ADC_A5  = BIT(5), //!< pin A5 (PC5)
+    HW_ADC_PC5 = BIT(5), //!< pin PC5 (A5)
 } HW_ADC_t;
 
 //! initialise ADC hardware and configure pins

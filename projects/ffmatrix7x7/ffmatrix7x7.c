@@ -9,6 +9,7 @@
 */
 
 #include <string.h>        // libc: string operations
+#include <math.h>          // libc: mathematical functions
 
 //#include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
 
@@ -52,6 +53,9 @@ void appInit(void)
     ws2801Init();
     ledfxClear(0, 0);
     sLedFlush();
+
+    // initialise ADC
+    hwAdcInit(HW_ADC_PC3 | HW_ADC_PC4, false);
 }
 
 // starts the user application task
@@ -72,14 +76,14 @@ void appCreateTask(void)
 #define PSU_MAX_MA 2500
 
 // current limiter status
-static uint16_t sAppCurrent;
+static uint16_t sCurrent;
 
 // send data to LEDs
 static /*inline*/ void sLedFlush(void)
 {
     PIN_HIGH(FLUSH_LED_PIN);
 
-    ledfxLimitCurrent(MA_PER_LED, PSU_MAX_MA, &sAppCurrent);
+    ledfxLimitCurrent(MA_PER_LED, PSU_MAX_MA, &sCurrent);
     ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
 
     PIN_LOW(FLUSH_LED_PIN);
@@ -204,6 +208,8 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
   //FXLOOP_INFO("huesweep",   sFxHueSweep,  FXPERIOD, FXDURATION),
 };
 
+static uint8_t sBrightness = 50;
+static uint8_t sSpeed = 50;
 
 // application task
 static void sAppTask(void *pArg)
@@ -217,11 +223,12 @@ static void sAppTask(void *pArg)
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
 
-    ledfxSetBrightness(200);
 
     while (ENDLESS)
     {
         const uint16_t res = fxloopRun(false);
+
+        ledfxSetBrightness(sBrightness);
 
         // update matrix?
         if (res == FLUSH_MATRIX)
@@ -229,8 +236,16 @@ static void sAppTask(void *pArg)
             sLedFlush();
         }
 
+        // read grey pot for brightness, convert to linear reading to exponential brightness
+        const float pot1 = hwAdcGetScaled(HW_ADC_PC4, 1, 55374); // log(254) * 10000
+        sBrightness = (uint8_t)expf(pot1 / 10000); // 1.0..254.01 --> 1..254
+
+        // read black pot, adjust effect speed
+        const int32_t pot2 = hwAdcGetScaled(HW_ADC_PC3, 0, 100); // black
+        sSpeed = (uint8_t)pot2;
+
         // delay until it's time to run the next iteration of the effect
-        fxloopWait();
+        /*const bool willChange = */fxloopWait();
     }
 }
 
@@ -240,7 +255,8 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    const int n = snprintf_P(str, size, PSTR("%"PRIu16"mA "), sAppCurrent);
+    const int n = snprintf_P(str, size, PSTR("%"PRIu16"mA bri=%"PRIu8" spd=%"PRIu8" "),
+        sCurrent, sBrightness, sSpeed);
     fxloopStatus(&str[n], size - n);
     str[size-1] = '\0';
 }

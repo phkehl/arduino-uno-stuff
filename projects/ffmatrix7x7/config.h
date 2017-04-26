@@ -42,6 +42,8 @@
 // SPI master speed
 #define FF_WS2801_SPI_SPEED 1000
 
+#define FF_SYS_MON_PERIOD 1
+
 
 // complete configuration by including the defaults
 #include "defconfig.h"

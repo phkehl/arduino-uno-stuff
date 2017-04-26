@@ -14,6 +14,7 @@
 
     <img src="../../projects/ffmatrix7x7/bottom.jpg" width="50%"/>
 
+    \todo This is the wrong schema. But's it's close.. :-)
     <img src="../../projects/ffmatrix7x7/schematics.png"/>
     [Schematics](../../projects/ffmatrix7x7/schematics.pdf)
 

@@ -420,13 +420,13 @@ static void sTouchMeas(void)
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
   //{ .fxName = "test",      .fxFunc = sFxTest,      .fxPeriod = FXPERIOD, .fxDuration = FXDURATION },
-    FXLOOP_INFO("noise1",    sFxNoise1,    FXPERIOD, FXDURATION),
-    FXLOOP_INFO("noise2",    sFxNoise2,    FXPERIOD, FXDURATION),
-    FXLOOP_INFO("chase",     sFxChase,     FXPERIOD, FXDURATION),
-    FXLOOP_INFO("kaa",       sFxKaa,       FXPERIOD, FXDURATION),
-    FXLOOP_INFO("huenoise1", sFxHueNoise1, FXPERIOD, FXDURATION),
-    FXLOOP_INFO("huenoise2", sFxHueNoise2, FXPERIOD, FXDURATION),
-    FXLOOP_INFO("huefill",   sFxHueFill,   FXPERIOD, FXDURATION),
+    FXLOOP_INFO("noise1",    sFxNoise1,    FXPERIOD, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("noise2",    sFxNoise2,    FXPERIOD, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("chase",     sFxChase,     FXPERIOD, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("kaa",       sFxKaa,       FXPERIOD, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("huenoise1", sFxHueNoise1, FXPERIOD, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("huenoise2", sFxHueNoise2, FXPERIOD, FXPERIOD, FXDURATION),
+    FXLOOP_INFO("huefill",   sFxHueFill,   FXPERIOD, FXPERIOD, FXDURATION),
 };
 
 // current limiter status
@@ -496,7 +496,7 @@ static void sAppTask(void *pArg)
         }
 
         // delay until it's time to run the next iteration of the effect
-        fxloopWait();
+        fxloopWait(50);
 
     } // ENDLESS
 }

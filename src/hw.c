@@ -838,16 +838,19 @@ void hwStatus(char *str, const uint16_t size)
         sHwTxBufSize, sHwTxBufPeak, sizeof(sHwTxBuf), sHwTxBufDrop);
     svHwRxBufPeak = 0;
     sHwTxBufPeak = 0;
+    sHwTxBufDrop = 0;
 #elif (FF_HW_RX_BUFSIZE > 0)
     snprintf_P(str, size,
         PSTR("rxbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         svHwRxBufSize, svHwRxBufPeak, sizeof(svHwRxBuf), svHwRxBufDrop);
     svHwRxBufPeak = 0;
+    svHwRxBufDrop = 0;
 #elif (FF_HW_TX_BUFSIZE > 0)
     snprintf_P(str, size,
         PSTR("txbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         sHwTxBufSize, sHwTxBufPeak, sizeof(sHwTxBuf), sHwTxBufDrop);
     sHwTxBufPeak = 0;
+    sHwTxBufDrop = 0;
 #endif
     str[size-1] = '\0';
 }

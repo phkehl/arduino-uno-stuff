@@ -32,9 +32,9 @@ typedef enum RUN_e
 // effects loop status
 typedef struct STATUS_s
 {
-    RUN_t          loopState;   // current loop state
-    uint8_t             loopIx;      // currently selected effect
-    FXLOOP_FUNC_t  fxFunc;      // currently selected effect function
+    RUN_t                loopState;   // current loop state
+    uint8_t              loopIx;      // currently selected effect
+    FXLOOP_FUNC_t        fxFunc;      // currently selected effect function
     uint32_t             duration;    // how long to play the effect
     uint32_t             runtime;     // how long the effect has been playing
     uint16_t             frame;       // frame counter
@@ -42,15 +42,16 @@ typedef struct STATUS_s
     uint16_t             period;      // refresh period
     uint32_t             msss;
     const FXLOOP_INFO_t *fxInfo;
-    uint8_t             numFx;
+    uint8_t              numFx;
 } STATUS_t;
 
 static STATUS_t sStatus;
 
-#define INFO_NAME(ix)      (/* STFU */const wchar_t *)&sStatus.fxInfo[ix].fxName
-#define INFO_FUNC(ix)      (FXLOOP_FUNC_t)pgm_read_word(&sStatus.fxInfo[ix].fxFunc)
-#define INFO_PERIOD(ix)    (uint32_t)pgm_read_word(&sStatus.fxInfo[ix].fxPeriod)
-#define INFO_DURATION(ix)  (uint32_t)pgm_read_dword(&sStatus.fxInfo[ix].fxDuration)
+#define INFO_NAME(ix)       (/* STFU */const wchar_t *)&sStatus.fxInfo[ix].fxName
+#define INFO_FUNC(ix)       (FXLOOP_FUNC_t)pgm_read_word(&sStatus.fxInfo[ix].fxFunc)
+#define INFO_PERIOD_MIN(ix) (uint32_t)pgm_read_word(&sStatus.fxInfo[ix].fxPeriodMin)
+#define INFO_PERIOD_MAX(ix) (uint32_t)pgm_read_word(&sStatus.fxInfo[ix].fxPeriodMax)
+#define INFO_DURATION(ix)   (uint32_t)pgm_read_dword(&sStatus.fxInfo[ix].fxDuration)
 
 void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const bool verbose)
 {
@@ -67,10 +68,12 @@ void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const boo
         // print the effects that available
         for (uint8_t ix = 0; ix < sStatus.numFx; ix++)
         {
-            const uint16_t period = INFO_PERIOD(ix);
-            const uint8_t hz = period ? 1000 / period : 0;
-            PRINT_F("fxloop: %2"PRIu16" %-16S %5"PRIu32"ms @ %3"PRIu16"ms/%2"PRIu8"Hz",
-                ix + 1, INFO_NAME(ix), INFO_DURATION(ix), period, hz);
+            const uint16_t periodMin = INFO_PERIOD_MIN(ix);
+            const uint16_t periodMax = INFO_PERIOD_MAX(ix);
+            const uint8_t hzMin = periodMin ? 1000 / periodMin : 0;
+            const uint8_t hzMax = periodMax ? 1000 / periodMax : 0;
+            PRINT_F("fxloop: %2"PRIu16" %-16S %5"PRIu32"ms @ %3"PRIu16"ms/%2"PRIu8"Hz .. %3"PRIu16"ms/%2"PRIu8"Hz",
+                ix + 1, INFO_NAME(ix), INFO_DURATION(ix), periodMin, hzMin, periodMax, hzMax);
         }
     }
 }
@@ -143,14 +146,19 @@ uint16_t fxloopRun(const bool forceNext)
 }
 
 
-bool fxloopWait(void)
+bool fxloopWait(uint8_t speed)
 {
     // delay to achieve desired update period (refresh rate)
     if (sStatus.loopState != RUN_NEXT)
     {
         // target refresh rate (period in [ms])
-        const uint16_t period = INFO_PERIOD(sStatus.loopIx);
+        const uint16_t periodMin = INFO_PERIOD_MIN(sStatus.loopIx);
+        const uint16_t periodMax = INFO_PERIOD_MAX(sStatus.loopIx);
+        const uint16_t speed16 = CLIP(speed, 0, 100);
+        const uint16_t period = (speed16 * (periodMax - periodMin) / (uint16_t)100) + periodMin;
         sStatus.period = period;
+        //DEBUG("speed %"PRIu8" %"PRIu16" %"PRIu16" %"PRIu16" %"PRIu16,
+        //    speed, speed16, periodMin, periodMax, period);
 
         // delay until next frame
         osTaskDelayUntil(&sStatus.msss, period);

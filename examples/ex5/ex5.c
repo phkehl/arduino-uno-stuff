@@ -99,9 +99,9 @@ static uint16_t sFxloopFunc3(const uint16_t frame)
 
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
-    FXLOOP_INFO("123456789012345", sFxloopFunc1, 250, 3000),
-    FXLOOP_INFO("func2", sFxloopFunc2, 250, 3000),
-    FXLOOP_INFO("func3", sFxloopFunc3, 250, 3000),
+    FXLOOP_INFO("func1func1func1", sFxloopFunc1, 250, 500, 3000),
+    FXLOOP_INFO("func2",           sFxloopFunc2, 250, 250, 3000),
+    FXLOOP_INFO("func3",           sFxloopFunc3, 250, 750, 3000),
 };
 
 static uint32_t sAppCnt;
@@ -130,7 +130,7 @@ static void sAppTask(void *pArg)
         }
 
         // delay until it's time to run the next iteration of the effect
-        const bool fxWillChange = fxloopWait();
+        const bool fxWillChange = fxloopWait(50); // play at 50% speed
 
         if (fxWillChange)
         {

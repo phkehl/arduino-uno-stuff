@@ -35,10 +35,11 @@ typedef uint16_t (*FXLOOP_FUNC_t)(const uint16_t frame);
 //! effect info (use FXLOOP_INFO() macro to initialise)
 typedef struct FXLOOP_INFO_s
 {
-    char            fxName[16];  //!< effect name
+    char          fxName[16];  //!< effect name
     FXLOOP_FUNC_t fxFunc;      //!< effect function
-    uint16_t            fxPeriod;    //!< update period (= 1 / refresh rate) [ms], how often to call the \c fxFunc
-    uint32_t            fxDuration;  //!< how long to play the effect [ms]
+    uint16_t      fxPeriodMin; //!< update period (= 1 / refresh rate) minimum [ms], how often to call the \c fxFunc
+    uint16_t      fxPeriodMax; //!< update period (= 1 / refresh rate) maximum [ms], how often to call the \c fxFunc
+    uint32_t      fxDuration;  //!< how long to play the effect [ms]
 } FXLOOP_INFO_t;
 
 //! create an effect info (#FXLOOP_INFO_t) entry \hideinitializer
@@ -48,8 +49,8 @@ typedef struct FXLOOP_INFO_s
     \param[in] period    update period of the effect [ms]
     \param[in] duration  duration of the effect [ms]
 */
-#define FXLOOP_INFO(name, func, period, duration) \
-    { .fxName = name "\0", .fxFunc = (func), .fxPeriod = (period), .fxDuration = (duration) }
+#define FXLOOP_INFO(name, func, min, max, duration) \
+    { .fxName = name "\0", .fxFunc = (func), .fxPeriodMin = (min), .fxPeriodMax = (max), .fxDuration = (duration) }
 
 //! fxloopRun() special meaning return value
 #define FXLOOP_NEXT 0xffff
@@ -74,9 +75,10 @@ uint16_t fxloopRun(const bool forceNext);
 
 //! wait until it's time for the next call to fxloopRun()
 /*!
+    \param[in]  speed  speed (0..100%) scaling of the min/max duration specified in #FXLOOP_INFO_t
     \returns true if the effect will change with the next call to fxloopInit()
 */
-bool fxloopWait(void);
+bool fxloopWait(uint8_t speed);
 
 //! get effects loop status
 /*!

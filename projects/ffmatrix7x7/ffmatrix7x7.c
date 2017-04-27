@@ -186,24 +186,23 @@ static uint16_t sFxDiagonal(const uint16_t frame)
 
 
 #define FXDURATION (uint32_t)60000
-#define FXPERIOD   50
 
 // TODO: fix duration
 
 // the effects
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
-  //FXLOOP_INFO("noise 1",    sFxNoise1,    FXPERIOD, 10000),
-    FXLOOP_INFO("diagonal",   sFxDiagonal,  FXPERIOD, FXDURATION), // 10..250
-    FXLOOP_INFO("noise 2",    sFxNoise2,    FXPERIOD, FXDURATION),
-    FXLOOP_INFO("rotor",      sFxRotor,     FXPERIOD, FXDURATION), // 10..250, frame 7-10ms
-    FXLOOP_INFO("plasma",     sFxPlasma,    FXPERIOD, FXDURATION), // 50..250, frame ~50ms
-    FXLOOP_INFO("kaa's eye",  sFxKaasEye,   FXPERIOD, FXDURATION), // 15..150
-    FXLOOP_INFO("rain",       sFxRain,      FXPERIOD, FXDURATION), // 30..250
-    FXLOOP_INFO("rainbow",    sFxRainbow,   FXPERIOD, FXDURATION), // 15..250
-    FXLOOP_INFO("stars",      sFxStars,     FXPERIOD, FXDURATION), // 5..250
-    FXLOOP_INFO("hue noise",  sFxHueNoise,  FXPERIOD, FXDURATION), // 30..250
-    FXLOOP_INFO("waves",      sFxWaves,     FXPERIOD, FXDURATION), // 50..250
+  //FXLOOP_INFO("noise 1",    sFxNoise1,    10, 100, 10000),
+    FXLOOP_INFO("diagonal",   sFxDiagonal,  10, 250, FXDURATION), // 10..250
+    FXLOOP_INFO("noise 2",    sFxNoise2,    10, 100, FXDURATION),
+    FXLOOP_INFO("rotor",      sFxRotor,     10, 250, FXDURATION), // 10..250, frame 7-10ms
+    FXLOOP_INFO("plasma",     sFxPlasma,    50, 250, FXDURATION), // 50..250, frame ~50ms
+    FXLOOP_INFO("kaa's eye",  sFxKaasEye,   15, 150, FXDURATION), // 15..150
+    FXLOOP_INFO("rain",       sFxRain,      30, 250, FXDURATION), // 30..250
+    FXLOOP_INFO("rainbow",    sFxRainbow,   15, 250, FXDURATION), // 15..250
+    FXLOOP_INFO("stars",      sFxStars,      5, 250, FXDURATION), // 5..250
+    FXLOOP_INFO("hue noise",  sFxHueNoise,  30, 250, FXDURATION), // 30..250
+    FXLOOP_INFO("waves",      sFxWaves,     50, 250, FXDURATION), // 50..250
   //FXLOOP_INFO("strobo",     sFxStrobo,    FXPERIOD, 60000),
   //FXLOOP_INFO("huesweep",   sFxHueSweep,  FXPERIOD, FXDURATION),
 };
@@ -241,11 +240,11 @@ static void sAppTask(void *pArg)
         sBrightness = (uint8_t)expf(pot1 / 10000); // 1.0..254.01 --> 1..254
 
         // read black pot, adjust effect speed
-        const int32_t pot2 = hwAdcGetScaled(HW_ADC_PC3, 0, 100); // black
+        const int32_t pot2 = hwAdcGetScaled(HW_ADC_PC3, 100, 0); // black
         sSpeed = (uint8_t)pot2;
 
         // delay until it's time to run the next iteration of the effect
-        /*const bool willChange = */fxloopWait();
+        /*const bool willChange = */fxloopWait(sSpeed);
     }
 }
 

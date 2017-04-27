@@ -405,7 +405,7 @@ void ledfxPlasma(const bool init, float *r0)
         //            ) / 2;
         //    }
         //}
-        DEBUG("ledfxPlasma() init %"PRIu32, hwToc(0)); // 15ms
+        //DEBUG("ledfxPlasma() init %"PRIu32, hwToc(0)); // 15ms
     }
 
     hwTic(0);
@@ -426,7 +426,7 @@ void ledfxPlasma(const bool init, float *r0)
     (*r0) -= 0.25; // smooth (the original code used -= 1)
     // AVR: ~45ms
     // ~250ms --> ~55ms
-    DEBUG("ledfxPlasma() render %"PRIu16, hwToc(0));
+    //DEBUG("ledfxPlasma() render %"PRIu16, hwToc(0));
 }
 
 void ledfxRainbow(const bool init, const uint16_t ix0, const uint16_t ix1, uint8_t *r0)
@@ -554,8 +554,7 @@ void ledfxRotor(const bool init, float *r0, float *r1)
             ledfxSetMatrixHSV(x, y, hue, sat, val);
         }
     }
-    DEBUG("ledfxRotor() render %"PRIu16, hwToc(0));
-
+    //DEBUG("ledfxRotor() render %"PRIu16, hwToc(0));
 }
 
 void ledfxDiagonal(const bool init, uint8_t *r0)
@@ -721,8 +720,8 @@ void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars)
         pStar->valMax = vBase + ((rand >> 16) % vBase);
         pStar->val    = 1;
 
-        DEBUG("ledfxStars() create %02"PRIu16": ix=%03"PRIu16" hue=%03"PRIu8" val=%03"PRIu8" valMax=%03"PRIu8" speed=%03"PRIi8,
-            starIx, pStar->ix, pStar->hue, pStar->val, pStar->valMax, pStar->speed);
+        //DEBUG("ledfxStars() create %02"PRIu16": ix=%03"PRIu16" hue=%03"PRIu8" val=%03"PRIu8" valMax=%03"PRIu8" speed=%03"PRIi8,
+        //    starIx, pStar->ix, pStar->hue, pStar->val, pStar->valMax, pStar->speed);
 
         break; // create one per iteration
     }

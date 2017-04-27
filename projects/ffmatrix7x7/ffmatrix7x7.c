@@ -193,16 +193,16 @@ static uint16_t sFxDiagonal(const uint16_t frame)
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
   //FXLOOP_INFO("noise 1",    sFxNoise1,    10, 100, 10000),
-    FXLOOP_INFO("diagonal",   sFxDiagonal,  10, 250, FXDURATION), // 10..250
+    FXLOOP_INFO("diagonal",   sFxDiagonal,  10, 250, FXDURATION),
     FXLOOP_INFO("noise 2",    sFxNoise2,    10, 100, FXDURATION),
-    FXLOOP_INFO("rotor",      sFxRotor,     10, 250, FXDURATION), // 10..250, frame 7-10ms
-    FXLOOP_INFO("plasma",     sFxPlasma,    50, 250, FXDURATION), // 50..250, frame ~50ms
-    FXLOOP_INFO("kaa's eye",  sFxKaasEye,   15, 150, FXDURATION), // 15..150
-    FXLOOP_INFO("rain",       sFxRain,      30, 250, FXDURATION), // 30..250
-    FXLOOP_INFO("rainbow",    sFxRainbow,   15, 250, FXDURATION), // 15..250
-    FXLOOP_INFO("stars",      sFxStars,      5, 250, FXDURATION), // 5..250
-    FXLOOP_INFO("hue noise",  sFxHueNoise,  30, 250, FXDURATION), // 30..250
-    FXLOOP_INFO("waves",      sFxWaves,     50, 250, FXDURATION), // 50..250
+    FXLOOP_INFO("rotor",      sFxRotor,     10, 250, FXDURATION), // frame 7-10ms
+    FXLOOP_INFO("plasma",     sFxPlasma,    50, 250, FXDURATION), // frame ~50ms
+    FXLOOP_INFO("kaa's eye",  sFxKaasEye,   15, 150, FXDURATION),
+    FXLOOP_INFO("rain",       sFxRain,      30, 250, FXDURATION),
+    FXLOOP_INFO("rainbow",    sFxRainbow,   15, 250, FXDURATION),
+    FXLOOP_INFO("stars",      sFxStars,      5, 250, FXDURATION),
+    FXLOOP_INFO("hue noise",  sFxHueNoise,  30, 250, FXDURATION),
+    FXLOOP_INFO("waves",      sFxWaves,     50, 250, FXDURATION),
   //FXLOOP_INFO("strobo",     sFxStrobo,    FXPERIOD, 60000),
   //FXLOOP_INFO("huesweep",   sFxHueSweep,  FXPERIOD, FXDURATION),
 };

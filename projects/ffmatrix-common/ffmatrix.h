@@ -12,6 +12,8 @@
 
     See ffmatrix.c source code and https://oinkzwurgl.org/projaeggd/flipflipmatrix for details.
 
+    \todo port Linux LED matrix simulator from old repo/code
+
     @{
 */
 

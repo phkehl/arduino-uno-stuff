@@ -75,8 +75,6 @@ uint16_t fxloopRun(const bool forceNext)
     // bring up next effect?
     if ( forceNext || (sStatus.runtime >= sStatus.duration) )
     {
-        DEBUG("fxloopRun() next");
-
         // find next effect
         sStatus.loopIx++;
         sStatus.loopIx %= sStatus.numFx;

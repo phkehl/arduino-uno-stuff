@@ -239,6 +239,8 @@ static OS_SEMAPHORE_t sHwRxReadySem;
 */
 static char sHwInputGetChar(FILE *pFile)
 {
+    UNUSED(pFile);
+
     // wait until character is available
     while (svHwRxBufSize == 0)
     {
@@ -331,7 +333,7 @@ static void sHwRxInit(void)
 }
 
 #else
-inline uint8_t hwGetRxBufSize(const uint32_t timeout) { return 0; }
+inline uint8_t hwGetRxBufSize(const uint32_t timeout) { UNUSED(timeout); return 0; }
 char hwReadNextChar(void) { return '\0'; }
 static void sHwRxInit(void) { }
 #endif // (FF_HW_RX_BUFSIZE > 0)

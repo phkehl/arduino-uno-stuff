@@ -505,7 +505,7 @@ bool osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const int32_t timeout)
 }
 
 
-bool osQueueReceive(OS_QUEUE_t *pQueue, void *pItem, const int32_t timeout, void *pMsg)
+bool osQueueReceive(OS_QUEUE_t *pQueue, const int32_t timeout, void *pMsg)
 {
     const uint8_t res = atomQueueGet((ATOM_QUEUE *)pQueue, timeout, pMsg);
     if (res == ATOM_OK)

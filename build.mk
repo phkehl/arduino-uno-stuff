@@ -177,7 +177,7 @@ CFLAGS      += -mmcu=$(MCU) -g3 -O1
 CFLAGS      += -pipe -std=gnu99 #--param max-inline-insns-single=500
 CFLAGS      += -Wall -Wpadded -Wextra -Wstrict-prototypes # -Werror -Wpedantic
 CFLAGS      += -fno-common -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums
-CFLAGS      += -Wunused -Wno-unused-parameter -Wwrite-strings # -Wold-style-definitions
+CFLAGS      += -Wunused -Wunused-parameter -Wwrite-strings # -Wold-style-definitions
 CFLAGS      += -Wnested-externs -Wformat=2 -Wunused-result # -Wredundant-decls
 CFLAGS      += -ffunction-sections -Wjump-misses-init -Wlogical-op
 CFLAGS      += -fno-strict-aliasing -fdata-sections -Wunused-variable

@@ -172,6 +172,9 @@ static void thread_shell (void)
  */
 void archThreadContextInit (ATOM_TCB *tcb_ptr, void *stack_top, void (*entry_point)(uint32_t), uint32_t entry_param)
 {
+    (void)entry_point; // unused
+    (void)entry_param; // unused
+
     uint8_t *stack_ptr;
 
     /** Start at stack top */

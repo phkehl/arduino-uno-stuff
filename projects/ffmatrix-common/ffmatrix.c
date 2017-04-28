@@ -186,7 +186,7 @@ static uint16_t sFxDiagonal(const uint16_t frame)
 
 /* ***** application task **************************************************** */
 
-#define FXDURATION (uint32_t)60000
+#define FXDURATION (uint32_t)120000
 
 // the effects
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
@@ -205,6 +205,8 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
   //FXLOOP_INFO("strobo",     sFxStrobo,    FXPERIOD, FXDURATION),
   //FXLOOP_INFO("huesweep",   sFxHueSweep,  FXPERIOD, FXDURATION),
 };
+
+#define TRANSTIME 750
 
 static uint8_t sBrightness = 50;
 static uint8_t sSpeed = 50;
@@ -235,7 +237,7 @@ static void sAppTask(void *pArg)
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
 
-    int8_t doTransition = 0;
+    int8_t doTransition = FF_LEDFX_NUM_Y;
 
     while (ENDLESS)
     {
@@ -271,7 +273,7 @@ static void sAppTask(void *pArg)
             }
         }
 
-        // do transition?
+        // do transition on effect end
         if (doTransition < 0)
         {
             uint16_t y = FF_LEDFX_NUM_Y;
@@ -283,9 +285,9 @@ static void sAppTask(void *pArg)
                     ledfxSetMatrixRGB(x, y, 0, 0, 0);
                 }
                 sLedFlush();
-                osTaskDelay(750 / FF_LEDFX_NUM_Y);
+                osTaskDelay(TRANSTIME / FF_LEDFX_NUM_Y);
             }
-            doTransition = 0;
+            doTransition = FF_LEDFX_NUM_Y;
         }
 
 
@@ -295,6 +297,21 @@ static void sAppTask(void *pArg)
         // update matrix?
         if (res == FLUSH_MATRIX)
         {
+            // do transition on effect start
+            // FIXME: make this last TRANSTIME [ms]
+            if (doTransition > 0)
+            {
+                uint16_t y = doTransition--;
+                while (y--)
+                {
+                    uint16_t x = FF_LEDFX_NUM_X;
+                    while (x--)
+                    {
+                        ledfxSetMatrixRGB(x, FF_LEDFX_NUM_Y - y, 0, 0, 0);
+                    }
+                }
+            }
+
             ledfxSetBrightness(sBrightness);
             sLedFlush();
         }

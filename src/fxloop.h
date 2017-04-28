@@ -71,7 +71,8 @@ uint16_t fxloopRun(const bool forceNext);
 
 //! wait until it's time for the next call to fxloopRun()
 /*!
-    \param[in]  speed  speed (0..100%) scaling of the min/max duration specified in #FXLOOP_INFO_t
+    \param[in]  speed  speed (0..100%, meaning slow..fast) by scaling of the min/max (fast/slow)
+                       duration specified in #FXLOOP_INFO_t
     \returns true if the effect will change with the next call to fxloopInit()
 */
 bool fxloopWait(uint8_t speed);

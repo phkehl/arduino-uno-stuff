@@ -112,7 +112,7 @@ bool fxloopWait(uint8_t speed)
     // target refresh rate (period in [ms])
     const uint16_t periodMin = INFO_PERIOD_MIN(sStatus.loopIx);
     const uint16_t periodMax = INFO_PERIOD_MAX(sStatus.loopIx);
-    const uint16_t speed16 = CLIP(speed, 0, 100);
+    const uint16_t speed16 = 100 - CLIP(speed, 0, 100);
     const uint16_t period = (speed16 * (periodMax - periodMin) / (uint16_t)100) + periodMin;
     sStatus.period = period;
     //DEBUG("speed %"PRIu8" %"PRIu16" %"PRIu16" %"PRIu16" %"PRIu16,

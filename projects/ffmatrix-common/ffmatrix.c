@@ -359,7 +359,7 @@ static void sAppTask(void *pArg)
         sBrightness = (uint8_t)expf(pot1 / 10000); // 1.0..254.01 --> 1..254
 
         // read black pot, adjust effect speed
-        const int32_t pot2 = hwAdcGetScaled(FFMATRIX_SPEED_POT, 100, 0); // black
+        const int32_t pot2 = hwAdcGetScaled(FFMATRIX_SPEED_POT, 0, 100); // black
         sSpeed = (uint8_t)pot2;
 
         // delay until it's time to run the next iteration of the effect

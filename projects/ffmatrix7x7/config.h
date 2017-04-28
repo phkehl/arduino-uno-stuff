@@ -20,15 +20,20 @@
 #define FFMATRIX_BRIGHT_POT HW_ADC_PC4  // potentiometer to change brightness
 #define FFMATRIX_MA_PER_LED 60          // [mA] per LED if fully lit
 #define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
+#define FFMATRIX_MODE_PIN_0 _PB0        // mode display 1st pin (LED), LSB
+#define FFMATRIX_MODE_PIN_1 _PD5        // mode display 2nd pin (LED)
+#define FFMATRIX_MODE_PIN_2 _PD6        // mode display 3rd pin (LED)
+#define FFMATRIX_MODE_PIN_3 _PD7        // mode display 4th pin (LED), MSB
+
 
 // idle thread stack size
 #define FF_OS_IDLE_STACK_SIZE 85
 
 // LED for the system load and status
-#define FF_HW_LOAD_PIN PD4
+#define FF_HW_LOAD_PIN _PD4
 
 // system tick signal
-#define FF_HW_TICK_PIN PD3
+#define FF_HW_TICK_PIN _PD3
 
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0

@@ -22,10 +22,10 @@
 #define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
 
 // LED for the system load and status
-#define FF_HW_LOAD_PIN PD3
+#define FF_HW_LOAD_PIN _PD3
 
 // system tick signal
-#define FF_HW_TICK_PIN PD4
+#define FF_HW_TICK_PIN _PD4
 
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0

@@ -62,6 +62,24 @@ void appInit(void)
     //CLRBITS(EICRA, BIT(ISC01) | BIT(ISC00)); // low-level triggers interrupt
     SETBITS(EIMSK, BIT(INT0));  // enable INT0 interrupt
 
+    // mode display (binary display of a couple of LEDs to indicate the effect number playing)
+#ifdef FFMATRIX_MODE_PIN_0
+    PIN_OUTPUT(FFMATRIX_MODE_PIN_0);
+    PIN_LOW(FFMATRIX_MODE_PIN_0);
+#endif
+#ifdef FFMATRIX_MODE_PIN_1
+    PIN_OUTPUT(FFMATRIX_MODE_PIN_1);
+    PIN_LOW(FFMATRIX_MODE_PIN_1);
+#endif
+#ifdef FFMATRIX_MODE_PIN_2
+    PIN_OUTPUT(FFMATRIX_MODE_PIN_2);
+    PIN_LOW(FFMATRIX_MODE_PIN_2);
+#endif
+#ifdef FFMATRIX_MODE_PIN_3
+    PIN_OUTPUT(FFMATRIX_MODE_PIN_3);
+    PIN_LOW(FFMATRIX_MODE_PIN_3);
+#endif
+
     // initialise ADC
     hwAdcInit(FFMATRIX_SPEED_POT | FFMATRIX_BRIGHT_POT, false);
 }
@@ -225,6 +243,24 @@ ISR(INT0_vect) // external interrupt 0
     osIsrLeave();
 }
 
+static void sSetModeDisplay(const uint8_t mode)
+{
+#ifdef FFMATRIX_MODE_PIN_3
+    PIN_SET(FFMATRIX_MODE_PIN_3, mode & BIT(3));
+#endif
+#ifdef FFMATRIX_MODE_PIN_2
+    PIN_SET(FFMATRIX_MODE_PIN_2, mode & BIT(2));
+#endif
+#ifdef FFMATRIX_MODE_PIN_1
+    PIN_SET(FFMATRIX_MODE_PIN_1, mode & BIT(1));
+#endif
+#ifdef FFMATRIX_MODE_PIN_0
+    PIN_SET(FFMATRIX_MODE_PIN_0, mode & BIT(0));
+#else
+    UNUSED(mode);
+#endif
+}
+
 // application task
 static void sAppTask(void *pArg)
 {
@@ -301,6 +337,7 @@ static void sAppTask(void *pArg)
             // FIXME: make this last TRANSTIME [ms]
             if (doTransition > 0)
             {
+                sSetModeDisplay( fxloopCurrentlyPlaying() );
                 uint16_t y = doTransition--;
                 while (y--)
                 {

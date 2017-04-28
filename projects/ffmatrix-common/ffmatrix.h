@@ -8,7 +8,8 @@
     \ingroup PROJECTS
 
     <img src="../../projects/ffmatrix-common/schematics.png"/>
-    [Schematics](../../projects/ffmatrix-common/schematics.pdf)
+
+    - [schematics.pdf](../../projects/ffmatrix-common/schematics.pdf)
 
     See ffmatrix.c source code and https://oinkzwurgl.org/projaeggd/flipflipmatrix for details.
 

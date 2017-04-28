@@ -14,18 +14,18 @@
 /* *************************************************************************** */
 
 // ../common/ffmatrix.c configuration
-#define FFMATRIX_MODEL      77
+#define FFMATRIX_MODEL      58
 #define FFMATRIX_FLUSH_LED  _PC5        // LED lit while data is written to the LED strip
-#define FFMATRIX_SPEED_POT  HW_ADC_PC3  // potentiometer to change speed
-#define FFMATRIX_BRIGHT_POT HW_ADC_PC4  // potentiometer to change brightness
+#define FFMATRIX_SPEED_POT  HW_ADC_PC2  // potentiometer to change speed
+#define FFMATRIX_BRIGHT_POT HW_ADC_PC3  // potentiometer to change brightness
 #define FFMATRIX_MA_PER_LED 60          // [mA] per LED if fully lit
 #define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
 
 // LED for the system load and status
-#define FF_HW_LOAD_PIN PD4
+#define FF_HW_LOAD_PIN PD3
 
 // system tick signal
-#define FF_HW_TICK_PIN PD3
+#define FF_HW_TICK_PIN PD4
 
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0
@@ -34,17 +34,17 @@
 #define FF_HSV2RGB_METHOD 2
 
 // matrix dimension
-#define FF_LEDFX_NUM_X 7
-#define FF_LEDFX_NUM_Y 7
+#define FF_LEDFX_NUM_X 5
+#define FF_LEDFX_NUM_Y 8
 
 // we have this many LEDs
 #define FF_LEDFX_NUM_LED ((FF_LEDFX_NUM_X) * (FF_LEDFX_NUM_Y))
 
 // LED matrix arrangement
-#define FF_LEDFX_XY_ARR 1
+#define FF_LEDFX_XY_ARR 3
 
 // BRG colour ordering
-#define FF_LEDFX_ORDER 312
+#define FF_LEDFX_ORDER 123
 
 // SPI master speed
 #define FF_WS2801_SPI_SPEED 1000

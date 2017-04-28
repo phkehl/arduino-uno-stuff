@@ -69,7 +69,7 @@ void appInit(void)
 // starts the user application task
 void appCreateTask(void)
 {
-    static uint8_t stack[250];
+    static uint8_t stack[350];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -235,6 +235,8 @@ static void sAppTask(void *pArg)
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
 
+    int8_t doTransition = 0;
+
     while (ENDLESS)
     {
         // button pressed? again?
@@ -262,14 +264,33 @@ static void sAppTask(void *pArg)
                 {
                     // move effect loop to next effect (but don't play it yet)
                     fxloopRun(true);
+                    doTransition = -1;
                     break;
                 }
                 osTaskDelay(50);
             }
         }
 
+        // do transition?
+        if (doTransition < 0)
+        {
+            uint16_t y = FF_LEDFX_NUM_Y;
+            while (y--)
+            {
+                uint16_t x = FF_LEDFX_NUM_X;
+                while (x--)
+                {
+                    ledfxSetMatrixRGB(x, y, 0, 0, 0);
+                }
+                sLedFlush();
+                osTaskDelay(750 / FF_LEDFX_NUM_Y);
+            }
+            doTransition = 0;
+        }
+
+
         // render next frame
-        const uint16_t res = fxloopRun(svButtonPressed);
+        const uint16_t res = fxloopRun(false);
 
         // update matrix?
         if (res == FLUSH_MATRIX)
@@ -288,7 +309,10 @@ static void sAppTask(void *pArg)
         sSpeed = (uint8_t)pot2;
 
         // delay until it's time to run the next iteration of the effect
-        /*const bool willChange = */fxloopWait(sSpeed);
+        if ( fxloopWait(sSpeed) )
+        {
+            doTransition = -1;
+        }
     }
 }
 

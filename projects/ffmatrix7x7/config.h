@@ -13,6 +13,13 @@
 
 /* *************************************************************************** */
 
+// ../common/ffmatrix.c configuration
+#define FFMATRIX_MODEL      77
+#define FFMATRIX_FLUSH_LED  _PC5        // LED lit while data is written to the LED strip
+#define FFMATRIX_SPEED_POT  HW_ADC_PC3  // potentiometer to change speed
+#define FFMATRIX_BRIGHT_POT HW_ADC_PC4  // potentiometer to change brightness
+#define FFMATRIX_MA_PER_LED 60          // [mA] per LED if fully lit
+#define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
 
 // LED for the system load and status
 #define FF_HW_LOAD_PIN PD4

@@ -242,8 +242,8 @@ OFILES      +=
 # makes compile rule for .c files
 define avrMakeCompileRuleC
 #$ (info avrMakeCompileRuleC $(1) --> $(OBJDIR)/$(subst /,__,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1)))))
-OFILES += $(OBJDIR)/$(subst /,__,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1))))
-$(OBJDIR)/$(subst /,__,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1)))): $(1) $(MAKEFILE_LIST)
+OFILES += $(OBJDIR)/$(subst /,__,$(subst ..,,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1)))))
+$(OBJDIR)/$(subst /,__,$(subst ../,__,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1))))): $(1) $(MAKEFILE_LIST)
 	@echo "$(HLY)C $$< $(HLR)$$@$(HLO)"
 	$(V)$(CC) -c -o $$@ $$(CFLAGS) $(DEFS) $(INCFLAGS) $$< -MD -MF $$(@:%.o=%.d) -MT $$@ -Wa,-adhlns=$$(@:.o=.lst)
 	$(V)if [ "$(SIZES)" -ge 2 ]; then $(SIZE) -B $$@; fi

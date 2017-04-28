@@ -14,32 +14,27 @@
 
     <img src="../../projects/ffmatrix7x7/bottom.jpg" width="50%"/>
 
-    \todo This is the wrong schema. But's it's close.. :-)
-    <img src="../../projects/ffmatrix7x7/schematics.png"/>
-    [Schematics](../../projects/ffmatrix7x7/schematics.pdf)
-
-    See ffmatrix7x7.c source code and https://oinkzwurgl.org/projaeggd/flipflipmatrix for details.
+    See \ref PROJECTS_FFMATRIX_COMMON and https://oinkzwurgl.org/projaeggd/flipflipmatrix for details.
 
     @{
 */
 
-#ifndef __FFMATRIX7X7_H__
-#define __FFMATRIX7X7_H__
+//#ifndef __FFMATRIX7X7_H__
+//#define __FFMATRIX7X7_H__
 
-
-#include "stdstuff.h"      // ff: useful macros and types
-
-
-/* *************************************************************************** */
-
-
-void appInit(void);
-
-void appCreateTask(void);
+//#include "stdstuff.h"      // ff: useful macros and types
 
 
 /* *************************************************************************** */
 
-#endif // __FFMATRIX7X7_H__
+
+//void appInit(void);
+
+//void appCreateTask(void);
+
+
+/* *************************************************************************** */
+
+//#endif // __FFMATRIX7X7_H__
 // @}
 // eof

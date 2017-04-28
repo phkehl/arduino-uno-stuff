@@ -1,4 +1,4 @@
-EXAMPLES := $(sort $(subst /,,$(dir $(wildcard */*.c))))
+EXAMPLES := $(sort $(subst /,,$(dir $(wildcard */Makefile))))
 
 .PHONY: all
 all: $(addsuffix -img,$(EXAMPLES))

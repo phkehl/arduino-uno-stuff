@@ -55,6 +55,8 @@ PIN_HIGH(_LED_PIN);
 #define PIN_LOW(pin)        CLRBITS( PIN_TO_PORT(pin), PIN_TO_MASK(pin) )
 //! toggle output pin state \hideinitializer
 #define PIN_TOGGLE(pin)     TOGBITS( PIN_TO_PORT(pin), PIN_TO_MASK(pin) )
+//! set pin state \hideinitializer
+#define PIN_SET(pin, state) if (state) { PIN_HIGH(pin); } else { PIN_LOW(pin); }
 //! configure pin for input \hideinitializer
 #define PIN_INPUT(pin)      CLRBITS( PIN_TO_DDR(pin), PIN_TO_MASK(pin) )
 //! enable pull-up on input pin \hideinitializer

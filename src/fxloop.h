@@ -46,7 +46,8 @@ typedef struct FXLOOP_INFO_s
 /*!
     \param[in] name      the name of the effect (a string, e.g. \c "foobar")
     \param[in] func      the effect function (of type #FXLOOP_FUNC_t)
-    \param[in] period    update period of the effect [ms]
+    \param[in] min       minimal update period of the effect [ms]
+    \param[in] max       maximal update period of the effect [ms]
     \param[in] duration  duration of the effect [ms]
 */
 #define FXLOOP_INFO(name, func, min, max, duration) \

@@ -27,7 +27,7 @@
 
 //! effect function signature
 /*!
-    \param[in] frame  the frame number to render (0 is the first frame)
+    \param[in] frame  the frame number to render (0 is the first frame, frames are skipped if a previous takes too long)
     \returns user return value, passed through to application via fxloopRun()
 */
 typedef uint16_t (*FXLOOP_FUNC_t)(const uint16_t frame);
@@ -53,9 +53,6 @@ typedef struct FXLOOP_INFO_s
 #define FXLOOP_INFO(name, func, min, max, duration) \
     { .fxName = name "\0", .fxFunc = (func), .fxPeriodMin = (min), .fxPeriodMax = (max), .fxDuration = (duration) }
 
-//! fxloopRun() special meaning return value
-#define FXLOOP_NEXT 0xffff
-
 //! initialise effects loop
 /*!
     \param[in] pkFxInfo  list of effects
@@ -64,13 +61,11 @@ typedef struct FXLOOP_INFO_s
 */
 void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const bool verbose);
 
-//! run effect
+//! run effect (render next frame)
 /*!
-    \param[in] forceNext  force transition to next effect
-                          (after running the current effect one last time)
+    \param[in] forceNext  force transition to next effect and return immediately
 
-    \returns the return value of the effect function (#FXLOOP_FUNC_t),
-        or #FXLOOP_NEXT if in transition to next effect
+    \returns the return value of the effect function (#FXLOOP_FUNC_t)
 */
 uint16_t fxloopRun(const bool forceNext);
 
@@ -80,6 +75,12 @@ uint16_t fxloopRun(const bool forceNext);
     \returns true if the effect will change with the next call to fxloopInit()
 */
 bool fxloopWait(uint8_t speed);
+
+//! get currently playing effect
+/*!
+    \returns the number of the playing effect (= index into effect list + 1)
+*/
+uint8_t fxloopCurrentlyPlaying(void);
 
 //! get effects loop status
 /*!

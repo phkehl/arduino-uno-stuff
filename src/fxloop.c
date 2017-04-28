@@ -21,18 +21,9 @@
 
 /* ************************************************************************** */
 
-// loop state
-typedef enum RUN_e
-{
-    RUN_INIT,        // initialise effect
-    RUN_PLAY,        // play effect
-    RUN_NEXT,        // select next effect to play
-} RUN_t;
-
 // effects loop status
 typedef struct STATUS_s
 {
-    RUN_t                loopState;   // current loop state
     uint8_t              loopIx;      // currently selected effect
     FXLOOP_FUNC_t        fxFunc;      // currently selected effect function
     uint32_t             duration;    // how long to play the effect
@@ -40,7 +31,7 @@ typedef struct STATUS_s
     uint16_t             frame;       // frame counter
     uint16_t             frameDrop;   // frame drop counter
     uint16_t             period;      // refresh period
-    uint32_t             msss;
+    uint32_t             msss;        // time of start of last frame
     const FXLOOP_INFO_t *fxInfo;
     uint8_t              numFx;
 } STATUS_t;
@@ -57,7 +48,6 @@ void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const boo
 {
     memset(&sStatus, 0, sizeof(sStatus));
 
-    sStatus.loopState = RUN_NEXT;
     sStatus.loopIx    = UINT8_MAX;
     sStatus.msss      = osTaskGetTicks();
     sStatus.numFx     = nFxInfo;
@@ -82,64 +72,37 @@ uint16_t fxloopRun(const bool forceNext)
 {
     uint16_t funcRes = 0;
 
-    switch (sStatus.loopState)
+    // bring up next effect?
+    if ( forceNext || (sStatus.runtime >= sStatus.duration) )
     {
-        /* ***** select next effect (when in auto-mode) ***************** */
+        DEBUG("fxloopRun() next");
 
-        case RUN_NEXT:
-            sStatus.loopIx++;
-            sStatus.loopIx %= sStatus.numFx;
-            sStatus.msss = osTaskGetTicks();
+        // find next effect
+        sStatus.loopIx++;
+        sStatus.loopIx %= sStatus.numFx;
 
-            funcRes = FXLOOP_NEXT;
+        // initialise next effect..
+        sStatus.fxFunc    = INFO_FUNC(sStatus.loopIx);
+        sStatus.runtime   = 0;
+        sStatus.frame     = 0;
+        sStatus.frameDrop = 0;
+        sStatus.duration  = INFO_DURATION(sStatus.loopIx);
 
-            // next, go initialise next effect..
-            sStatus.loopState = RUN_INIT;
-            break;
+        PRINT("fxloop: %"PRIu8"/%"PRIu8" %S %"PRIu32"ms",
+            sStatus.loopIx + 1, sStatus.numFx, INFO_NAME(sStatus.loopIx), sStatus.duration);
+    }
 
-
-        /* ***** initialise effect *************************************** */
-
-        case RUN_INIT:
-
-            sStatus.fxFunc    = INFO_FUNC(sStatus.loopIx);
-            sStatus.runtime   = 0;
-            sStatus.frame     = 0;
-            sStatus.frameDrop = 0;
-            sStatus.duration  = INFO_DURATION(sStatus.loopIx);
-
-            PRINT("fxloop: %"PRIu8"/%"PRIu8" %S %"PRIu32"ms",
-                sStatus.loopIx + 1, sStatus.numFx, INFO_NAME(sStatus.loopIx), sStatus.duration);
-
-            // run program initialisation
-            funcRes = sStatus.fxFunc(sStatus.frame);
-            sStatus.frame++;
-
-            // go play..
-            sStatus.loopState = RUN_PLAY;
-            break;
-
-
-        /* ***** play effect ********************************************* */
-
-        case RUN_PLAY:
-
-            // run effect (render next frame)
-            funcRes = sStatus.fxFunc(sStatus.frame);
-            sStatus.frame++;
-
-            // switch to next loop by user choice?
-            if (forceNext)
-            {
-                sStatus.loopState = RUN_NEXT;
-            }
-            // switch to next loop because we're in auto-mode and the time's up
-            else if (sStatus.runtime >= sStatus.duration)
-            {
-                sStatus.loopState = RUN_NEXT;
-            }
-
-            break;
+    // retrun if forced (so that this can be called multiple times)
+    if (forceNext)
+    {
+        // ...nothing...
+    }
+    // play
+    else
+    {
+        sStatus.msss = osTaskGetTicks();
+        funcRes = sStatus.fxFunc(sStatus.frame);
+        sStatus.frame++;
     }
 
     return funcRes;
@@ -148,46 +111,50 @@ uint16_t fxloopRun(const bool forceNext)
 
 bool fxloopWait(uint8_t speed)
 {
-    // delay to achieve desired update period (refresh rate)
-    if (sStatus.loopState != RUN_NEXT)
+    // target refresh rate (period in [ms])
+    const uint16_t periodMin = INFO_PERIOD_MIN(sStatus.loopIx);
+    const uint16_t periodMax = INFO_PERIOD_MAX(sStatus.loopIx);
+    const uint16_t speed16 = CLIP(speed, 0, 100);
+    const uint16_t period = (speed16 * (periodMax - periodMin) / (uint16_t)100) + periodMin;
+    sStatus.period = period;
+    //DEBUG("speed %"PRIu8" %"PRIu16" %"PRIu16" %"PRIu16" %"PRIu16,
+    //    speed, speed16, periodMin, periodMax, period);
+
+    // delay until next frame
+    osTaskDelayUntil(&sStatus.msss, period);
+
+    // update runtime
+    sStatus.runtime += period;
+
+    // if we were too late, drop one frame and sleep until next period
+    const uint32_t msssNow = osTaskGetTicks();
+    if ( (msssNow - sStatus.msss) > 10 ) // other tasks may schedule in before us so that we may be slightly late
     {
-        // target refresh rate (period in [ms])
-        const uint16_t periodMin = INFO_PERIOD_MIN(sStatus.loopIx);
-        const uint16_t periodMax = INFO_PERIOD_MAX(sStatus.loopIx);
-        const uint16_t speed16 = CLIP(speed, 0, 100);
-        const uint16_t period = (speed16 * (periodMax - periodMin) / (uint16_t)100) + periodMin;
-        sStatus.period = period;
-        //DEBUG("speed %"PRIu8" %"PRIu16" %"PRIu16" %"PRIu16" %"PRIu16,
-        //    speed, speed16, periodMin, periodMax, period);
-
-        // delay until next frame
+        const uint32_t dt = (msssNow - sStatus.msss);
+        const uint16_t numDropped = (dt / period) + 1;
+        WARNING("fxloop: %S %"PRIu16" frames dropped! %"PRIu16"+%"PRIu16"ms",
+            INFO_NAME(sStatus.loopIx), numDropped, period, dt);
+        sStatus.frameDrop += numDropped;
+        sStatus.frame     += numDropped;
+        sStatus.msss       = (msssNow / period) * period;
         osTaskDelayUntil(&sStatus.msss, period);
-
-        // update runtime
-        sStatus.runtime += period;
-
-        // if we were too late, drop one frame and sleep until next period
-        const uint32_t msssNow = osTaskGetTicks();
-        if ( (msssNow - sStatus.msss) > 10 ) // other tasks may schedule in before us so that we may be slightly late
-        {
-            const uint32_t dt = (msssNow - sStatus.msss);
-            const uint16_t numDropped = (dt / period) + 1;
-            WARNING("fxloop: %S %"PRIu16" frames dropped! %"PRIu16"+%"PRIu16"ms",
-                INFO_NAME(sStatus.loopIx), numDropped, period, dt);
-            sStatus.frameDrop += numDropped;
-            sStatus.frame     += numDropped;
-            sStatus.msss       = (msssNow / period) * period;
-            osTaskDelayUntil(&sStatus.msss, period);
-            sStatus.runtime   += period;
-        }
-        return false;
+        sStatus.runtime   += period;
     }
-    else
+
+    if (sStatus.runtime >= sStatus.duration)
     {
         return true;
     }
+    else
+    {
+        return false;
+    }
 }
 
+uint8_t fxloopCurrentlyPlaying(void)
+{
+    return sStatus.loopIx + 1;
+}
 
 void fxloopStatus(char *str, const size_t size)
 {

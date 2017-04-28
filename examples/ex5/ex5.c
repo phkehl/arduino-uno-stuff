@@ -99,8 +99,8 @@ static uint16_t sFxloopFunc3(const uint16_t frame)
 
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
-    FXLOOP_INFO("func1func1func1", sFxloopFunc1, 250, 500, 3000),
-    FXLOOP_INFO("func2",           sFxloopFunc2, 250, 250, 3000),
+    FXLOOP_INFO("func1func1func1", sFxloopFunc1, 250, 250, 3000),
+    FXLOOP_INFO("func2",           sFxloopFunc2, 300, 500, 3000),
     FXLOOP_INFO("func3",           sFxloopFunc3, 250, 750, 3000),
 };
 
@@ -120,7 +120,8 @@ static void sAppTask(void *pArg)
         sAppCnt++;
 
         // run one iteration of the effect
-        const uint16_t res = fxloopRun(false);
+        const bool forceNext = false;
+        const uint16_t res = fxloopRun(forceNext);
         DEBUG("res=%"PRIu16, res);
 
         // do other stuff.. such as wasting some CPU time

@@ -283,7 +283,7 @@ Get chip info: avrdude -p m328p -v -P /dev/ttyUSB0 -b 19200 -c avrisp
 \endverbatim
 
 
-\defgroup FF flifplip's stuff
+\defgroup FF flifplip's Arduino Uno Stuff
 
 \defgroup FF_APPS Applications
 \ingroup FF

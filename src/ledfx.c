@@ -775,7 +775,44 @@ void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars)
 }
 
 
-/* ************************************************************************** */
+void ledfxDigit(const uint8_t digit, const uint16_t x0, const uint16_t y0,
+    const uint8_t hue, const uint8_t sat, const uint8_t val)
+{
+    // .**.  ..**  .**.  .**.  *..*  ****  .**.  ****  .**.  .**.
+    // *..*  .*.*  *..*  *..*  *..*  *...  *...  ...*  *..*  *..*
+    // *..*  *..*  ...*  ...*  *..*  *...  *...  ..*.  *..*  *..*
+    // *..*  ...*  ..*.  ..*.  ****  ***.  ***.  .*..  .**.  .***
+    // *..*  ...*  .*..  ...*  ...*  ...*  *..*  .*..  *..*  ...*
+    // *..*  ...*  *...  *..*  ...*  *. *  *..*  *...  *..*  ...*
+    // .**.  ...*  ****  .**.  ...*  .**.  .**.  *...  .**.  .**.
+    static const uint8_t digits[10][5] PROGMEM =
+    {
+        { 0x3e, 0x41, 0x41, 0x3e }, // 0
+        { 0x10, 0x20, 0x40, 0x7f }, // 1
+        { 0x23, 0x45, 0x49, 0x31 }, // 2
+        { 0x22, 0x41, 0x49, 0x36 }, // 3
+        { 0x78, 0x08, 0x08, 0x7f }, // 4
+        { 0x7a, 0x49, 0x49, 0x46 }, // 5
+        { 0x3e, 0x49, 0x49, 0x06 }, // 6
+        { 0x43, 0x4c, 0x50, 0x60 }, // 7
+        { 0x36, 0x49, 0x49, 0x36 }, // 8
+        { 0x30, 0x49, 0x49, 0x3e }, // 9
+    };
+    const uint8_t *pDigit = digits[digit % 10];
+    for (uint16_t x = x0; (x < FF_LEDFX_NUM_X) && (x < (x0 + 4)); x++)
+    {
+        const uint8_t col = pgm_read_byte(&pDigit[x - x0]);
+        for (uint16_t y = y0; (y < FF_LEDFX_NUM_Y) && (y < (y0 + 7)); y++)
+        {
+            //DEBUG_F("x=%"PRIu16" col=%02"PRIx8" y=%"PRIu16" %02"PRIx8 " -- %"PRIu8,
+            //    x, col, y, BIT(y - y0), col & BIT(y - y0) ? 1 : 0);
+            if (col & BIT(y - y0))
+            {
+                ledfxSetMatrixHSV(x, y, hue, sat, val);
+            }
+        }
+    }
+}
 
 /* ************************************************************************** */
 

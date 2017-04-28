@@ -333,6 +333,19 @@ typedef struct LEDFX_STAR_s
 */
 void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars);
 
+//! render digit
+/*!
+    The digits are 4x7 pixels
+
+    \param[in] digit  the digit to render (0..9)
+    \param[in] x0     x offset
+    \param[in] y0     y offset
+    \param[in] hue    hue value (0..255)
+    \param[in] sat    saturation value (0..255)
+    \param[in] val    (brightness) value (0..255)
+*/
+void ledfxDigit(const uint8_t digit, const uint16_t x0, const uint16_t y0,
+    const uint8_t hue, const uint8_t sat, const uint8_t val);
 
 //@}
 

@@ -11,7 +11,7 @@
 #include <string.h>        // libc: string operations
 #include <math.h>          // libc: mathematical functions
 
-//#include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
+#include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "unopins.h"       // ff: Arduino Uno pins
@@ -53,6 +53,13 @@ void appInit(void)
     ws2801Init();
     ledfxClear(0, 0);
     sLedFlush();
+
+    // enable interrupt (to register button presses)
+    PIN_INPUT(PD2);
+    PIN_PULLUP_ON(PD2);
+    SETBITS(EICRA, BIT(ISC01));   // falling-edge triggers interrupt
+    //CLRBITS(EICRA, BIT(ISC01) | BIT(ISC00)); // low-level triggers interrupt
+    SETBITS(EIMSK, BIT(INT0));  // enable INT0 interrupt
 
     // initialise ADC
     hwAdcInit(HW_ADC_PC3 | HW_ADC_PC4, false);
@@ -184,7 +191,6 @@ static uint16_t sFxDiagonal(const uint16_t frame)
 
 /* ***** application task **************************************************** */
 
-
 #define FXDURATION (uint32_t)60000
 
 // TODO: fix duration
@@ -209,6 +215,20 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 
 static uint8_t sBrightness = 50;
 static uint8_t sSpeed = 50;
+static volatile bool svButtonPressed;
+
+ISR(INT0_vect) // external interrupt 0
+{
+    static volatile uint32_t msss0;
+    osIsrEnter();
+    const uint32_t msss1 = osTaskGetTicks();
+    if ( (msss1 - msss0) > 150 )
+    {
+        svButtonPressed = true;
+    }
+    msss0 = msss1;
+    osIsrLeave();
+}
 
 // application task
 static void sAppTask(void *pArg)
@@ -222,20 +242,51 @@ static void sAppTask(void *pArg)
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
 
-
     while (ENDLESS)
     {
-        const uint16_t res = fxloopRun(false);
+        // button pressed? again?
+        while (svButtonPressed)
+        {
+            // display effect number
+            const uint8_t fxNum = fxloopCurrentlyPlaying();
+            const uint8_t brightness = sBrightness < 100 ? 50 + sBrightness : sBrightness;
+            ledfxSetBrightness(brightness);
+            const uint8_t hue = (fxNum % 10) * (255/10);
+            ledfxFillHSV(0, 0, hue + 128, 255, 50);
+            ledfxDigit(fxNum, (FF_LEDFX_NUM_X - 4 + 1) / 2, (FF_LEDFX_NUM_X - 7 + 1) / 2, hue, 255, 255);
+            if (fxNum >= 10)
+            {
+                ledfxSetMatrixHSV(0, 0, hue, 255, 255);
+            }
+            sLedFlush();
 
-        ledfxSetBrightness(sBrightness);
+            // display for a while and repeat if the button has been pressed again
+            svButtonPressed = false;
+            uint8_t n = 15;
+            while (n--)
+            {
+                if (svButtonPressed)
+                {
+                    // move effect loop to next effect (but don't play it yet)
+                    fxloopRun(true);
+                    break;
+                }
+                osTaskDelay(50);
+            }
+        }
+
+        // render next frame
+        const uint16_t res = fxloopRun(svButtonPressed);
 
         // update matrix?
         if (res == FLUSH_MATRIX)
         {
+            ledfxSetBrightness(sBrightness);
             sLedFlush();
         }
 
-        // read grey pot for brightness, convert to linear reading to exponential brightness
+        // read grey pot for brightness, convert from linear reading to exponential brightness level
+        // (i.e. start increasing brightness slowly; use smaller brightness steps at the lower end)
         const float pot1 = hwAdcGetScaled(HW_ADC_PC4, 1, 55374); // log(254) * 10000
         sBrightness = (uint8_t)expf(pot1 / 10000); // 1.0..254.01 --> 1..254
 

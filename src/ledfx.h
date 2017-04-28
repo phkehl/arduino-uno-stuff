@@ -18,13 +18,14 @@
 hwMathSeedRandom(hwGetRandomSeed());
 \endcode
 
-Supported LED matrix arrangements (x/y 0/0 is at the bottom left, values for #FF_LEDFX_XY_ARR):
+Supported LED matrix arrangements for LED electrically connected as 0-1-2-3-4-5-6-7-8 (x/y 0/0 is at
+the bottom left, values for #FF_LEDFX_XY_ARR):
 
 \verbatim
- (1)     (2)
-6 7 8   6 7 8
-3 4 5   5 4 3
-0 1 2   0 1 2
+ (1)     (2)     (3)
+6 7 8   6 7 8   8 7 6
+3 4 5   5 4 3   3 4 5
+0 1 2   0 1 2   2 1 0
 \endverbatim
 
 

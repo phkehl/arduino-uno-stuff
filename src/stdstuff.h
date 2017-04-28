@@ -65,8 +65,8 @@
 #  undef __INLINE
 #endif
 #define __INLINE              inline                                 //!< inline \hideinitializer
-#define __NOINLINE            __attribute__((noinline))         //!< no inline \hideinitializer
-#define __FORCEINLINE         __attribute__((always_inline))    //!< force inline \hideinitializer
+#define __NOINLINE            __attribute__((noinline))              //!< no inline \hideinitializer
+#define __FORCEINLINE         __attribute__((always_inline)) inline  //!< force inline (also with -Os) \hideinitializer
 #define __USED                __attribute__((used))                  //!< used \hideinitializer
 #define __NORETURN            __attribute__((noreturn))              //!< no return \hideinitializer
 #define __PRINTF(six, aix)    __attribute__((format(printf, six, aix))) //!< printf() style func \hideinitializer

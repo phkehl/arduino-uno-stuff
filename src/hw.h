@@ -4,10 +4,10 @@
 
     - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \defgroup HW Hardware
+    \defgroup HW Hardware Abstraction
     \ingroup FF
 
-    This implements the hardware abstraction.
+    This implements some hardware abstraction.
 
     @{
 */

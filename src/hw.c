@@ -346,14 +346,14 @@ static void sHwLedTickInit(void)
     PIN_LOW(FF_HW_TICK_PIN);
 }
 
-inline void hwLedTickToggle(void)
+__FORCEINLINE void hwLedTickToggle(void)
 {
     PIN_TOGGLE(FF_HW_TICK_PIN);
 }
 
 #else
-static void sHwLedTickInit(void) { }
-inline void hwLedTickToggle(void) { }
+ void sHwLedTickInit(void) { }
+__FORCEINLINE void hwLedTickToggle(void) { }
 #endif
 
 #if (PIN_TO_BIT(FF_HW_LOAD_PIN) != PIN_BIT_NONE)
@@ -364,12 +364,12 @@ static void sHwLedLoadInit(void)
     PIN_LOW(FF_HW_LOAD_PIN);
 }
 
-inline void hwLedLoadOn(void)
+__FORCEINLINE void hwLedLoadOn(void)
 {
     PIN_HIGH(FF_HW_LOAD_PIN);
 }
 
-inline void hwLedLoadOff(void)
+__FORCEINLINE void hwLedLoadOff(void)
 {
     PIN_LOW(FF_HW_LOAD_PIN);
 }
@@ -552,7 +552,7 @@ static void sHwCheckResetCause(void)
     }
 }
 
-inline void hwAssertWatchdog(void)
+__FORCEINLINE void hwAssertWatchdog(void)
 {
     wdt_reset();
 }
@@ -773,32 +773,32 @@ int32_t hwAdcGetScaled(const HW_ADC_t pin, const int32_t min, const int32_t max)
 
 /* **** fast (or not) math functions **************************************** */
 
-inline float hwMathFastCosf(const float phi)
+__FORCEINLINE float hwMathFastCosf(const float phi)
 {
     // TODO: implement
     return cosf(phi);
 }
 
 
-inline float hwMathFastSinf(const float phi)
+__FORCEINLINE float hwMathFastSinf(const float phi)
 {
     // TODO: implement
     return sinf(phi);
 }
 
 
-inline float hwMathFastSqrtf(const float x)
+__FORCEINLINE float hwMathFastSqrtf(const float x)
 {
     // TODO: implement
     return sqrtf(x);
 }
 
-inline void hwMathSeedRandom(const uint32_t seed)
+__FORCEINLINE void hwMathSeedRandom(const uint32_t seed)
 {
     srandom(seed);
 }
 
-inline uint32_t hwMathGetRandom(void)
+__FORCEINLINE uint32_t hwMathGetRandom(void)
 {
     return random();
 }

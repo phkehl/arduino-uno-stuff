@@ -142,7 +142,7 @@ ISR(TIMER0_COMPA_vect)
 //static uint8_t sOsIsrStack[150];
 //static int16_t sOsPreIsrSP;
 
-inline void osIsrEnter(void)
+__FORCEINLINE void osIsrEnter(void)
 {
     // sOsPreIsrSP = SP;
     // SP = (int16_t)&sOsIsrStack[sizeof(sOsIsrStack)-1];
@@ -150,7 +150,7 @@ inline void osIsrEnter(void)
 }
 
 
-inline void osIsrLeave(void)
+__FORCEINLINE void osIsrLeave(void)
 {
     atomIntExit(false);
     // SP = sOsPreIsrSP;

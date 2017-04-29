@@ -268,6 +268,17 @@ Reanimate when lfuse wrongly 0: apply external clock on XTAL1 (e.g. 1MHz square 
 
 Get chip info: avrdude -p m328p -v -P /dev/ttyUSB0 -b 19200 -c avrisp
 
+\subsection P_FTDI FTDI Cable
+
+  - green: RTS (out)
+  - yellow: RXD (in)
+  - orange: TXD (out)
+  - red: VCC (out)
+  - brown: CTS (in)
+  - black: GND (out)
+  - [ftdi_cable.pdf](../ftdi_cable.pdf)
+
+
 \page P_DOXYGEN Doxygen
 
 \section P_DOXYGEN_WARNINGS Warnings

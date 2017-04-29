@@ -48,19 +48,19 @@
 //@}
 
 #ifndef __DOXYGEN__
-#define _STRINGIFY(x) #x
-#define _CONCAT(a, b)  a ## b
-#define ___PADNAME(x) __pad##x
-#define __PADNAME(x) ___PADNAME(x)
+#  define _STRINGIFY(x) #x
+#  define _CONCAT(a, b)  a ## b
+#  define ___PADNAME(x) __pad##x
+#  define __PADNAME(x) ___PADNAME(x)
 #endif
 
 //! \name Compiler Hints etc.
 //@{
-#define __PURE(func)          func __attribute__ ((pure))          //!< pure \hideinitializer
-#define __IRQ(func)           func __attribute__ ((interrupt))     //!< irq \hideinitializer
-#define __WEAK(arg)           arg  __attribute__ ((weak))          //!< weak \hideinitializer
-#define __PACKED(arg)         arg  __attribute__ ((packed))        //!< packed \hideinitializer
-#define __ALIGN(n, arg)       arg  __attribute__ ((aligned (n)))   //!< align \hideinitializer
+#define __PURE()              __attribute__ ((pure))          //!< pure \hideinitializer
+#define __IRQ()               __attribute__ ((interrupt))     //!< irq \hideinitializer
+#define __WEAK()              __attribute__ ((weak))          //!< weak \hideinitializer
+#define __PACKED              __attribute__ ((packed))        //!< packed \hideinitializer
+#define __ALIGN(n)            __attribute__ ((aligned (n)))   //!< align \hideinitializer
 #ifdef __INLINE
 #  undef __INLINE
 #endif

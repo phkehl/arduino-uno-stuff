@@ -48,6 +48,7 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 - \ref WS2812
 - \ref LEDFX
 - \ref FXLOOP
+- \ref UBX
 - See also \ref P_REFERENCES below, the \ref EXAMPLES, the \ref PROJECTS
   and the [AVR libc docu](../avr-libc/html/index.html).
 

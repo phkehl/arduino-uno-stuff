@@ -145,6 +145,64 @@
 
 /* *************************************************************************** */
 
+//! use UBX-NAV-PVT messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_NAV_PVT_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_NAV_PVT_USE 1
+#endif
+
+//! use UBX-NAV-AOPSTATUS messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_NAV_AOPSTATUS_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_NAV_AOPSTATUS_USE 0
+#endif
+
+//! use UBX-NAV-CLOCK messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_NAV_CLOCK_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_NAV_CLOCK_USE 0
+#endif
+
+//! use UBX-NAV-POSECEF messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_NAV_POSECEF_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_NAV_POSECEF_USE 0
+#endif
+
+//! use UBX-NAV-VELECEF messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_NAV_VELECEF_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_NAV_VELECEF_USE 0
+#endif
+
+//! use UBX-NAV-STATUS messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_NAV_STATUS_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_NAV_STATUS_USE 0
+#endif
+
+//! use UBX-INF-ERROR messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_INF_ERROR_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_INF_ERROR_USE 1
+#endif
+
+//! use UBX-INF-WARNING messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_INF_WARNING_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_INF_WARNING_USE 1
+#endif
+
+//! use UBX-INF-NOTICE messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_INF_NOTICE_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_INF_NOTICE_USE 1
+#endif
+
+//! use UBX-INF-TEST messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_INF_TEST_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_INF_TEST_USE 0
+#endif
+
+//! use UBX-INF-DEBUG messages (1 = yes, 0 = no)
+#if !defined (FF_UBX_INF_DEBUG_USE) || defined(__DOXYGEN__)
+#  define FF_UBX_INF_DEBUG_USE 0
+#endif
+
+
+/* *************************************************************************** */
+
 #endif // __DEFCONFIG_H__
 
 //@}

@@ -19,9 +19,8 @@
     - [NEO-M8_DataSheet_(UBX-13003366).pdf](../../projects/ffclock/docs/NEO-M8_DataSheet_(UBX-13003366).pdf) (GNSS receiver)
     - [NEO-M8_HardwareIntegrationManual_(UBX-13003557).pdf](../../projects/ffclock/docs/NEO-M8_HardwareIntegrationManual_(UBX-13003557).pdf) (GNSS receiver)
     - [NEO-M8_ProductSummary_(UBX-13003449).pdf](../../projects/ffclock/docs/NEO-M8_ProductSummary_(UBX-13003449).pdf) (GNSS receiver)
-    - [u-bloxM8_ReceiverDescriptionProtocolSpec_Public_(UBX-13003221).pdf](../../projects/ffclock/docs/u-bloxM8_ReceiverDescriptionProtocolSpec_Public_(UBX-13003221).pdf) (GNSS receiver)
 
-    See ffclock.c source code for details.
+    See ffclock.c source code and https://oinkzwurgl.org/projaeggd/flipflipclock for details.
 
     @{
 */

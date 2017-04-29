@@ -26,6 +26,16 @@
 #include "ffclock.h"
 
 
+/* ***** configuration ******************************************************* */
+
+// clock stepper motor signal pins
+#define CLKMOT_PIN_I1 _PB1
+#define CLKMOT_PIN_I2 _PB3
+#define CLKMOT_PIN_I3 _PB2
+#define CLKMOT_PIN_I4 _PB0
+
+
+
 /* ***** application init **************************************************** */
 
 // forward declarations
@@ -39,6 +49,16 @@ void appInit(void)
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
+
+    // initialise clock motor pins
+    PIN_OUTPUT(CLKMOT_PIN_I1);
+    PIN_OUTPUT(CLKMOT_PIN_I2);
+    PIN_OUTPUT(CLKMOT_PIN_I3);
+    PIN_OUTPUT(CLKMOT_PIN_I4);
+    PIN_LOW(CLKMOT_PIN_I1);
+    PIN_LOW(CLKMOT_PIN_I2);
+    PIN_LOW(CLKMOT_PIN_I3);
+    PIN_LOW(CLKMOT_PIN_I4);
 }
 
 // starts the user application task

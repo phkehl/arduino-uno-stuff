@@ -7,6 +7,10 @@
 
     \addtogroup WS2812
     @{
+
+    \todo Use osTask{Suspend,Resume}Scheduler() instead of CS_{ENTER,LEAVE} and only put the
+          critical bit of in a CS (see josh.com's example). Consider that in TIMER0_COMPA_vect and
+          only count up system ticks but don't run timers or schedule tasks.
 */
 
 #include "stdstuff.h"      // ff: useful macros and types

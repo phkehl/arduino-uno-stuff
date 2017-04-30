@@ -10,9 +10,7 @@
     This implements an effect loops system that allows to run loops of (e.g. LED) effects (while
     doing other stuff, too). It will run user-supplied effect functions at appropriate times.
 
-    See \ref EXAMPLES_EX5 for usage instructions.
-
-    \todo implement fx period adjustment (speed)
+    See \ref EXAMPLES_EX5 for a demonstration or \ref PROJECTS_FFMATRIX7X7 for an application.
 
     @{
 */

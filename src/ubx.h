@@ -10,13 +10,16 @@
     This implements some of the protocol used by u-blox positioning (GNSS) receivers according to
     [u-blox M8 Receiver Description Including Protocol Specification (UBX-13003221)](../../projects/ffclock/docs/u-bloxM8_ReceiverDescriptionProtocolSpec_Public_(UBX-13003221).pdf).
 
+    See \ref EXAMPLES_EX6 for a demonstration.
+
     @{
 */
 
 #ifndef __UBX_H__
-#define __UBX_H__ // multiple inclusion guard
+#define __UBX_H__
 
 #include "stdstuff.h"      // ff: useful macros and types
+
 
 /* ************************************************************************** */
 

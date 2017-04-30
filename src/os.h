@@ -11,10 +11,6 @@
 
     Note that some functions may panic via hwPanic() on unexpected errors.
 
-    \todo implement precise task runtime statistics
-
-    \todo look into http://mark3os.com/docs/html/index.html
-
     @{
 */
 

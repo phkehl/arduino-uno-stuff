@@ -11,11 +11,13 @@
 
     Configuration: #FF_GNSS_TASK_PRIO, #FF_GNSS_TASK_STACK and #FF_GNSS_PARSER configuration.
 
+    See \ref EXAMPLES_EX6 for a demonstration of \ref PROJECTS_FFCLOCK for an application.
+
     @{
 */
 
 #ifndef __GNSS_H__
-#define __GNSS_H__ //!< multiple inclusion guard
+#define __GNSS_H__
 
 
 /* *************************************************************************** */

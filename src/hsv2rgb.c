@@ -7,6 +7,8 @@
 
     \addtogroup HSV2RGB
     @{
+
+    \todo study https://beesbuzz.biz/code/hsv_color_transforms.php
 */
 
 #include "stdstuff.h"      // ff: useful macros and types

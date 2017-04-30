@@ -6,6 +6,8 @@
 
     \addtogroup FXLOOP
     @{
+
+    \todo implement fx period adjustment (speed)
 */
 
 #include <string.h>        // libc: string operations

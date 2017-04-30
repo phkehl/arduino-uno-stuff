@@ -12,8 +12,6 @@
     From [Wikipedia](http://en.wikipedia.org/wiki/File:HSV-RGB-comparison.svg):
     <img src="../HSV-RGB-comparison_svg_wikipedia.png"/>
 
-    \todo study https://beesbuzz.biz/code/hsv_color_transforms.php
-
     @{
 */
 

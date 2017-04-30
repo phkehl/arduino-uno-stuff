@@ -30,14 +30,6 @@ the bottom left, values for #FF_LEDFX_XY_ARR):
 (0,0)
 \endverbatim
 
-
-    \todo fire, water effects
-    \todo game of life
-    \todo play with different noises: Worley, Simplex, ...
-    \todo fireflys http://www.michaelfogleman.com/sync/
-    \todo better plasma à la http://lodev.org/cgtutor/plasma.html, http://pastebin.com/MQhR526C, http://www.bidouille.org/prog/plasma
-    \todo support LUT for LED arrangement
-
     @{
 */
 

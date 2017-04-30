@@ -7,6 +7,8 @@
     \defgroup UNOPINS Arduino Uno Pins
     \ingroup FF
 
+    See \ref P_PINOUTS.
+
     @{
 */
 

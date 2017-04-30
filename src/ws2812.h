@@ -17,10 +17,6 @@
     - https://github.com/cpldcpu/light_ws2812
     - https://wp.josh.com/2014/05/13/ws2812-neopixels-are-not-so-finicky-once-you-get-to-know-them/
 
-    \todo Use osTask{Suspend,Resume}Scheduler() instead of CS_{ENTER,LEAVE} and only put the
-          critical bit of in a CS (see josh.com's example). Consider that in TIMER0_COMPA_vect and
-          only count up system ticks but don't run timers or schedule tasks.
-
     @{
 */
 

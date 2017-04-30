@@ -30,7 +30,7 @@ more).
 
 See [source code](files.html) for copyrights, sources and more.
 
-Credits: the Internet, AVR freaks forum, et al. (see source code).
+Credits: the Internet, AVR freaks forum, et al. (see [source code](files.html)).
 
 See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 
@@ -49,7 +49,8 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 - \ref LEDFX
 - \ref FXLOOP
 - \ref UBX
-- See also \ref P_REFERENCES below, the \ref EXAMPLES, the \ref PROJECTS
+- \ref GNSS
+- See also the [source code](files.html), the \ref P_REFERENCES below, the \ref EXAMPLES, the \ref PROJECTS
   and the [AVR libc docu](../avr-libc/html/index.html).
 
 
@@ -117,7 +118,7 @@ See \ref PROJECTS.
 - [avr-gcc]
   ABI and Extensions, https://gcc.gnu.org/wiki/avr-gcc
 
-\section P_PINOUT Pinout
+\section P_PINOUTS Pinouts
 
 \subsection P_PINOUT_UNO Arduino Uno Pinout
 (by Alberto (aka PighiXXX), http://www.pighixxx.com/test/pinoutspg/boards/)

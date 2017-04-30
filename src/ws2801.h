@@ -17,7 +17,7 @@
     to require that the CS pin is configured as an output in order for the SPI master mode to work.
     Hence this driver drives that signal (active low), which might be useful for debugging.
 
-    See [example 4](files.html) for a demonstration.
+    See \ref EXAMPLES_EX4 for a demonstration.
 
     References:
 

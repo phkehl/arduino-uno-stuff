@@ -6,6 +6,10 @@
 
     \addtogroup OS
     @{
+
+    \todo implement precise task runtime statistics
+
+    \todo look into http://mark3os.com/docs/html/index.html
 */
 
 #include <stdio.h>         // libc: standard buffered input/output

@@ -157,7 +157,7 @@ static int16_t sHwOutputPutChar(char c, FILE *pFile)
     return res;
 }
 
-//! the output file handle (write-only)
+// the output file handle (write-only)
 static FILE sHwOutputDev = FDEV_SETUP_STREAM(sHwOutputPutChar, NULL, _FDEV_SETUP_WRITE);
 
 static OS_SEMAPHORE_t sHwTxReadySem;
@@ -215,17 +215,7 @@ static volatile uint16_t  svHwRxBufDrop;               // number of dropped byte
 
 static OS_SEMAPHORE_t sHwRxReadySem;
 
-//! reads a character from the rx buffer
-/*
-    Returns the next character from the rx buffer, possibly waiting until a
-    character has been received.
-
-    \note This is used by the stdio subsystem, (printf() et al.).
-
-    \param pFile  the file handle (not actually used)
-
-    \returns  the character
-*/
+// reads a character from the rx buffer
 static char sHwInputGetChar(FILE *pFile)
 {
     UNUSED(pFile);
@@ -257,7 +247,7 @@ static char sHwInputGetChar(FILE *pFile)
     return c;
 }
 
-//! the input file handle (read-only)
+// the input file handle (read-only)
 static FILE sHwInputDev = FDEV_SETUP_STREAM(NULL, sHwInputGetChar, _FDEV_SETUP_READ);
 
 ISR(USART_RX_vect) // UART, rx complete
@@ -281,7 +271,7 @@ ISR(USART_RX_vect) // UART, rx complete
         svHwRxBufDrop++;
     }
 
-    osSemaphoreGive(&sHwRxReadySem);
+    osSemaphoreGive(&sHwRxReadySem); // XXX PANIC XXX
 
     osIsrLeave();
 }
@@ -314,11 +304,11 @@ static void sHwRxInit(void)
     svHwRxBufPeak = 0;
     svHwRxBufDrop = 0;
 
-    // enable RX complete interrupt
-    SETBITS(UCSR0B, BIT(RXCIE0));
-
     // input sync
     osSemaphoreCreate(&sHwRxReadySem, 0);
+
+    // enable RX complete interrupt
+    SETBITS(UCSR0B, BIT(RXCIE0));
 }
 
 #else
@@ -827,6 +817,7 @@ void hwStatus(char *str, const uint16_t size)
         svHwRxBufSize, svHwRxBufPeak, sizeof(svHwRxBuf), svHwRxBufDrop,
         sHwTxBufSize, sHwTxBufPeak, sizeof(sHwTxBuf), sHwTxBufDrop);
     svHwRxBufPeak = 0;
+    svHwRxBufDrop = 0;
     sHwTxBufPeak = 0;
     sHwTxBufDrop = 0;
 #elif (FF_HW_RX_BUFSIZE > 0)

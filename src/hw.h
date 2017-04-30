@@ -56,24 +56,38 @@ void hwTxFlush(void);
 
     See also \ref DEBUG functions PRINT() etc.
 
+    Suggested way of processing serial port input:
+\code{.c}
+while (ENDLESS)
+{
+    uint8_t n = hwGetRxBufSize(0); // will block until one or more chars become available
+    while (n--)
+    {
+        const char c = hwReadNextChar(); // won't block as one or more chars *are* available
+        // do something with the received character
+    }
+}
+\endcode
+
     @{
 */
 
 //! get number of pending input bytes
 /*
-    Returns the number of pending input bytes, optionally waiting until at least
-    one byte is available.
+    Returns the number of pending input bytes, optionally waiting until at least one byte is
+    available. When waiting it will unblock immediately after one or more new characters has become
+    available.
 
-    \param[in] timeout  nunber of ticks to wait at most
+    \param[in] timeout  number of ticks to wait at most (0 to wait forever, -1 to not wait at all)
 
     \returns the number of pending input bytes
 */
-uint8_t hwGetRxBufSize(const uint32_t timeout);
+uint8_t hwGetRxBufSize(const int32_t timeout);
 
 //! get next pending input character
 /*!
-    Returns the next pending input character (if hwGetRxBufSize() is > 0)
-    or '\0'.
+    Returns the next pending input character. This will block until a character becomes available.
+    This is the same as calling fgetc() on #stdin.
 
     \returns next input character
 */

@@ -166,7 +166,7 @@ ISR(USART_TX_vect) // UART, tx complete
 {
     osIsrEnter();
     CLRBITS(UCSR0B, BIT(TXCIE0)); // USART tx complete interrupt enable
-    osSemaphoreGive(&sHwTxReadySem);
+    osSemaphoreGive(&sHwTxReadySem, true);
     osIsrLeave();
 }
 
@@ -206,11 +206,11 @@ void hwTxFlush(void) { }
 
 #if (FF_HW_RX_BUFSIZE > 0)
 
-static volatile char svHwRxBuf[FF_HW_RX_BUFSIZE]; // data rx buffer
-static volatile uint8_t svHwRxBufHead;               // write-to-buffer pointer (index)
-static volatile uint8_t svHwRxBufTail;               // read-from-buffer pointer (index)
-static volatile uint8_t svHwRxBufSize;               // size of buffered data
-static volatile uint8_t svHwRxBufPeak;               // peak input buffer size
+static volatile char      svHwRxBuf[FF_HW_RX_BUFSIZE]; // data rx buffer
+static volatile uint8_t   svHwRxBufHead;               // write-to-buffer pointer (index)
+static volatile uint8_t   svHwRxBufTail;               // read-from-buffer pointer (index)
+static volatile uint8_t   svHwRxBufSize;               // size of buffered data
+static volatile uint8_t   svHwRxBufPeak;               // peak input buffer size
 static volatile uint16_t  svHwRxBufDrop;               // number of dropped bytes
 
 static OS_SEMAPHORE_t sHwRxReadySem;
@@ -226,7 +226,7 @@ static char sHwInputGetChar(FILE *pFile)
         // sleep
         if (osTaskIsSchedulerRunning())
         {
-            osSemaphoreTake(&sHwRxReadySem, 10);
+            osTaskDelay(1);
         }
         // or block
     }
@@ -255,6 +255,7 @@ ISR(USART_RX_vect) // UART, rx complete
     osIsrEnter();
 
     const char c = UDR0; // always read this or this ISR will fire continuously
+
     if ( (svHwRxBufSize == 0) || (svHwRxBufHead != svHwRxBufTail) )
     {
         svHwRxBuf[svHwRxBufHead] = c;
@@ -271,12 +272,12 @@ ISR(USART_RX_vect) // UART, rx complete
         svHwRxBufDrop++;
     }
 
-    osSemaphoreGive(&sHwRxReadySem); // XXX PANIC XXX
+    osSemaphoreGive(&sHwRxReadySem, true);
 
     osIsrLeave();
 }
 
-inline uint8_t hwGetRxBufSize(const uint32_t timeout)
+__INLINE uint8_t hwGetRxBufSize(const int32_t timeout)
 {
     if (svHwRxBufSize == 0)
     {
@@ -285,9 +286,10 @@ inline uint8_t hwGetRxBufSize(const uint32_t timeout)
     return svHwRxBufSize;
 }
 
-char hwReadNextChar(void)
+__FORCEINLINE char hwReadNextChar(void)
 {
-    return svHwRxBufSize > 0 ? fgetc(stdin) : '\0';
+    //return fgetc(stdin);
+    return sHwInputGetChar(NULL);
 }
 
 static void sHwRxInit(void)
@@ -312,7 +314,7 @@ static void sHwRxInit(void)
 }
 
 #else
-inline uint8_t hwGetRxBufSize(const uint32_t timeout) { UNUSED(timeout); return 0; }
+__INLINE uint8_t hwGetRxBufSize(const int32_t timeout) { UNUSED(timeout); return 0; }
 char hwReadNextChar(void) { return '\0'; }
 static void sHwRxInit(void) { }
 #endif // (FF_HW_RX_BUFSIZE > 0)
@@ -357,8 +359,8 @@ __FORCEINLINE void hwLedLoadOff(void)
 
 #else
 static void sHwLedLoadInit(void) { }
-inline void hwLedLoadOn(void) { }
-inline void hwLedLoadOff(void) { }
+__FORCEINLINE void hwLedLoadOn(void) { }
+__FORCEINLINE void hwLedLoadOff(void) { }
 #endif
 
 
@@ -638,7 +640,7 @@ ISR(ADC_vect) // ADC conversion complete
     // disable ADC
     CLRBITS(ADCSRA, BIT(ADEN));
     // signal the waiting task that the ADC conversion has finished
-    osSemaphoreGive(&sHwAdcReadySem);
+    osSemaphoreGive(&sHwAdcReadySem, true);
     osIsrLeave();
 }
 

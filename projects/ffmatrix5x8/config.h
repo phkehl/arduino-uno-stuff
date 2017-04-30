@@ -21,6 +21,9 @@
 #define FFMATRIX_MA_PER_LED 60          // [mA] per LED if fully lit
 #define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
 
+// idle thread stack size
+#define FF_OS_IDLE_STACK 85
+
 // LED for the system load and status
 #define FF_HW_LOAD_PIN _PD3
 

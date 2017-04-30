@@ -8,13 +8,6 @@
     @{
 */
 
-//#include <stdio.h>         // libc: standard buffered input/output
-//#include <stdarg.h>        // libc: variable argument lists
-//#include <string.h>        // libc: string operations
-//#include <math.h>          // libc: mathematical functions
-
-//#include <avr/pgmspace.h>  // avr-libc: program space utilities
-
 #include "stdstuff.h"      // ff: useful macros and types
 #include "debug.h"         // ff: debugging
 #include "os.h"            // ff: operating system
@@ -23,7 +16,7 @@
 
 /* ************************************************************************** */
 
-static uint8_t sSysTaskStack[FF_SYS_STACK_SIZE];
+static uint8_t sSysTaskStack[FF_SYS_TASK_STACK];
 
 static void sSysTask(void *pArg);
 
@@ -35,7 +28,7 @@ void sysInit(void)
 void sysCreateSystemTask(void)
 {
     static OS_TASK_t task;
-    osTaskCreate("sys", 3, &task, sSysTaskStack, sizeof(sSysTaskStack), sSysTask,  NULL);
+    osTaskCreate("sys", FF_SYS_TASK_PRIO, &task, sSysTaskStack, sizeof(sSysTaskStack), sSysTask,  NULL);
 }
 
 //uint16_t sysGetInitStackPointer(void) __FORCEINLINE;
@@ -102,8 +95,8 @@ static void sSysTask(void *pArg)
             {
                 char str[64];
                 osStatus(str, sizeof(str));
-                PRINT("mon: os: %s", str);
                 hwTxFlush();
+                PRINT("mon: os: %s", str);
             }
 
             // task list
@@ -113,13 +106,13 @@ static void sSysTask(void *pArg)
             {
                 char str[64];
                 hwStatus(str, sizeof(str));
-                PRINT("mon: hw: %s", str);
                 hwTxFlush();
+                PRINT("mon: hw: %s", str);
                 if (sSysMonFunc)
                 {
                     sSysMonFunc(str, sizeof(str));
-                    PRINT("mon: app: %s", str);
                     hwTxFlush();
+                    PRINT("mon: app: %s", str);
                 }
             }
         }

@@ -180,7 +180,7 @@ typedef struct UBX_NAV_STATUS_PAYLOAD_s
 //! UBX-INF-* messages payload (error/warning/notice/test/debug string messages, see #FF_UBX_INF_ERROR_USE etc.)
 typedef struct UBX_INF_ANY_PAYLOAD_s
 {
-    char str[UBX_INF_MAX_LEN];  //!< error/warning/notice/test/debug string
+    char str[UBX_INF_MAX_LEN + 1];  //!< error/warning/notice/test/debug string
 } __PACKED UBX_INF_ANY_PAYLOAD_t;
 
 //! union of all UBX message payloads
@@ -205,7 +205,7 @@ typedef union UBX_PAYLOADS_u
     UBX_NAV_STATUS_PAYLOAD_t    navStatus;  //!< UBX-NAV-STATUS message payload
 #endif
 #if (defined FF_UBX_INF_ERROR_USE) || (defined FF_UBX_INF_WARNING_USE) || (defined FF_UBX_INF_NOTICE_USE) || (defined FF_UBX_INF_TEST_USE) || (defined FF_UBX_INF_DEBUG_USE) || defined(__DOXYGEN__)
-    UBX_INF_ANY_PAYLOAD_t       infAny;     //!< UBX-INF-* messages payload
+    UBX_INF_ANY_PAYLOAD_t       infAny;     //!< UBX-INF-* messages payload (nul terminated)
 #endif
 } UBX_PAYLOADS_t;
 

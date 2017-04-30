@@ -80,7 +80,7 @@ static uint32_t sUbxWanted  = 0; // number of interesting messages received
 
 void ubxStatus(char *str, const uint8_t size)
 {
-    snprintf_P(str, size, PSTR("ubx: bytes=%"PRIu32" (%"PRIu32") count=%"PRIu32"/%"PRIu32" buf=%"PRIu16"/%"PRIu16"/%"PRIu16),
+    snprintf_P(str, size, PSTR("bytes=%"PRIu32" (%"PRIu32") count=%"PRIu32"/%"PRIu32" buf=%"PRIu16"/%"PRIu16"/%"PRIu16),
              sUbxBytes, sUbxDropped, sUbxMsgs, sUbxWanted, sUbxParserBufSize, sUbxParserBufPeak, UBX_PARSER_BUF_SIZE);
     str[size-1] = '\0';
     sUbxParserBufPeak = 0;
@@ -189,22 +189,22 @@ const UBX_PAYLOADS_t *ubxParse(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *
         case UBX_MSG_CLS_NAV:
             switch (pkHead->id)
             {
-#  if FF_UBX_NAV_PVT_USE
+#  if (FF_UBX_NAV_PVT_USE > 0)
                 case UBX_MSG_ID_NAV_PVT:
 #  endif
-#  if FF_UBX_NAV_AOPSTATUS_USE
+#  if (FF_UBX_NAV_AOPSTATUS_USE > 0)
                 case UBX_MSG_ID_NAV_AOPSTATUS:
 #  endif
-#  if FF_UBX_NAV_CLOCK_USE
+#  if (FF_UBX_NAV_CLOCK_USE > 0)
                 case UBX_MSG_ID_NAV_CLOCK:
 #  endif
-#  if FF_UBX_NAV_POSECEF_USE
+#  if (FF_UBX_NAV_POSECEF_USE > 0)
                 case UBX_MSG_ID_NAV_POSECEF:
 #  endif
-#  if FF_UBX_NAV_VELECEF_USE
+#  if (FF_UBX_NAV_VELECEF_USE > 0)
                 case UBX_MSG_ID_NAV_VELECEF:
 #  endif
-#  if FF_UBX_NAV_STATUS_USE
+#  if (FF_UBX_NAV_STATUS_USE > 0)
                 case UBX_MSG_ID_NAV_STATUS:
 #  endif
                     interesting = true;
@@ -218,22 +218,40 @@ const UBX_PAYLOADS_t *ubxParse(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *
         case UBX_MSG_CLS_INF:
             if (pkHead->len < UBX_INF_MAX_LEN)
             {
+                // nul terminate inf message
+                char *pStr = (char *)&sUbxParserBuf[sizeof(*pkHead)];
+                pStr[pkHead->len] = '\0';
                 switch (pkHead->id)
                 {
-#  if FF_UBX_INF_ERROR_USE
+#  if (FF_UBX_INF_ERROR_USE > 0)
                     case UBX_MSG_ID_INF_ERROR:
+#    if (FF_UBX_INF_ERROR_USE > 1)
+                        ERROR("ubx: %s", pStr);
+#    endif
 #  endif
-#  if FF_UBX_INF_WARNING_USE
+#  if (FF_UBX_INF_WARNING_USE > 0)
                     case UBX_MSG_ID_INF_WARNING:
+#    if (FF_UBX_INF_WARNING_USE > 1)
+                        WARNING("ubx: %s", pStr);
+#    endif
 #  endif
-#  if FF_UBX_INF_NOTICE_USE
+#  if (FF_UBX_INF_NOTICE_USE > 0)
                     case UBX_MSG_ID_INF_NOTICE:
+#    if (FF_UBX_INF_NOTICE_USE > 1)
+                        PRINT("ubx: %s", pStr);
+#    endif
 #  endif
-#  if FF_UBX_INF_TEST_USE
+#  if (FF_UBX_INF_TEST_USE > 0)
                     case UBX_MSG_ID_INF_TEST:
+#    if (FF_UBX_INF_TEST_USE > 1)
+                        NOTICE("ubx: %s", pStr);
+#    endif
 #  endif
-#  if FF_UBX_INF_DEBUG_USE
+#  if (FF_UBX_INF_DEBUG_USE > 0)
                     case UBX_MSG_ID_INF_DEBUG:
+#    if (FF_UBX_INF_DEBUG_USE > 1)
+                        DEBUG("ubx: %s", pStr);
+#    endif
 #  endif
                         interesting = true;
                         break;
@@ -261,14 +279,6 @@ const UBX_PAYLOADS_t *ubxParse(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *
 
         // move payload to beginning of buffer (so that's it's aligned)
         memmove(&sUbxParserBuf[0], &sUbxParserBuf[sizeof(UBX_HEAD_t)], pkHead->len);
-
-        // nul terminate UBX-INF-* string
-#if UBX_INF_ANY_USE
-        if (pkHead->cls == UBX_MSG_CLS_INF)
-        {
-            sUbxParserBuf[pkHead->len] = '\0';
-        }
-#endif
 
         return (const UBX_PAYLOADS_t *)sUbxParserBuf;
 

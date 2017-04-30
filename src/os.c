@@ -65,7 +65,7 @@ enum
 static ATOM_TCB *spLastCreatedTask = NULL;
 
 // idle thread stack
-static uint8_t sOsIdleTaskStack[FF_OS_IDLE_STACK_SIZE];
+static uint8_t sOsIdleTaskStack[FF_OS_IDLE_STACK];
 
 void osInit(void)
 {

@@ -11,5 +11,8 @@ DEBUGPORT   := /dev/ttyUSB0
 # USBTinyISP programmer
 AVRDUDEARGS := -c usbtiny -y -V -B 1
 
+# we want to printf() floats
+PRINTF      := float
+
 # include master makefile
 include $(FFDIR)/build.mk

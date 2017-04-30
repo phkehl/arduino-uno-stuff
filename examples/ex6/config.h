@@ -30,9 +30,9 @@
 #define FF_UBX_NAV_POSECEF_USE   1
 #define FF_UBX_NAV_VELECEF_USE   1
 #define FF_UBX_NAV_STATUS_USE    1
-#define FF_UBX_INF_ERROR_USE     1
-#define FF_UBX_INF_WARNING_USE   1
-#define FF_UBX_INF_NOTICE_USE    1
+#define FF_UBX_INF_ERROR_USE     2
+#define FF_UBX_INF_WARNING_USE   2
+#define FF_UBX_INF_NOTICE_USE    2
 #define FF_UBX_INF_TEST_USE      1
 #define FF_UBX_INF_DEBUG_USE     1
 

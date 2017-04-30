@@ -71,7 +71,7 @@ Some hardware resources are reserved for stuff functions:
 - Timer/Counter1 (TCCR1) is used for runtime measurements (hwTIC() and hwTOC() functions)
   - Configuration: #FF_HW_NUM_TICTOC
 - Some of the SRAM is reserved and required for the system.
-  - Configuration: #FF_HW_RX_BUFSIZE, #FF_HW_TX_BUFSIZE, #FF_SYS_STACK_SIZE, #FF_OS_IDLE_STACK_SIZE, #FF_OS_HEAP_SIZE
+  - Configuration: #FF_HW_RX_BUFSIZE, #FF_HW_TX_BUFSIZE, #FF_SYS_TASK_STACK, #FF_OS_IDLE_STACK, #FF_OS_HEAP_SIZE
 
 
 

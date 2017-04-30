@@ -9,6 +9,8 @@
 
     This implements the system task.
 
+    Configuration: #FF_SYS_TASK_PRIO, #FF_SYS_MON_PERIOD, #FF_SYS_MON_VERBOSE, #FF_SYS_TASK_STACK.
+
     @{
 */
 
@@ -22,6 +24,7 @@
 
 void sysInit(void);
 
+// create system task
 void sysCreateSystemTask(void);
 
 // return a pointer suitable for the initial stack pointer

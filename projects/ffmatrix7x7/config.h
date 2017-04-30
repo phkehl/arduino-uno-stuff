@@ -27,7 +27,7 @@
 
 
 // idle thread stack size
-#define FF_OS_IDLE_STACK_SIZE 85
+#define FF_OS_IDLE_STACK 85
 
 // LED for the system load and status
 #define FF_HW_LOAD_PIN _PD4

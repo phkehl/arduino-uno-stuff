@@ -58,8 +58,8 @@
 /* *************************************************************************** */
 
 //! idle thread stack size
-#if !defined(FF_OS_IDLE_STACK_SIZE) || defined(__DOXYGEN__)
-#  define FF_OS_IDLE_STACK_SIZE 70
+#if !defined(FF_OS_IDLE_STACK) || defined(__DOXYGEN__)
+#  define FF_OS_IDLE_STACK 70
 #endif
 
 //! reserve heap memory (for malloc() etc.)
@@ -80,13 +80,19 @@
 #endif
 
 //! system task stack size (maybe needs to be increased with more tasks or more complex sysRegisterMonFunc() function)
-#if !defined(FF_SYS_STACK_SIZE) || defined(__DOXYGEN__)
+#if !defined(FF_SYS_TASK_STACK) || defined(__DOXYGEN__)
 #  if (FF_SYS_MON_VERBOSE > 0)
-#    define FF_SYS_STACK_SIZE 250
+#    define FF_SYS_TASK_STACK 250
 #  else
-#    define FF_SYS_STACK_SIZE 150
+#    define FF_SYS_TASK_STACK 150
 #  endif
 #endif
+
+//! system task priority, should be higher (i.e. a smaller number) than any user task priority
+#if !defined(FF_SYS_TASK_PRIO) || defined(__DOXYGEN__)
+#  define FF_SYS_TASK_PRIO 3
+#endif
+
 
 /* *************************************************************************** */
 
@@ -145,59 +151,77 @@
 
 /* *************************************************************************** */
 
-//! use UBX-NAV-PVT messages (1 = yes, 0 = no)
+//! use UBX-NAV-PVT messages (0 = no, 1 = yes)
 #if !defined (FF_UBX_NAV_PVT_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_NAV_PVT_USE 1
 #endif
 
-//! use UBX-NAV-AOPSTATUS messages (1 = yes, 0 = no)
+//! use UBX-NAV-AOPSTATUS messages (0 = no, 1 = yes)
 #if !defined (FF_UBX_NAV_AOPSTATUS_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_NAV_AOPSTATUS_USE 0
 #endif
 
-//! use UBX-NAV-CLOCK messages (1 = yes, 0 = no)
+//! use UBX-NAV-CLOCK messages (0 = no, 1 = yes)
 #if !defined (FF_UBX_NAV_CLOCK_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_NAV_CLOCK_USE 0
 #endif
 
-//! use UBX-NAV-POSECEF messages (1 = yes, 0 = no)
+//! use UBX-NAV-POSECEF messages (0 = no, 1 = yes)
 #if !defined (FF_UBX_NAV_POSECEF_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_NAV_POSECEF_USE 0
 #endif
 
-//! use UBX-NAV-VELECEF messages (1 = yes, 0 = no)
+//! use UBX-NAV-VELECEF messages (0 = no, 1 = yes)
 #if !defined (FF_UBX_NAV_VELECEF_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_NAV_VELECEF_USE 0
 #endif
 
-//! use UBX-NAV-STATUS messages (1 = yes, 0 = no)
+//! use UBX-NAV-STATUS messages (0 = no, 1 = yes)
 #if !defined (FF_UBX_NAV_STATUS_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_NAV_STATUS_USE 0
 #endif
 
-//! use UBX-INF-ERROR messages (1 = yes, 0 = no)
+//! use UBX-INF-ERROR messages (0 = no, 1 = yes, 2 = yes and debug print via ERROR())
 #if !defined (FF_UBX_INF_ERROR_USE) || defined(__DOXYGEN__)
-#  define FF_UBX_INF_ERROR_USE 1
+#  define FF_UBX_INF_ERROR_USE 2
 #endif
 
-//! use UBX-INF-WARNING messages (1 = yes, 0 = no)
+//! use UBX-INF-WARNING messages (0 = no, 1 = yes, 2 = yes and debug print via WARNING())
 #if !defined (FF_UBX_INF_WARNING_USE) || defined(__DOXYGEN__)
-#  define FF_UBX_INF_WARNING_USE 1
+#  define FF_UBX_INF_WARNING_USE 2
 #endif
 
-//! use UBX-INF-NOTICE messages (1 = yes, 0 = no)
+//! use UBX-INF-NOTICE messages (0 = no, 1 = yes, 2 = yes and debug print via PRINT())
 #if !defined (FF_UBX_INF_NOTICE_USE) || defined(__DOXYGEN__)
-#  define FF_UBX_INF_NOTICE_USE 1
+#  define FF_UBX_INF_NOTICE_USE 2
 #endif
 
-//! use UBX-INF-TEST messages (1 = yes, 0 = no)
+//! use UBX-INF-TEST messages (0 = no, 1 = yes, 2 = yes and debug print via NOTICE())
 #if !defined (FF_UBX_INF_TEST_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_INF_TEST_USE 0
 #endif
 
-//! use UBX-INF-DEBUG messages (1 = yes, 0 = no)
+//! use UBX-INF-DEBUG messages (0 = no, 1 = yes, 2 = yes and debug print via DEBUG())
 #if !defined (FF_UBX_INF_DEBUG_USE) || defined(__DOXYGEN__)
 #  define FF_UBX_INF_DEBUG_USE 0
+#endif
+
+
+/* *************************************************************************** */
+
+//! GNSS task priority, should be higher (i.e. a smaller number) than #FF_SYS_TASK_PRIO
+#if !defined (FF_GNSS_TASK_PRIO) || defined(__DOXYGEN__)
+#  define FF_GNSS_TASK_PRIO 2
+#endif
+
+//! GNSS task stack size
+#if !defined(FF_GNSS_TASK_STACK) || defined(__DOXYGEN__)
+#  define FF_GNSS_TASK_STACK 125
+#endif
+
+//! GNSS parser to use (1 = \ref UBX)
+#if !defined(FF_GNSS_PARSER) || defined(__DOXYGEN__)
+#  define FF_GNSS_PARSER 1
 #endif
 
 

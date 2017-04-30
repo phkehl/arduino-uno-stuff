@@ -17,8 +17,12 @@
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
 #include "ubx.h"           // ff: u-blox binary protocol
+#include "gnss.h"          // ff: GNSS receiver abstraction
 
 #include "ex6.h"
+
+
+//#define RAW_UBX
 
 
 /* ***** application init **************************************************** */
@@ -44,14 +48,14 @@ void appCreateTask(void)
     static uint8_t stack[350];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
+
+#ifndef RAW_UBX
+    gnssStartTask();
+#endif
 }
 
 
-/* ***** application functions *********************************************** */
-
-
 /* ***** application task **************************************************** */
-
 
 // application task
 static void sAppTask(void *pArg)
@@ -63,11 +67,8 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
+#ifdef RAW_UBX
         uint8_t n = hwGetRxBufSize(0);
-        if (n)
-        {
-            //DEBUG("n=%"PRIu8, n);
-        }
         while (n--)
         {
             const char c = hwReadNextChar();
@@ -76,20 +77,25 @@ static void sAppTask(void *pArg)
             const UBX_PAYLOADS_t *pkPayload = ubxParse(c, &msgCls, &msgId);
             if (pkPayload != NULL)
             {
-                if (msgCls == UBX_MSG_CLS_INF)
-                {
-                    DEBUG("ubx %02"PRIx8" %02"PRIx8 " %s",
-                        msgCls, msgId, pkPayload->infAny.str);
-                }
-                else
-                {
-                    DEBUG("ubx %02"PRIx8" %02"PRIx8 " %"PRIu32,
-                        msgCls, msgId,
-                        // UBX-NAV-*.iTOW field
-                        msgCls == UBX_MSG_CLS_NAV ? *((const uint32_t *)((const uint8_t *)pkPayload)) : 0);
-                }
+                DEBUG("ubx %02"PRIx8" %02"PRIx8 " %"PRIu32,
+                    msgCls, msgId,
+                    // UBX-NAV-*.iTOW field
+                    msgCls == UBX_MSG_CLS_NAV ? *((const uint32_t *)((const uint8_t *)pkPayload)) : 0);
             }
         }
+#else
+        GNSS_TIME_t time;
+        if (gnssGetTime(&time, 0, 5000))
+        {
+            PRINT("time: %02"PRIu8":%02"PRIu8":%02"PRIu8" acc=%"PRIu16"ms valid=%c leap=%c",
+                time.hour, time.min, time.sec, time.acc,
+                time.valid ? 'Y' : 'N', time.leap ? 'Y' : 'N');
+        }
+        else
+        {
+            WARNING("no time :-(");
+        }
+#endif
     }
 }
 
@@ -99,9 +105,13 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    const int n = snprintf_P(str, size, PSTR("status... "));
-    ubxStatus(&str[n], size - n);
-    str[size-1] = '\0';
+    ubxStatus(str, size);
+    hwTxFlush();
+    PRINT("mon: ubx: %s", str);
+    gnssStatus(str, size);
+    hwTxFlush();
+    PRINT("mon: gnss: %s", str);
+    /*const int n = */snprintf_P(str, size, PSTR("status..."));
 }
 
 

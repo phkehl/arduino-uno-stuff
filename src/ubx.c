@@ -19,6 +19,10 @@
 #define UBX_NAV_ANY_USE  (FF_UBX_NAV_PVT_USE || FF_UBX_NAV_AOPSTATUS_USE || FF_UBX_NAV_CLOCK_USE || FF_UBX_NAV_POSECEF_USE || FF_UBX_NAV_VELECEF_USE || FF_UBX_NAV_STATUS_USE) // use any UBX-NAV-* message?
 #define UBX_INF_ANY_USE  (FF_UBX_INF_ERROR_USE || FF_UBX_INF_ERROR_USE || FF_UBX_INF_ERROR_USE || FF_UBX_INF_ERROR_USE) // use any UBX-INF-* message?
 
+#if (!UBX_NAV_ANY_USE && !UBX_INF_ANY_USE)
+#  error no UBX_*_*_USE enabled
+#endif
+
 
 /* ***** parser ************************************************************* */
 

@@ -51,10 +51,10 @@ typedef struct GNSS_TIME_s
 
 //! get current time
 /*!
-    \param[in] pTime    time structure
-    \param[in] tzOffs   timezone offset (0 = UTC
-    \param[in] timeout  number of ticks to wait at most (0 to wait forever,
-                        or -1 to not wait at all, i.e. get latest known time)
+    \param[put] pTime    time structure
+    \param[in]  tzOffs   timezone offset (0 = UTC
+    \param[in]  timeout  number of ticks to wait at most (0 to wait forever,
+                         or -1 to not wait at all, i.e. get latest known time)
     \returns true if time was available within timeout
 */
 bool gnssGetTime(GNSS_TIME_t *pTime, const int8_t tzOffs, int32_t timeout);

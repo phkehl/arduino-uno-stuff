@@ -68,11 +68,9 @@ static bool sUbxChecksum(const uint8_t *pkPayload, uint16_t payloadSize)
 
 
 #define UBX_PARSER_BUF_SIZE (uint16_t)(UBX_FRAME_SIZE + UBX_MAX_PAYLOAD_SIZE) // parser buffer size, large enough to fit the largest message we are interested in
-#define UBX_PARSER_BUF_XTRA (uint16_t)20 // extra parser buffer bytes used to minimise the memmove() calls in the parser
 
-static uint8_t sUbxParserBuf[UBX_PARSER_BUF_SIZE + UBX_PARSER_BUF_XTRA]; // parser buffer
+static uint8_t sUbxParserBuf[UBX_PARSER_BUF_SIZE] __ALIGN(4); // parser buffer
 static uint16_t sUbxParserBufSize = 0; // current size of the parser buffer (write offset)
-static uint16_t sUbxParserBufOffs = 0; // current offset into the parser buffer (optimisation, see #UBX_PARSER_BUF_XTRA)
 static uint16_t sUbxParserBufPeak = 0;
 
 static uint32_t sUbxBytes   = 0; // number of bytes received
@@ -82,15 +80,13 @@ static uint32_t sUbxWanted  = 0; // number of interesting messages received
 
 void ubxStatus(char *str, const uint8_t size)
 {
-    snprintf_P(str, size, PSTR("bytes=%"PRIu32"/%"PRIu32 " msgs=%"PRIu32"/%"PRIu32" buf=%"PRIu16"/%"PRIu16"/%"PRIu16),
+    snprintf_P(str, size, PSTR("ubx: bytes=%"PRIu32" (%"PRIu32") count=%"PRIu32"/%"PRIu32" buf=%"PRIu16"/%"PRIu16"/%"PRIu16),
              sUbxBytes, sUbxDropped, sUbxMsgs, sUbxWanted, sUbxParserBufSize, sUbxParserBufPeak, UBX_PARSER_BUF_SIZE);
     str[size-1] = '\0';
     sUbxParserBufPeak = 0;
 }
 
-// FIXME: the "XTRA" stuff doesn't seem to help optimising it.. so memmove() isn't that expensive..
-
-bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PAYLOADS_t *pPayload)
+const UBX_PAYLOADS_t *ubxParse(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId)
 {
     // concept:
     // - add byte to the input buffer
@@ -107,23 +103,17 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
 
     sUbxBytes++;
 
-    // remove discarded data from the buffer, in chunks of #UBX_PARSER_BUF_EXTRA bytes
-    if (sUbxParserBufOffs >= UBX_PARSER_BUF_XTRA)
-    {
-        memmove(&sUbxParserBuf[0], &sUbxParserBuf[sUbxParserBufOffs], sUbxParserBufSize);
-        sUbxParserBufOffs = 0;
-    }
-
     // buffer full
     if (sUbxParserBufSize >= UBX_PARSER_BUF_SIZE)
     {
         // drop one byte
-        sUbxParserBufOffs++;
+        sUbxDropped++;
         sUbxParserBufSize--;
+        memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], sUbxParserBufSize);
     }
 
     // add character to the buffer
-    sUbxParserBuf[sUbxParserBufOffs + sUbxParserBufSize++] = c;
+    sUbxParserBuf[sUbxParserBufSize++] = c;
 
     // track maximum buffer size used
     if (sUbxParserBufSize > sUbxParserBufPeak)
@@ -135,59 +125,55 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
     if (sUbxParserBufSize < 2)
     {
         // --> WAIT
-        return false;
+        return NULL;
     }
 
     // need the correct sync chars or
-    if ( (sUbxParserBuf[sUbxParserBufOffs + 0] != UBX_SYNC_CHAR_1) ||
-         (sUbxParserBuf[sUbxParserBufOffs + 1] != UBX_SYNC_CHAR_2) )
+    if ( (sUbxParserBuf[0] != UBX_SYNC_CHAR_1) ||
+         (sUbxParserBuf[1] != UBX_SYNC_CHAR_2) )
     {
         // --> NADA
         sUbxDropped++;
-        sUbxParserBufOffs++;
         sUbxParserBufSize--;
-        //memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], --sUbxParserBufSize);
-        return false;
+        memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], sUbxParserBufSize);
+        return NULL;
     }
 
     // need four more chars (message class and id, payload size)
     if (sUbxParserBufSize < UBX_HEAD_SIZE)
     {
         // --> WAIT
-        return false;
+        return NULL;
     }
 
     // let's see what we have
-    UBX_HEAD_t head;
-    memcpy(&head, &sUbxParserBuf[sUbxParserBufOffs + 0], sizeof(head));
+    const UBX_HEAD_t *pkHead = (const UBX_HEAD_t *)sUbxParserBuf;
     // it's either too big or something else that looks like a UBX message
-    if (head.len > UBX_MAX_PAYLOAD_SIZE)
+    if (pkHead->len > UBX_MAX_PAYLOAD_SIZE)
     {
         // --> NADA
         sUbxDropped++;
-        sUbxParserBufOffs++;
         sUbxParserBufSize--;
-        //memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], --sUbxParserBufSize);
-        return false;
+        memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], sUbxParserBufSize);
+        return NULL;
     }
 
     // now need to wait for the rest of the payload and the checksum
-    const uint16_t size = (head.len + UBX_FRAME_SIZE);
+    const uint16_t size = (pkHead->len + UBX_FRAME_SIZE);
     if (sUbxParserBufSize < size)
     {
         // --> WAIT
-        return false;
+        return NULL;
     }
 
     // and check the checksum
-    if (sUbxChecksum(&sUbxParserBuf[sUbxParserBufOffs + UBX_TAIL_SIZE],
-                     head.len + UBX_HEAD_SIZE - UBX_TAIL_SIZE) == false)
+    if (sUbxChecksum(&sUbxParserBuf[UBX_TAIL_SIZE],
+                     pkHead->len + UBX_HEAD_SIZE - UBX_TAIL_SIZE) == false)
     {
         // --> NADA
         sUbxDropped++;
-        sUbxParserBufOffs++;
         sUbxParserBufSize--;
-        //memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], --sUbxParserBufSize);
+        memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], sUbxParserBufSize);
         return false;
     }
 
@@ -197,11 +183,11 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
     // so should have a UBX message now... see if it's interesting
     bool interesting = false;
 
-    switch ((UBX_MSG_CLS_t)head.cls)
+    switch (pkHead->cls)
     {
 #if UBX_NAV_ANY_USE
         case UBX_MSG_CLS_NAV:
-            switch ((UBX_MSG_ID_t)head.id)
+            switch (pkHead->id)
             {
 #  if FF_UBX_NAV_PVT_USE
                 case UBX_MSG_ID_NAV_PVT:
@@ -230,9 +216,9 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
 #endif // UBX_NAV_ANY_USE
 #if UBX_INF_ANY_USE
         case UBX_MSG_CLS_INF:
-            if (head.len < UBX_INF_MAX_LEN)
+            if (pkHead->len < UBX_INF_MAX_LEN)
             {
-                switch ((UBX_MSG_ID_t)head.id)
+                switch (pkHead->id)
                 {
 #  if FF_UBX_INF_ERROR_USE
                     case UBX_MSG_ID_INF_ERROR:
@@ -263,30 +249,35 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
 
     //DEBUG("ubx: 0x%02"PRIx8" 0x%02"PRIx8" %c", head.cls, head.id, interesting ? 'Y' : 'N');
 
-    // copy message to output
+    // reset parser for next iteration
+    sUbxParserBufSize = 0;
+
+    // prepare message payload for output
     if (interesting)
     {
         sUbxWanted++;
-        *pMsgCls = head.cls;
-        *pMsgId  = head.id;
-        if (pPayload)
-        {
-            memcpy(pPayload, &sUbxParserBuf[sUbxParserBufOffs + UBX_HEAD_SIZE], head.len);
+        *pMsgCls = pkHead->cls;
+        *pMsgId  = pkHead->id;
+
+        // move payload to beginning of buffer (so that's it's aligned)
+        memmove(&sUbxParserBuf[0], &sUbxParserBuf[sizeof(UBX_HEAD_t)], pkHead->len);
+
+        // nul terminate UBX-INF-* string
 #if UBX_INF_ANY_USE
-            if ((UBX_MSG_CLS_t)head.cls == UBX_MSG_CLS_INF)
-            {
-                pPayload->infAny.str[head.len] = '\0';
-            }
-#endif
+        if (pkHead->cls == UBX_MSG_CLS_INF)
+        {
+            sUbxParserBuf[pkHead->len] = '\0';
         }
+#endif
+
+        return (const UBX_PAYLOADS_t *)sUbxParserBuf;
+
     }
-
-    // remove message from buffer
-    memmove(&sUbxParserBuf[0], &sUbxParserBuf[sUbxParserBufOffs + size], sUbxParserBufSize - size);
-    sUbxParserBufSize -= size;
-    sUbxParserBufOffs = 0;
-
-    return interesting;
+    // a valid UBX message, but not an interesting one
+    else
+    {
+        return NULL;
+    }
 }
 
 
@@ -298,7 +289,8 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
 
 void ubxInit(void)
 {
-    DEBUG("ubx: init (buf %"PRIu16")", UBX_PARSER_BUF_SIZE);
+    DEBUG("ubx: init (payload %"PRIu16", buf %"PRIu16")",
+        (uint16_t)sizeof(UBX_PAYLOADS_t), UBX_PARSER_BUF_SIZE);
     memset(sUbxParserBuf, 0, sizeof(sUbxParserBuf));
 }
 

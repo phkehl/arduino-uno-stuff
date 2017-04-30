@@ -14,15 +14,11 @@
 */
 
 #ifndef __UBX_H__
-#define __UBX_H__ //!< multiple inclusion guard
+#define __UBX_H__ // multiple inclusion guard
 
 #include "stdstuff.h"      // ff: useful macros and types
 
 /* ************************************************************************** */
-
-//! initialise the u-blox binary protocol parser
-void ubxInit(void);
-
 
 /*!
     \name u-blox binary protocol (UBX) messages
@@ -89,24 +85,23 @@ typedef struct UBX_NAV_PVT_PAYLOAD_s
     uint32_t reserved4;             //!< reserved
 } __PACKED UBX_NAV_PVT_PAYLOAD_t;
 
-#define UBX_NAV_PVT_VALID_DATE_Pos             0                             //!< #UBX_NAV_PVT_VALID_DATE_Mask position
-#define UBX_NAV_PVT_VALID_DATE_Mask   (0x01 << UBX_NAV_PVT_VALID_DATE_Pos)   //!< UTC date valid flag mask
-#define UBX_NAV_PVT_VALID_TIME_Pos             1                             //!< #UBX_NAV_PVT_VALID_TIME_Mask position
-#define UBX_NAV_PVT_VALID_TIME_Mask   (0x01 << UBX_NAV_PVT_VALID_TIME_Pos)   //!< UTC time valid flag mask
-#define UBX_NAV_PVT_VALID_LEAP_Pos             2                             //!< #UBX_NAV_PVT_VALID_LEAP_Mask position
-#define UBX_NAV_PVT_VALID_LEAP_Mask   (0x01 << UBX_NAV_PVT_VALID_LEAP_Pos)   //!< UTC leap seconds valid flag mask
+#define UBX_NAV_PVT_VALID_DATE(valid) (((valid) >> 0) & 0x01) //!< UTC date valid flag
+#define UBX_NAV_PVT_VALID_TIME(valid) (((valid) >> 1) & 0x01) //!< UTC time valid flag
+#define UBX_NAV_PVT_VALID_LEAP(valid) (((valid) >> 2) & 0x01) //!< UTC leap seconds valid flag (time fully resolved)
 #define UBX_NAV_PVT_FIXTYPE_NOFIX     0 //!< no fix
 #define UBX_NAV_PVT_FIXTYPE_DRFIX     1 //!< dead-reckoning only fix
 #define UBX_NAV_PVT_FIXTYPE_2DFIX     2 //!< 2d fix
 #define UBX_NAV_PVT_FIXTYPE_3DFIX     3 //!< 3d fix
 #define UBX_NAV_PVT_FIXTYPE_GSFIX     4 //!< GNSS + dead-reckoning fix
 #define UBX_NAV_PVT_FIXTYPE_TIFIX     5 //!< time only fix
-#define UBX_NAV_PVT_FLAGS_FIXOK_Pos            0                             //!< #UBX_NAV_PVT_FLAGS_FIXOK_Mask position
-#define UBX_NAV_PVT_FLAGS_FIXOK_Mask  (0x01 << UBX_NAV_PVT_FLAGS_FIXOK_Pos)  //!< GNSS fix ok (within DOP and accuracy mask) mask
-#define UBX_NAV_PVT_FLAGS_DIFF_Pos             1                             //!< #UBX_NAV_PVT_FLAGS_DIFF_Mask position
-#define UBX_NAV_PVT_FLAGS_DIFF_Mask   (0x01 << UBX_NAV_PVT_FLAGS_DIFF_Pos)   //!< differential corrections applied flag mask
-#define UBX_NAV_PVT_FLAGS_PSM_Pos              2                             //!< #UBX_NAV_PVT_FLAGS_PSM_Mask position
-#define UBX_NAV_PVT_FLAGS_PSM_Mask    (0x07 << UBX_NAV_PVT_FLAGS_PSM_Pos)    //!< power save mode state mask
+#define UBX_NAV_PVT_FLAGS_FIXOK(flags) (((flags) >> 0) & 0x01)
+#define UBX_NAV_PVT_FLAGS_DIFF(flags)  (((flags) >> 1) & 0x01)
+#define UBX_NAV_PVT_FLAGS_PSMST(flags) (((flags) >> 2) & 0x07)
+#define UBX_NAV_PVT_PSMST_ENABLED      //!< power save mode enabled
+#define UBX_NAV_PVT_PSMST_ACQUISITION  //!< power save mode: acquisition
+#define UBX_NAV_PVT_PSMST_TRACKING     //!< power save mode: tracking
+#define UBX_NAV_PVT_PSMST_PSM          //!< power save mode: power optimised tracking
+#define UBX_NAV_PVT_FLAGS_INACTIVE     //!< power save mode: inactive
 
 //! UBX-NAV-AOPSTATUS message payload (AssistNow Autonomous (AOP) status, see #FF_UBX_NAV_AOPSTATUS_USE)
 typedef struct UBX_NAV_AOPSTATUS_PAYLOAD_s
@@ -120,8 +115,7 @@ typedef struct UBX_NAV_AOPSTATUS_PAYLOAD_s
     uint32_t reserved3;             //!< reserved
 } __PACKED UBX_NAV_AOPSTATUS_PAYLOAD_t;
 
-#define UBX_NAV_AOPSTATUS_AOPCFG_USEAOP_Pos     0 //!< #UBX_NAV_AOPSTATUS_AOPCFG_USEAOP_Mask position
-#define UBX_NAV_AOPSTATUS_AOPCFG_USEAOP_Mask (0x01 << UBX_NAV_AOPSTATUS_AOPCFG_USEAOP_Pos)  //!< AOP enabled flag mask
+#define UBX_NAV_AOPSTATUS_USEAOP(aopCfg) (((aopCfg) >> 0) & 0x01) //!< AOP enabled flag
 
 //! UBX-NAV-CLOCK message payload (clock solution, see #FF_UBX_NAV_CLOCK_USE)
 typedef struct UBX_NAV_CLOCK_PAYLOAD_s
@@ -171,20 +165,14 @@ typedef struct UBX_NAV_STATUS_PAYLOAD_s
 #define UBX_NAV_STATUS_GPSFIX_3DFIX      3 //!< 3d fix
 #define UBX_NAV_STATUS_GPSFIX_GSFIX      4 //!< "GPS" + dead-reckoning fix
 #define UBX_NAV_STATUS_GPSFIX_TIFIX      5 //!< time only fix
-#define UBX_NAV_STATUS_FLAGS_FIXOK_Pos       0 //!< #UBX_NAV_STATUS_FLAGS_FIXOK_Mask position
-#define UBX_NAV_STATUS_FLAGS_FIXOK_Mask  (0x01 << UBX_NAV_STATUS_FLAGS_FIXOK_Pos)   //!< "GPS" fix ok (within DOP and accuracy mask) mask
-#define UBX_NAV_STATUS_FLAGS_DIFF_Pos        1 //!< #UBX_NAV_STATUS_FLAGS_DIFF_Mask position
-#define UBX_NAV_STATUS_FLAGS_DIFF_Mask   (0x01 << UBX_NAV_STATUS_FLAGS_DIFF_Pos)    //!< DGPS (differential corrections) used
-#define UBX_NAV_STATUS_FLAGS_WNOSET_Pos      2 //!< #UBX_NAV_STATUS_FLAGS_WNOSET_Mask position
-#define UBX_NAV_STATUS_FLAGS_WNOSET_Mask (0x01 << UBX_NAV_STATUS_FLAGS_WNOSET_Pos)  //!< week number valid flag
-#define UBX_NAV_STATUS_FLAGS_TOWSET_Pos      3 //!< #UBX_NAV_STATUS_FLAGS_TOWSET_Mask position
-#define UBX_NAV_STATUS_FLAGS_TOWSET_Mask (0x01 << UBX_NAV_STATUS_FLAGS_TOWSET_Pos)  //!< time of week valid flag
-#define UBX_NAV_STATUS_FIXSTAT_DGPS_Pos      0 //!< #UBX_NAV_STATUS_FIXSTAT_DGPS_Mask position
-#define UBX_NAV_STATUS_FIXSTAT_DGPS_Mask (0x01 << UBX_NAV_STATUS_FIXSTAT_DGPS_Pos)   //!< DGPS input status (0 = none, 1 = PR+PRR corrections)
-#define UBX_NAV_STATUS_FIXSTAT_MAPM_Pos      6 //!< #UBX_NAV_STATUS_FIXSTAT_MAPM_Mask position
-#define UBX_NAV_STATUS_FIXSTAT_MAPM_Mask (0x03 << UBX_NAV_STATUS_FIXSTAT_MAPM_Pos)   //!< map matching status (0 = none, 1 = valid but unused, 2 = valid and used, 3 = WTF?!)
-#define UBX_NAV_STATUS_FLAGS2_PSM_Pos        0 //!< #UBX_NAV_STATUS_FLAGS2_PSM_Mask position
-#define UBX_NAV_STATUS_FLAGS2_PSM_Mask   (0x01 << UBX_NAV_STATUS_FLAGS__Pos)   //!< power save mode (PSM) state (0 = acquisition, 1 = tracking, 2 = power optimised tracking, 3 inactive)
+#define UBX_NAV_STATUS_FIXOK(flags)      (((flags) >> 0) & 0x01) //!< position and velocity okay (within masks) flag
+#define UBX_NAV_STATUS_DIFF(flags)       (((flags) >> 1) & 0x01) //!< DGPS used flag
+#define UBX_NAV_STATUS_WNOSET(flags)     (((flags) >> 2) & 0x01) //!< week number (date) valid flag
+#define UBX_NAV_STATUS_TOWSET(flags)     (((flags) >> 3) & 0x01) //!< time of week (time) valid flag
+
+#define UBX_NAV_STATUS_DGPS(fixStat)     (((fixStat) >> 0) & 0x01) //!< DNGSS input status
+#define UBX_NAV_STATUS_DGPS_NONE         0 //!< no corrections
+#define UBX_NAV_STATUS_DGPS_PRPRR        1 //!< PR+PRR corrections
 
 //! maximum length of UBX-INF-* message we'll handle (incl. ending NUL character)
 #define UBX_INF_MAX_LEN     64
@@ -227,15 +215,17 @@ typedef union UBX_PAYLOADS_u
 //@}
 
 
+//! initialise the u-blox binary protocol parser
+void ubxInit(void);
+
 //! feed data to the UBX parser
 /*!
     \param[in]  c        the character to feed
     \param[out] pMsgCls  the message class
     \param[out] pMsgId   the message ID
-    \param[out] pPayload the message payload
-    \returns true if a message has been received (and \c pMsgCls, \c pMsgId and \c pPayload are valid) , false otherwise
+    \returns pointer to message payload (and valid \c pMsgCls and \c pMsgId), #NULL otherwise
 */
-bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PAYLOADS_t *pPayload);
+const UBX_PAYLOADS_t *ubxParse(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId);
 
 //! make UBX protocol parser status string
 /*!

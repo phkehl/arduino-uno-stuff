@@ -112,6 +112,10 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+    // initialise random number generator
+    hwMathSeedRandom(hwGetRandomSeed());
+
+    // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
 
     // keep running...

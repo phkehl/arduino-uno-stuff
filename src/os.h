@@ -145,7 +145,7 @@ void osSemaphoreCreate(OS_SEMAPHORE_t *pSem, const uint16_t iniCount);
     block until the count is incremented by another task, the semaphore is deleted or a timeout
     occured.
 
-    \param[in,out] pSem       the semaphore
+    \param[in,out] pSem     the semaphore
     \param[in]     timeout  maximum time to wait (0 for endless) or -1 to check
 
     \returns \c true if the semaphore was taken (decremented),
@@ -157,9 +157,10 @@ bool osSemaphoreTake(OS_SEMAPHORE_t *pSem, const int32_t timeout);
 /*!
     This will wake up threads waiting on the semaphore.
 
-    \param[in,out] pSem  the semaphore
+    \param[in,out] pSem    the semaphore
+    \param[in]     binary  set to true if this a binary semaphore (counting only up to 1)
 */
-void osSemaphoreGive(OS_SEMAPHORE_t *pSem);
+void osSemaphoreGive(OS_SEMAPHORE_t *pSem, const bool binary);
 
 //! delete semaphore
 /*!

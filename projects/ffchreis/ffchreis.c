@@ -322,7 +322,7 @@ ISR(PCINT2_vect)
     osIsrEnter();
     svTime = hwToc(0);
     svCount++;
-    osSemaphoreGive(&sAppTouchDone);
+    osSemaphoreGive(&sAppTouchDone, true);
     osIsrLeave();
 }
 

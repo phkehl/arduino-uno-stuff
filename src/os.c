@@ -383,7 +383,7 @@ void osSemaphoreCreate(OS_SEMAPHORE_t *pSem, const uint16_t iniCount)
 
 bool osSemaphoreTake(OS_SEMAPHORE_t *pSem, const int32_t timeout)
 {
-    uint16_t res = atomSemGet((ATOM_SEM *)pSem, (int16_t)timeout);
+    uint16_t res = atomSemGet((ATOM_SEM *)pSem, timeout);
     if (res == ATOM_OK)
     {
         return true;
@@ -400,8 +400,12 @@ bool osSemaphoreTake(OS_SEMAPHORE_t *pSem, const int32_t timeout)
     return false;
 }
 
-void osSemaphoreGive(OS_SEMAPHORE_t *pSem)
+void osSemaphoreGive(OS_SEMAPHORE_t *pSem, const bool binary)
 {
+    if (binary)
+    {
+        atomSemResetCount((ATOM_SEM *)pSem, 0);
+    }
     const uint8_t res = atomSemPut((ATOM_SEM *)pSem);
     if (res != ATOM_OK)
     {

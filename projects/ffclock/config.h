@@ -23,6 +23,19 @@
 //! serial port input buffer size
 #define FF_HW_RX_BUFSIZE 125
 
+// use all UBX messages
+#define FF_UBX_NAV_PVT_USE       1
+#define FF_UBX_NAV_AOPSTATUS_USE 0
+#define FF_UBX_NAV_CLOCK_USE     0
+#define FF_UBX_NAV_POSECEF_USE   0
+#define FF_UBX_NAV_VELECEF_USE   0
+#define FF_UBX_NAV_STATUS_USE    1
+#define FF_UBX_INF_ERROR_USE     2
+#define FF_UBX_INF_WARNING_USE   2
+#define FF_UBX_INF_NOTICE_USE    2
+#define FF_UBX_INF_TEST_USE      0
+#define FF_UBX_INF_DEBUG_USE     0
+
 
 // complete configuration by including the defaults
 #include "defconfig.h"

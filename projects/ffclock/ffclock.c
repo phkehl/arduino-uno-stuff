@@ -18,10 +18,8 @@
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
-#include "hsv2rgb.h"       // ff: HSV to RGV conversion
-#include "ws2812.h"        // ff: WS2812 LED driver
-#include "ledfx.h"         // ff: LED effects
-#include "fxloop.h"        // ff: effects loops
+#include "ubx.h"           // ff: u-blox binary protocol
+#include "gnss.h"          // ff: GNSS receiver abstraction
 
 #include "ffclock.h"
 
@@ -67,6 +65,8 @@ void appCreateTask(void)
     static uint8_t stack[250];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
+
+    gnssStartTask();
 }
 
 
@@ -84,9 +84,17 @@ static void sAppTask(void *pArg)
     // keep running...
     while (ENDLESS)
     {
-        DEBUG("app...");
-        osTaskDelay(1000);
-
+        GNSS_TIME_t time;
+        if (gnssGetTime(&time, 0, 5000))
+        {
+            PRINT("time: %02"PRIu8":%02"PRIu8":%02"PRIu8" acc=%"PRIu16"ms valid=%c leap=%c",
+                time.hour, time.min, time.sec, time.acc,
+                time.valid ? 'Y' : 'N', time.leap ? 'Y' : 'N');
+        }
+        else
+        {
+            WARNING("no time :-(");
+        }
     } // ENDLESS
 }
 
@@ -96,6 +104,12 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
+    ubxStatus(str, size);
+    hwTxFlush();
+    PRINT("mon: ubx: %s", str);
+    gnssStatus(str, size);
+    hwTxFlush();
+    PRINT("mon: gnss: %s", str);
     /*const int n = */snprintf_P(str, size, PSTR("status..."));
 }
 

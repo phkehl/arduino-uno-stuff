@@ -13,13 +13,6 @@
 
 /* *************************************************************************** */
 
-
-//  LED for the system load and status
-#define FF_HW_LOAD_PIN _PD4
-
-// system tick signal
-#define FF_HW_TICK_PIN _PD5
-
 // serial port input buffer size
 #define FF_HW_RX_BUFSIZE 125
 

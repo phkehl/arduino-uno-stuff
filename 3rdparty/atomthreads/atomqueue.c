@@ -393,6 +393,9 @@ uint8_t atomQueueGet (ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
                             timer_cb.cb_func = atomQueueTimerCallback;
                             timer_cb.cb_data = (POINTER)&timer_data;
                             timer_cb.cb_ticks = timeout;
+#ifdef ATOM_FLIPFLIP
+                            timer_cb.cb_repeat = 0;
+#endif
 
                             /**
                              * Store the timer details in the TCB so that we
@@ -600,6 +603,9 @@ uint8_t atomQueuePut (ATOM_QUEUE *qptr, int32_t timeout, const uint8_t *msgptr)
                             timer_cb.cb_func = atomQueueTimerCallback;
                             timer_cb.cb_data = (POINTER)&timer_data;
                             timer_cb.cb_ticks = timeout;
+#ifdef ATOM_FLIPFLIP
+                            timer_cb.cb_repeat = 0;
+#endif
 
                             /**
                              * Store the timer details in the TCB so that we

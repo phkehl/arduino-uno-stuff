@@ -409,6 +409,9 @@ uint8_t atomMutexGet (ATOM_MUTEX *mutex, int32_t timeout)
                         timer_cb.cb_func = atomMutexTimerCallback;
                         timer_cb.cb_data = (POINTER)&timer_data;
                         timer_cb.cb_ticks = timeout;
+#ifdef ATOM_FLIPFLIP
+                        timer_cb.cb_repeat = 0;
+#endif
 
                         /**
                          * Store the timer details in the TCB so that we can

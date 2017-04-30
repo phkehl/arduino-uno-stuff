@@ -59,7 +59,7 @@
 
 //! idle thread stack size
 #if !defined(FF_OS_IDLE_STACK_SIZE) || defined(__DOXYGEN__)
-#  define FF_OS_IDLE_STACK_SIZE 65
+#  define FF_OS_IDLE_STACK_SIZE 70
 #endif
 
 //! reserve heap memory (for malloc() etc.)

@@ -1,10 +1,8 @@
-// $Id: ubx.c 3196 2014-10-16 21:14:08Z flip $
-// $HeadURL: svn+ssh://fry/flipflipclock/src/ubx.c $
 /*!
     \file
-    \brief fLiPfLiPcLoCk u-blox stuff implementation (see \ref UBX)
+    \brief flipflip's Arduino Uno stuff: u-blox binary protocol (see \ref UBX)
 
-    - Copyright (c) 2014 Philippe Kehl < phkehl at gmail dot com >
+    - Copyright (c) 2014-2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup UBX
     @{
@@ -35,7 +33,7 @@ typedef struct UBX_HEAD_s
     uint8_t  cls;    // message class
     uint8_t  id;     // message id
     uint16_t len;    // payload length
-} __PACKED  UBX_HEAD_t;
+} __PACKED UBX_HEAD_t;
 
 // UBX protocol framing tail
 typedef struct UBX_TAIL_s
@@ -50,16 +48,6 @@ typedef struct UBX_TAIL_s
 
 
 // verify checksum of a UBX message
-/*!
-    Verifies the checksum of a UBX message.
-
-    \param pkPayload    pointer to the payload data
-    \param payloadSize  size of the payload
-
-    It assumes the two checksum characters follow the payload.
-
-    \returns #TRUE if checksum matches, #FALSE otherwise
-*/
 static bool sUbxChecksum(const uint8_t *pkPayload, uint16_t payloadSize)
 {
     uint8_t ckA = 0;
@@ -71,7 +59,7 @@ static bool sUbxChecksum(const uint8_t *pkPayload, uint16_t payloadSize)
         ckB += ckA;
     }
 
-    return ( (ckA == pkPayload[0]) && (ckB == pkPayload[1]) ) ? TRUE : FALSE;
+    return ( (ckA == pkPayload[0]) && (ckB == pkPayload[1]) ) ? true : false;
 }
 
 
@@ -143,7 +131,7 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
     if (sUbxParserBufSize < 2)
     {
         // --> WAIT
-        return FALSE;
+        return false;
     }
 
     // need the correct sync chars or
@@ -155,14 +143,14 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
         sUbxParserBufOffs++;
         sUbxParserBufSize--;
         //memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], --sUbxParserBufSize);
-        return FALSE;
+        return false;
     }
 
     // need four more chars (message class and id, payload size)
     if (sUbxParserBufSize < UBX_HEAD_SIZE)
     {
         // --> WAIT
-        return FALSE;
+        return false;
     }
 
     // let's see what we have
@@ -176,7 +164,7 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
         sUbxParserBufOffs++;
         sUbxParserBufSize--;
         //memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], --sUbxParserBufSize);
-        return FALSE;
+        return false;
     }
 
     // now need to wait for the rest of the payload and the checksum
@@ -184,26 +172,26 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
     if (sUbxParserBufSize < size)
     {
         // --> WAIT
-        return FALSE;
+        return false;
     }
 
     // and check the checksum
     if (sUbxChecksum(&sUbxParserBuf[sUbxParserBufOffs + UBX_TAIL_SIZE],
-                     head.len + UBX_HEAD_SIZE - UBX_TAIL_SIZE) == FALSE)
+                     head.len + UBX_HEAD_SIZE - UBX_TAIL_SIZE) == false)
     {
         // --> NADA
         sUbxDropped++;
         sUbxParserBufOffs++;
         sUbxParserBufSize--;
         //memmove(&sUbxParserBuf[0], &sUbxParserBuf[1], --sUbxParserBufSize);
-        return FALSE;
+        return false;
     }
 
     // have now a valid UBX protocol message
     sUbxMsgs++;
 
     // so should have a UBX message now... see if it's interesting
-    bool interesting = FALSE;
+    bool interesting = false;
 
     switch ((UBX_MSG_CLS_t)head.cls)
     {
@@ -229,7 +217,7 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
 #  if FF_UBX_NAV_STATUS_USE
                 case UBX_MSG_ID_NAV_STATUS:
 #  endif
-                    interesting = TRUE;
+                    interesting = true;
                     break;
                 default:
                     break;
@@ -257,7 +245,7 @@ bool ubxFeedByte(uint8_t c, UBX_MSG_CLS_t *pMsgCls, UBX_MSG_ID_t *pMsgId, UBX_PA
 #  if FF_UBX_INF_DEBUG_USE
                     case UBX_MSG_ID_INF_DEBUG:
 #  endif
-                        interesting = TRUE;
+                        interesting = true;
                         break;
                     default:
                         break;

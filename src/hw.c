@@ -83,12 +83,12 @@ static void sHwRxTxInit(void) { }
 
 #if (FF_HW_TX_BUFSIZE > 0)
 
-static char sHwTxBuf[FF_HW_TX_BUFSIZE]; //!< output buffer
-static uint8_t sHwTxBufHead;               //!< write-to-buffer pointer (index)
-static uint8_t sHwTxBufTail;               //!< read-from-buffer pointer (index)
-static uint8_t sHwTxBufSize;               //!< size of buffered data
-static uint8_t sHwTxBufPeak;               //!< peak output buffer size
-static uint16_t  sHwTxBufDrop;               //!< number of dropped bytes
+static char      sHwTxBuf[FF_HW_TX_BUFSIZE]; // output buffer
+static uint8_t   sHwTxBufHead;               // write-to-buffer pointer (index)
+static uint8_t   sHwTxBufTail;               // read-from-buffer pointer (index)
+static uint8_t   sHwTxBufSize;               // size of buffered data
+static uint8_t   sHwTxBufPeak;               // peak output buffer size
+static uint16_t  sHwTxBufDrop;               // number of dropped bytes
 
 static uint8_t sHwTxFlush(void)
 {
@@ -117,18 +117,7 @@ static uint8_t sHwTxFlush(void)
     return sHwTxBufSize;
 }
 
-//! adds a character to the tx buffer
-/*!
-    Adds a character to the tx buffer, possibly waiting until there is space.
-
-    \note This is used by the stdio subsystem, (printf() et al.).
-
-    \param c      the character to put into the buffer
-    \param pFile  the file handle (not actually used)
-
-    \returns 1 on error (no more space in output buffer),
-             0 if okay (character queued for output)
-*/
+// adds a character to the tx buffer
 static int16_t sHwOutputPutChar(char c, FILE *pFile)
 {
     int16_t res = 1;
@@ -217,12 +206,12 @@ void hwTxFlush(void) { }
 
 #if (FF_HW_RX_BUFSIZE > 0)
 
-static volatile char svHwRxBuf[FF_HW_RX_BUFSIZE]; //!< data rx buffer
-static volatile uint8_t svHwRxBufHead;               //!< write-to-buffer pointer (index)
-static volatile uint8_t svHwRxBufTail;               //!< read-from-buffer pointer (index)
-static volatile uint8_t svHwRxBufSize;               //!< size of buffered data
-static volatile uint8_t svHwRxBufPeak;               //!< peak input buffer size
-static volatile uint16_t  svHwRxBufDrop;               //!< number of dropped bytes
+static volatile char svHwRxBuf[FF_HW_RX_BUFSIZE]; // data rx buffer
+static volatile uint8_t svHwRxBufHead;               // write-to-buffer pointer (index)
+static volatile uint8_t svHwRxBufTail;               // read-from-buffer pointer (index)
+static volatile uint8_t svHwRxBufSize;               // size of buffered data
+static volatile uint8_t svHwRxBufPeak;               // peak input buffer size
+static volatile uint16_t  svHwRxBufDrop;               // number of dropped bytes
 
 static OS_SEMAPHORE_t sHwRxReadySem;
 
@@ -425,15 +414,16 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
     // blink load LED
     if (n > 0)
     {
+        // FIXME: something's not working sometimes here.. :-(
+
         DEBUG(":-(");
         ERROR("PANIC @ %"PRIu32": 0x%"PRIx16" %S (0x%08"PRIx32", 0x%08"PRIx32")",
               (uint32_t)msss, (uint16_t)reason,
               (PGM_P)pgm_read_word(&skHwPanicStr[reason]), u0, u1);
 
-
         sHwLedLoadInit();
         uint32_t timeLeft = time ? time : 1;
-        const uint32_t period = (n * 400) + (5 * 400);
+        const uint32_t period = (n * 400) + 1000;
         while (timeLeft)
         {
             int16_t i = n;
@@ -444,11 +434,8 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
                 hwLedLoadOff();
                 _delay_ms(200);
             }
-            i = 5;
-            while (i--)
-            {
-                _delay_ms(200);
-            }
+            _delay_ms(500);
+            _delay_ms(500);
 
             if (time)
             {
@@ -461,7 +448,7 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
                     timeLeft = 0;
                 }
             }
-//            wdt_reset();
+            wdt_reset();
         }
 
         ERROR("RESET");
@@ -469,6 +456,7 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
         //void(* reset) (void) = 0;
         //reset();
 
+        sei();
         wdt_enable(WDTO_15MS);
         _delay_ms(100);
     }

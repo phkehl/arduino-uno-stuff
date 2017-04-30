@@ -701,7 +701,7 @@ void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars)
         bool uniq;
         do
         {
-            uniq = TRUE;
+            uniq = true;
             pStar->ix = hwMathGetRandom() % FF_LEDFX_NUM_LED;
             if (starIx > 0)
             {
@@ -710,12 +710,12 @@ void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars)
                 {
                     if (pStars[testIx].ix == pStar->ix)
                     {
-                        uniq = FALSE;
+                        uniq = false;
                         break;
                     }
                 }
             }
-        } while (uniq == FALSE);
+        } while (uniq == false);
         const uint32_t rand = hwMathGetRandom();
         pStar->hue    = rand & 0xff;
         pStar->speed  = ((rand >> 8) % 5) + 1;

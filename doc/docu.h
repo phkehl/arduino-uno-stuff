@@ -59,7 +59,7 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 
 Some hardware resources are reserved for stuff functions:
 
-- Pin 0 (PD0/RXD) and pin 1 (PD1/TXD) for serial port receive and transmit at baudrate 115200
+- Pin D0 (PD0/RXD) and pin D1 (PD1/TXD) for serial port receive and transmit at baudrate 115200
   - Configuration: #FF_HW_RX_BUFSIZE and #FF_HW_TX_BUFSIZE
 - Pin A0 as a system load and status indicator.
   - load: The LED is lit whenever a thread (other than the idle thread) is running.

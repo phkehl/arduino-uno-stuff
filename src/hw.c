@@ -650,38 +650,38 @@ void hwAdcInit(const HW_ADC_t pins, const bool useAref)
     uint8_t didr = 0;
     if (pins & HW_ADC_A0)
     {
-        PIN_INPUT(A0);
-        PIN_PULLUP_OFF(A0);
+        PIN_INPUT(_A0);
+        PIN_PULLUP_OFF(_A0);
         didr |= BIT(ADC0D);
     }
     if (pins & HW_ADC_A1)
     {
-        PIN_INPUT(A1);
-        PIN_PULLUP_OFF(A1);
+        PIN_INPUT(_A1);
+        PIN_PULLUP_OFF(_A1);
         didr |= BIT(ADC1D);
     }
     if (pins & HW_ADC_A2)
     {
-        PIN_INPUT(A2);
-        PIN_PULLUP_OFF(A2);
+        PIN_INPUT(_A2);
+        PIN_PULLUP_OFF(_A2);
         didr |= BIT(ADC2D);
     }
     if (pins & HW_ADC_A3)
     {
-        PIN_INPUT(A3);
-        PIN_PULLUP_OFF(A3);
+        PIN_INPUT(_A3);
+        PIN_PULLUP_OFF(_A3);
         didr |= BIT(ADC3D);
     }
     if (pins & HW_ADC_A4)
     {
-        PIN_INPUT(A4);
-        PIN_PULLUP_OFF(A4);
+        PIN_INPUT(_A4);
+        PIN_PULLUP_OFF(_A4);
         didr |= BIT(ADC4D);
     }
     if (pins & HW_ADC_A5)
     {
-        PIN_INPUT(A5);
-        PIN_PULLUP_OFF(A5);
+        PIN_INPUT(_A5);
+        PIN_PULLUP_OFF(_A5);
         didr |= BIT(ADC5D);
     }
 

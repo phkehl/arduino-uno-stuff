@@ -20,10 +20,10 @@
 void ws2801Init(void)
 {
     // configure hardware SPI
-    PIN_OUTPUT(13); // SCK
-    PIN_OUTPUT(11); // MOSI
-    PIN_OUTPUT(10); // SS
-    PIN_HIGH(10);
+    PIN_OUTPUT(_D13); // SCK
+    PIN_OUTPUT(_D11); // MOSI
+    PIN_OUTPUT(_D10); // SS
+    PIN_HIGH(_D10);
 
     // enable, master mode
     SPCR = BIT(SPE) | BIT(MSTR); // | BIT(CPOL);
@@ -52,7 +52,7 @@ void ws2801Init(void)
 void ws2801Send(const uint8_t *data, const uint8_t size)
 {
     CS_ENTER;
-    PIN_LOW(10);
+    PIN_LOW(_D10);
 
     uint16_t n = size;
     while (n--)
@@ -74,7 +74,7 @@ void ws2801Send(const uint8_t *data, const uint8_t size)
 
     // latch data
     //_delay_us(500);
-    PIN_HIGH(10);
+    PIN_HIGH(_D10);
     CS_LEAVE;
 }
 

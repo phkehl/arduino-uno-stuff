@@ -56,8 +56,8 @@ void appInit(void)
     sLedFlush();
 
     // enable interrupt (to register button presses)
-    PIN_INPUT(PD2);
-    PIN_PULLUP_ON(PD2);
+    PIN_INPUT(_PD2);
+    PIN_PULLUP_ON(_PD2);
     SETBITS(EICRA, BIT(ISC01));   // falling-edge triggers interrupt
     //CLRBITS(EICRA, BIT(ISC01) | BIT(ISC00)); // low-level triggers interrupt
     SETBITS(EIMSK, BIT(INT0));  // enable INT0 interrupt

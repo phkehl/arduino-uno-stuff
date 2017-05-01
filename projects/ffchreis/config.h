@@ -15,7 +15,7 @@
 
 
 // use the built-in LED for the system load and status
-#define FF_HW_LOAD_PIN 13
+#define FF_HW_LOAD_PIN _D13
 
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0

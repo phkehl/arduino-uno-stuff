@@ -13,7 +13,7 @@
 
 /* *************************************************************************** */
 
-#define FF_HW_LOAD_PIN 13
+#define FF_HW_LOAD_PIN _D13
 
 
 // complete configuration by including the defaults

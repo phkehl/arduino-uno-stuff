@@ -31,17 +31,17 @@
 /* ***** application init **************************************************** */
 
 // debug LED
-#define LED_PIN A5
+#define LED_PIN _A5
 
 // LED lit while data is written to the LED strip
-#define FLUSH_LED_PIN A4
+#define FLUSH_LED_PIN _A4
 
 // the WS2811 LED strip data pin
-#define STRIP_PIN A2
+#define STRIP_PIN _A2
 
 // capacitive touch interface
-#define TOUCH_SEND_PIN PD2 // Arduino pin 2, PCINT18
-#define TOUCH_RECV_PIN PD3 // Arduino pin 3, PCINT19
+#define TOUCH_SEND_PIN _PD2 // Arduino pin 2, PCINT18
+#define TOUCH_RECV_PIN _PD3 // Arduino pin 3, PCINT19
 
 
 

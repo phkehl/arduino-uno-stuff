@@ -22,12 +22,12 @@
 
 //! system load signal on pin (see \ref UNOPINS, set to NONE to disable)
 #if !defined(FF_HW_LOAD_PIN) || defined(__DOXYGEN__)
-#  define FF_HW_LOAD_PIN A0
+#  define FF_HW_LOAD_PIN _A0
 #endif
 
 //! system tick signal on pin (see \ref UNOPINS, set to NONE to disable)
 #if !defined(FF_HW_TICK_PIN) || defined(__DOXYGEN__)
-#  define FF_HW_TICK_PIN A1
+#  define FF_HW_TICK_PIN _A1
 #endif
 
 //! serial port baudrate (don't set this too low!)

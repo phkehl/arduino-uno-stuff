@@ -20,8 +20,8 @@
 
 /* ***** application init **************************************************** */
 
-#define LED_PIN 9
-#define LED2_PIN 8
+#define LED_PIN  _D9
+#define LED2_PIN _D8
 
 // forward declaration
 static void sAppStatus(char *str, const size_t size);

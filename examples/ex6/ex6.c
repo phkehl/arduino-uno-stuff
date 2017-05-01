@@ -34,18 +34,21 @@ static void sAppTask(void *pArg);
 // initialise the user application
 void appInit(void)
 {
-    DEBUG("ex6: init");
+    DEBUG("ex6: init, sizeof(GNSS_EPOCH_t)=%"PRIu8,
+        (uint8_t)sizeof(GNSS_EPOCH_t));
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
 
+#ifdef RAW_UBX
     ubxInit();
+#endif
 }
 
 // starts the user application task
 void appCreateTask(void)
 {
-    static uint8_t stack[350];
+    static uint8_t stack[200];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 
@@ -84,16 +87,16 @@ static void sAppTask(void *pArg)
             }
         }
 #else
-        GNSS_TIME_t time;
-        if (gnssGetTime(&time, 0, 5000))
+        static GNSS_EPOCH_t epoch;
+        if (gnssGetEpoch(&epoch, 5000))
         {
-            PRINT("time: %02"PRIu8":%02"PRIu8":%02"PRIu8" acc=%"PRIu16"ms valid=%c leap=%c",
-                time.hour, time.min, time.sec, time.acc,
-                time.valid ? 'Y' : 'N', time.leap ? 'Y' : 'N');
+            static char str[120];
+            gnssStringifyEpoch(&epoch, str, sizeof(str));
+            PRINT("epoch %s", str);
         }
         else
         {
-            WARNING("no time :-(");
+            WARNING("no epoch :-(");
         }
 #endif
     }

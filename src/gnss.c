@@ -8,7 +8,7 @@
     @{
 
     \todo use timepulse output to determine age of epoch
-    \todo reset TTFF when position has been lost and start counting again
+    \todo implement epoch collection from multiple UBX-NAV-*
 */
 
 #include <string.h>        // libc: string operations
@@ -31,56 +31,129 @@
 #if ( (FF_GNSS_PARSER < 0) || (FF_GNSS_PARSER > 1) )
 #  error illegal value for FF_GNSS_PARSER
 #endif
+#if (FF_GNSS_PARSER == 1)
+#  if (!FF_UBX_NAV_PVT_USE)
+#    error FF_UBX_NAV_PVT_USE not enabled
+#  endif
+#endif
 
+//--------------------------------------------------------------------------------------------------
 
-static float       sGnssTtff    = 0.0f;    // time to first fix (as reported by the receiver) [s]
-static float       sGnssLat     = 0.0f;    // latitude [deg]
-static float       sGnssLon     = 0.0f;    // longitude [deg]
-static float       sGnssAlt     = 0.0f;    // height above ellipsoid [m]
-static uint8_t     sGnssFixType = 0;       // fix type (0 = nofix, 1 = dr, 2 = 2d, 3 = 3d, 4 = 3d+dr)
-static bool        sGnssFixOk   = false;   // fix within DOP and accuracy mask?
-static uint8_t     sGnssNumSv   = 0;       // number of SVs used in navigation solution
-static GNSS_TIME_t sGnssTime    = { .hour = 0, .min = 0, .sec = 0, .acc = 0xffff, .valid = false, .leap = false }; // latest time solution
-static OS_MUTEX_t     sGnssTimeMutex;       // access protection for sGnssTime
-static OS_SEMAPHORE_t sGnssNewTimeSemaphore; // new time solution available semaphore
+// epoch data collecting
+static GNSS_EPOCH_t sEpoch;
+uint32_t sMsssLastNofix;
+//#if (FF_GNSS_PARSER == 1)
+//static uint32_t sCollectItow;
+//bool sUbxNavPvtSeen;
+//bool sUbxNavStatusSeen;
+//#endif
 
-void gnssStatus(char *str, const uint8_t size)
-{
-    snprintf_P(str, size, PSTR("ttff=%.1f llh=%.4f/%.4f/%.0f fix=%"PRIu8"/%c #SV=%"PRIu8" time=%c"),
-        sGnssTtff, sGnssLat, sGnssLon, sGnssAlt, sGnssFixType, sGnssFixOk ? 'Y' : 'N', sGnssNumSv,
-        sGnssTime.valid ? 'Y' : 'N');
-    str[size-1] = '\0';
-}
+static OS_MUTEX_t     sEpochMx;    // access protection for sEpoch
+static OS_SEMAPHORE_t sNewTimeSem; // new time solution available semaphore
 
-bool gnssGetTime(GNSS_TIME_t *pTime, const int8_t tzOffs, int32_t timeout)
+bool gnssGetEpoch(GNSS_EPOCH_t *pEpoch, int32_t timeout)
 {
     if (timeout >= 0)
     {
-        if (osSemaphoreTake(&sGnssNewTimeSemaphore, timeout) == false)
+        if (osSemaphoreTake(&sNewTimeSem, timeout) == false)
         {
             return false;
         }
     }
 
-    osMutexClaim(&sGnssTimeMutex, 0);
-    memcpy(pTime, &sGnssTime, sizeof(*pTime));
-
-    int8_t hour = pTime->hour;
-    hour += tzOffs;
-    if (hour < 0)
-    {
-        hour += 24;
-    }
-    else if (hour >= 24)
-    {
-        hour -= 24;
-    }
-    pTime->hour = (uint8_t)hour;;
-
-    osMutexRelease(&sGnssTimeMutex);
+    osMutexClaim(&sEpochMx, 0);
+    memcpy(pEpoch, &sEpoch, sizeof(*pEpoch));
+    osMutexRelease(&sEpochMx);
 
     return true;
 }
+
+//--------------------------------------------------------------------------------------------------
+
+// forward declarations
+static void sGnssTask(void *pArg);
+static void sCollectUbxNavPvt(const UBX_NAV_PVT_PAYLOAD_t *pkPvt);
+
+void gnssStartTask(void)
+{
+    DEBUG("gnss: start");
+
+    osMutexCreate(&sEpochMx);
+    osSemaphoreCreate(&sNewTimeSem, 0);
+
+    sMsssLastNofix = osTaskGetMsss();
+#if (FF_GNSS_PARSER == 1)
+    ubxInit();
+//    sCollectItow = UINT32_MAX;
+#endif
+
+    static OS_TASK_t task;
+    static uint8_t stack[FF_GNSS_TASK_STACK];
+    osTaskCreate("gns", FF_GNSS_TASK_PRIO, &task, stack, sizeof(stack), sGnssTask,  NULL);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#ifndef __DOXYGEN__ // STFU
+static const char skFixTypeStrs[][6] PROGMEM =
+{
+    { "NOFIX\0" }, { "DR\0" }, { "2D\0" }, { "3D\0" }, { "SF\0" }, { "TIME\0" }
+};
+#endif
+
+void gnssStatus(char *str, const uint8_t size)
+{
+    const uint16_t ttff = sEpoch.ttff / 10;
+    const uint8_t ttffFrac = sEpoch.ttff - (ttff * 10);
+    snprintf_P(str, size, PSTR("numEpochs=%"PRIu32" fixType=%S ttff=%"PRIu16".%"PRIu16" numSV=%"PRIu8),
+        sEpoch.count, skFixTypeStrs[sEpoch.fixType], ttff, ttffFrac, (uint8_t)sEpoch.numSv);
+    str[size-1] = '\0';
+}
+
+#ifndef __DOXYGEN__ // STFU
+static const char skTaccStrs[][7] PROGMEM =
+{
+    { "<100ns\0" }, { "<1ms\0" }, { "<10ms\0" }, { "<100ms\0" }, { "<0.5s\0" }, { "<1s\0" }, { "<10s\0" }, { "oo\0" }
+};
+#endif
+
+#ifndef __DOXYGEN__ // STFU
+static const char skPaccStrs[][6] PROGMEM =
+{
+    { "<1cm\0" }, { "<10cm\0" }, { "<1m\0" }, { "<2m\0" }, { "<5m\0" }, { "<10m\0" }, { "<100m\0" }, { "oo\0" }
+};
+#endif
+
+#ifndef __DOXYGEN__ // STFU
+static const char skDopStrs[][6] PROGMEM =
+{
+    { "<0.5\0" }, { "<1.0\0" }, { "<1.5\0" }, { "<2.0\0" }, { "<2.5\0" }, { "<5.0\0" }, { "<10.0\0" }, { "oo\0" }
+};
+#endif
+
+void gnssStringifyEpoch(const GNSS_EPOCH_t *pkEpoch, char *str, const uint8_t size)
+{
+    const uint16_t ttff = sEpoch.ttff / 10;
+    const uint8_t ttffFrac = sEpoch.ttff - (ttff * 10);
+    snprintf_P(str, size, PSTR("#%"PRIu32" (%"PRIu16".%"PRIu16") %S (%c) #SV=%"PRIu8" PDOP=%S "
+            "%09.6f/%010.6f/%04"PRIi16" (%S/%S) "
+            "%02"PRIu8".%02"PRIu8".%02"PRIu8" (%c) "
+            "%02"PRIu8":%02"PRIu8":%02"PRIu8" (%c%c, %S)"
+            ),
+        pkEpoch->count, ttff, ttffFrac, skFixTypeStrs[pkEpoch->fixType],
+        pkEpoch->fixOk ? 'Y' : 'N', (uint8_t)pkEpoch->numSv, skDopStrs[pkEpoch->pDop],
+        pkEpoch->lat, pkEpoch->lon, pkEpoch->alt, skPaccStrs[pkEpoch->hAcc], skPaccStrs[pkEpoch->vAcc],
+        (uint8_t)pkEpoch->day, (uint8_t)pkEpoch->month, (uint8_t)pkEpoch->year, pkEpoch->dateValid ? 'Y' : 'N',
+        (uint8_t)pkEpoch->hour, (uint8_t)pkEpoch->min, (uint8_t)pkEpoch->sec,
+        pkEpoch->timeValid ? 'Y' : 'N', pkEpoch->leapValid ? 'Y' : 'N', skTaccStrs[pkEpoch->tAcc]
+
+
+        );
+
+    str[size-1] = '\0';
+}
+
+//--------------------------------------------------------------------------------------------------
 
 static void sGnssTask(void *pArg)
 {
@@ -117,43 +190,23 @@ static void sGnssTask(void *pArg)
                         case UBX_MSG_ID_NAV_PVT:
                         {
                             const UBX_NAV_PVT_PAYLOAD_t *pkPvt = &pkPayload->navPvt;
-                            sGnssLat     = (float)pkPvt->lat * 1e-7f;
-                            sGnssLon     = (float)pkPvt->lon * 1e-7f;
-                            sGnssAlt     = (float)pkPvt->height * 1e-3f;
-                            sGnssFixType = pkPvt->fixType;
-                            sGnssNumSv   = pkPvt->numSV;
-                            sGnssFixOk   = UBX_NAV_PVT_FLAGS_FIXOK(pkPvt->flags) ? true : false;
-
-                            // make new time available
-                            if (osMutexClaim(&sGnssTimeMutex, 1)) // cannot wait too long, need to keep reading on the input
+                            //const uint32_t iTow = pkPvt->iTOW;
+                            //DEBUG("gnss: UBX-NAV-PVT %08"PRIu32" %04"PRIu16"-%02"PRIu8"-%02"PRIu8" %02"PRIu8":%02"PRIu8":%02"PRIu8" %"PRIu8" %"PRIu8" %.5f %.5f %"PRIi32,
+                            //    iTow, pkPvt->year, pkPvt->month, pkPvt->day, pkPvt->hour, pkPvt->min, pkPvt->sec,
+                            //    pkPvt->fixType, pkPvt->numSV, (float)pkPvt->lat * 1e-7, (float)pkPvt->lon * 1e-7, pkPvt->height / 1000);
+                            if (osMutexClaim(&sEpochMx, 1)) // cannot wait too long, need to keep reading on the input
                             {
-                                //DEBUG("gnss: new time");
-                                sGnssTime.hour  = pkPvt->hour;
-                                sGnssTime.min   = pkPvt->min;
-                                sGnssTime.sec   = pkPvt->sec;
-                                sGnssTime.acc   = (pkPvt->tAcc > (uint32_t)4294) ? 4295 : (uint16_t)(pkPvt->tAcc / (uint32_t)1000000);
-                                sGnssTime.valid = UBX_NAV_PVT_VALID_TIME(pkPvt->valid) ? true : false;
-                                sGnssTime.leap  = UBX_NAV_PVT_VALID_LEAP(pkPvt->valid) ? true : false;
-                                osMutexRelease(&sGnssTimeMutex);
-                                osSemaphoreGive(&sGnssNewTimeSemaphore, true);
+                                sCollectUbxNavPvt(pkPvt);
+                                sEpoch.count++;
+                                osMutexRelease(&sEpochMx);
+                                osSemaphoreGive(&sNewTimeSem, true);
                             }
                             else
                             {
                                 ERROR("gnss: mx");
                             }
-                            //DEBUG("gnss: %04"PRIu16"-%02"PRIu8"-%02"PRIu8" %02"PRIu8":%02"PRIu8":%02"PRIu8" %"PRIu8" %"PRIu8" %.5f %.5f %"PRIi32,
-                            //    pkPvt->year, pkPvt->month, pkPvt->day, pkPvt->hour, pkPvt->min, pkPvt->sec,
-                            //    pkPvt->fixType, pkPvt->numSV, (float)pkPvt->lat * 1e-7, (float)pkPvt->lon * 1e-7, pkPvt->height / 1000);
                         }   break;
 #  endif // (FF_UBX_NAV_PVT_USE > 0)
-#  if (FF_UBX_NAV_STATUS_USE > 0)
-                        case UBX_MSG_ID_NAV_STATUS:
-                        {
-                            const UBX_NAV_STATUS_PAYLOAD_t *pkStatus = &pkPayload->navStatus;
-                            sGnssTtff = (float)pkStatus->ttff * 1e-3f;
-                            //DEBUG("gnss: %.3f %.3f", (float)pkStatus->ttff * 1e-3, (float)pkStatus->msss * 1e-3);
-                        }   break;
-#  endif // (FF_UBX_NAV_STATUS_USE > 0)
                         default:
                             break;
                     }
@@ -169,17 +222,75 @@ static void sGnssTask(void *pArg)
     } // ENDLESS
 }
 
-void gnssStartTask(void)
+//--------------------------------------------------------------------------------------------------
+
+static void sCollectUbxNavPvt(const UBX_NAV_PVT_PAYLOAD_t *pkPvt)
 {
-    DEBUG("gnss: start");
-    osMutexCreate(&sGnssTimeMutex);
-    osSemaphoreCreate(&sGnssNewTimeSemaphore, 0);
-    static OS_TASK_t task;
-    static uint8_t stack[FF_GNSS_TASK_STACK];
-    osTaskCreate("gns", FF_GNSS_TASK_PRIO, &task, stack, sizeof(stack), sGnssTask,  NULL);
+    switch (pkPvt->fixType)
+    {
+        case UBX_NAV_PVT_FIXTYPE_DRFIX: sEpoch.fixType = GNSS_FIXTYPE_DR;   break;
+        case UBX_NAV_PVT_FIXTYPE_2DFIX: sEpoch.fixType = GNSS_FIXTYPE_2D;   break;
+        case UBX_NAV_PVT_FIXTYPE_3DFIX: sEpoch.fixType = GNSS_FIXTYPE_3D;   break;
+        case UBX_NAV_PVT_FIXTYPE_SFFIX: sEpoch.fixType = GNSS_FIXTYPE_SF;   break;
+        case UBX_NAV_PVT_FIXTYPE_TIFIX: sEpoch.fixType = GNSS_FIXTYPE_TIME; break;
+        case UBX_NAV_PVT_FIXTYPE_NOFIX:
+        default:                        sEpoch.fixType = GNSS_FIXTYPE_NONE; break;
+    }
+    sEpoch.numSv     = pkPvt->numSV & 0x1f;
+    sEpoch.dateValid = UBX_NAV_PVT_VALID_DATE(pkPvt->valid) ? true : false;
+    sEpoch.timeValid = UBX_NAV_PVT_VALID_TIME(pkPvt->valid) ? true : false;
+    sEpoch.leapValid = UBX_NAV_PVT_VALID_LEAP(pkPvt->valid) ? true : false;
+    sEpoch.fixOk     = UBX_NAV_PVT_VALID_LEAP(pkPvt->flags) ? true : false;
+    sEpoch.day       = pkPvt->day   & 0x1f;
+    sEpoch.month     = pkPvt->month & 0x0f;
+    sEpoch.year      = (pkPvt->year - 2000) & 0x7f;
+    sEpoch.hour      = pkPvt->hour & 0x1f;
+    sEpoch.min       = pkPvt->min  & 0x3f;
+    sEpoch.sec       = pkPvt->sec  & 0x3f;
+    sEpoch.lat       = (float)pkPvt->lat * 1e-7f;
+    sEpoch.lon       = (float)pkPvt->lon * 1e-7f;
+    sEpoch.alt       = pkPvt->height / 1000;
+    if      (pkPvt->tAcc <      100) { sEpoch.tAcc = GNSS_TACC_100NS; }
+    else if (pkPvt->tAcc <     1000) { sEpoch.tAcc = GNSS_TACC_1MS;   }
+    else if (pkPvt->tAcc <    10000) { sEpoch.tAcc = GNSS_TACC_10MS;  }
+    else if (pkPvt->tAcc <   100000) { sEpoch.tAcc = GNSS_TACC_100MS; }
+    else if (pkPvt->tAcc <   500000) { sEpoch.tAcc = GNSS_TACC_500MS; }
+    else if (pkPvt->tAcc <  1000000) { sEpoch.tAcc = GNSS_TACC_1S;    }
+    else if (pkPvt->tAcc < 10000000) { sEpoch.tAcc = GNSS_TACC_10S;   }
+    else                             { sEpoch.tAcc = GNSS_TACC_BIG;   }
+    if      (pkPvt->hAcc <       10) { sEpoch.hAcc = GNSS_PACC_1CM;   }
+    else if (pkPvt->hAcc <      100) { sEpoch.hAcc = GNSS_PACC_10CM;  }
+    else if (pkPvt->hAcc <     1000) { sEpoch.hAcc = GNSS_PACC_1M;    }
+    else if (pkPvt->hAcc <     2000) { sEpoch.hAcc = GNSS_PACC_2M;    }
+    else if (pkPvt->hAcc <     5000) { sEpoch.hAcc = GNSS_PACC_5M;    }
+    else if (pkPvt->hAcc <    10000) { sEpoch.hAcc = GNSS_PACC_10M;   }
+    else if (pkPvt->hAcc <   100000) { sEpoch.hAcc = GNSS_PACC_100M;  }
+    else                             { sEpoch.hAcc = GNSS_PACC_BIG;   }
+    if      (pkPvt->vAcc <       10) { sEpoch.vAcc = GNSS_PACC_1CM;   }
+    else if (pkPvt->vAcc <      100) { sEpoch.vAcc = GNSS_PACC_10CM;  }
+    else if (pkPvt->vAcc <     1000) { sEpoch.vAcc = GNSS_PACC_1M;    }
+    else if (pkPvt->vAcc <     2000) { sEpoch.vAcc = GNSS_PACC_2M;    }
+    else if (pkPvt->vAcc <     5000) { sEpoch.vAcc = GNSS_PACC_5M;    }
+    else if (pkPvt->vAcc <    10000) { sEpoch.vAcc = GNSS_PACC_10M;   }
+    else if (pkPvt->vAcc <   100000) { sEpoch.vAcc = GNSS_PACC_100M;  }
+    else                             { sEpoch.vAcc = GNSS_PACC_BIG;   }
+    if      (pkPvt->pDOP <       50) { sEpoch.pDop = GNSS_DOP_0_5;    }
+    else if (pkPvt->pDOP <      100) { sEpoch.pDop = GNSS_DOP_1_0;    }
+    else if (pkPvt->pDOP <      150) { sEpoch.pDop = GNSS_DOP_1_5;    }
+    else if (pkPvt->pDOP <      200) { sEpoch.pDop = GNSS_DOP_2_0;    }
+    else if (pkPvt->pDOP <      250) { sEpoch.pDop = GNSS_DOP_2_5;    }
+    else if (pkPvt->pDOP <      500) { sEpoch.pDop = GNSS_DOP_5_0;    }
+    else if (pkPvt->pDOP <     1000) { sEpoch.pDop = GNSS_DOP_10_0;   }
+    else                             { sEpoch.pDop = GNSS_DOP_BIG;    }
+    const uint32_t msss = osTaskGetMsss();
+    sEpoch.ttff = ( (msss - sMsssLastNofix) + 500 ) / 100;
+    if ( (GNSS_FIXTYPE_2D <= sEpoch.fixType) && (sEpoch.fixType >= GNSS_FIXTYPE_SF) )
+    {
+        sMsssLastNofix = msss;
+    }
 }
 
-
+//--------------------------------------------------------------------------------------------------
 
 //@}
 // eof

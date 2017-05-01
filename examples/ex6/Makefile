@@ -3,6 +3,10 @@
 FFDIR       := ../..
 
 
+# we want to printf() floats
+PRINTF      := float
+
+
 # see build.mk for more options that can be set here
 
 

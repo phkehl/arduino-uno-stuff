@@ -81,7 +81,7 @@ typedef struct UBX_NAV_PVT_PAYLOAD_s
     int32_t  headMot;               //!< course over ground (heading) [1e-5 deg]
     uint32_t sAcc;                  //!< speed accuracy estimate [mm/s]
     uint32_t headAcc;               //!< heading accuracy [1e-5 deg]
-    uint16_t pDOP;                  //!< position dillution of precision (DOP)
+    uint16_t pDOP;                  //!< position dillution of precision (DOP) [0.01]
     uint16_t reserved2;             //!< reserved
     uint32_t reserved3;             //!< reserved
     int32_t  headVeh;               //!< vehicle course over ground (heading) [1e-5 deg]
@@ -95,7 +95,7 @@ typedef struct UBX_NAV_PVT_PAYLOAD_s
 #define UBX_NAV_PVT_FIXTYPE_DRFIX     1 //!< dead-reckoning only fix
 #define UBX_NAV_PVT_FIXTYPE_2DFIX     2 //!< 2d fix
 #define UBX_NAV_PVT_FIXTYPE_3DFIX     3 //!< 3d fix
-#define UBX_NAV_PVT_FIXTYPE_GSFIX     4 //!< GNSS + dead-reckoning fix
+#define UBX_NAV_PVT_FIXTYPE_SFFIX     4 //!< GNSS + dead-reckoning fix (sensor fusion)
 #define UBX_NAV_PVT_FIXTYPE_TIFIX     5 //!< time only fix
 #define UBX_NAV_PVT_FLAGS_FIXOK(flags) (((flags) >> 0) & 0x01)
 #define UBX_NAV_PVT_FLAGS_DIFF(flags)  (((flags) >> 1) & 0x01)

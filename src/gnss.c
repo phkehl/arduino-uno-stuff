@@ -6,6 +6,9 @@
 
     \addtogroup GNSS
     @{
+
+    \todo use timepulse output to determine age of epoch
+    \todo reset TTFF when position has been lost and start counting again
 */
 
 #include <string.h>        // libc: string operations

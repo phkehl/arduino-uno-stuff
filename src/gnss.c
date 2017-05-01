@@ -42,6 +42,7 @@
 // epoch data collecting
 static GNSS_EPOCH_t sEpoch;
 uint32_t sMsssLastNofix;
+uint32_t sMsssLastEpoch;
 //#if (FF_GNSS_PARSER == 1)
 //static uint32_t sCollectItow;
 //bool sUbxNavPvtSeen;
@@ -105,8 +106,11 @@ void gnssStatus(char *str, const uint8_t size)
 {
     const uint16_t ttff = sEpoch.ttff / 10;
     const uint8_t ttffFrac = sEpoch.ttff - (ttff * 10);
-    snprintf_P(str, size, PSTR("numEpochs=%"PRIu32" fixType=%S ttff=%"PRIu16".%"PRIu16" numSV=%"PRIu8),
-        sEpoch.count, skFixTypeStrs[sEpoch.fixType], ttff, ttffFrac, (uint8_t)sEpoch.numSv);
+    const uint32_t age = (osTaskGetMsss() - sMsssLastEpoch + 500) / 100;
+    const uint16_t ageI = age / 10;
+    const uint16_t ageF = age - (ageI * 10);
+    snprintf_P(str, size, PSTR("numEpochs=%"PRIu32" fixType=%S ttff=%"PRIu16".%"PRIu16" age=%"PRIu16".%"PRIu16" numSV=%"PRIu8),
+        sEpoch.count, skFixTypeStrs[sEpoch.fixType], ttff, ttffFrac, ageI, ageF, (uint8_t)sEpoch.numSv);
     str[size-1] = '\0';
 }
 
@@ -197,8 +201,12 @@ static void sGnssTask(void *pArg)
                             if (osMutexClaim(&sEpochMx, 1)) // cannot wait too long, need to keep reading on the input
                             {
                                 sCollectUbxNavPvt(pkPvt);
+
                                 sEpoch.count++;
+                                sMsssLastEpoch = osTaskGetMsss();
+
                                 osMutexRelease(&sEpochMx);
+
                                 osSemaphoreGive(&sNewTimeSem, true);
                             }
                             else

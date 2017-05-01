@@ -69,7 +69,7 @@ typedef struct atom_tcb
     /* Details used if thread stack-checking is required */
 #ifdef ATOM_STACK_CHECKING
     POINTER stack_bottom;         /* Pointer to bottom of stack allocation */
-    uint32_t stack_size;          /* Size of stack allocation in bytes */
+    uint16_t stack_size;          /* Size of stack allocation in bytes */
 #endif
 
 #ifdef ATOM_FLIPFLIP

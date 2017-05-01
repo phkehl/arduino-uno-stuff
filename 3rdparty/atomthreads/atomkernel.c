@@ -418,13 +418,13 @@ static void atomThreadSwitch(ATOM_TCB *old_tcb, ATOM_TCB *new_tcb)
  * @retval ATOM_ERR_PARAM Bad parameters
  * @retval ATOM_ERR_QUEUE Error putting the thread on the ready queue
  */
-uint8_t atomThreadCreate (ATOM_TCB *tcb_ptr, uint8_t priority, void (*entry_point)(uint32_t), uint32_t entry_param, void *stack_bottom, uint32_t stack_size, uint8_t stack_check)
+uint8_t atomThreadCreate (ATOM_TCB *tcb_ptr, uint8_t priority, void (*entry_point)(uint32_t), uint32_t entry_param, void *stack_bottom, uint16_t stack_size, uint8_t stack_check)
 {
     CRITICAL_STORE;
     uint8_t status;
     uint8_t *stack_top;
 #ifdef ATOM_STACK_CHECKING
-	int32_t count;
+	int16_t count;
 #endif
 
     if ((tcb_ptr == NULL) || (entry_point == NULL) || (stack_bottom == NULL)
@@ -478,7 +478,7 @@ uint8_t atomThreadCreate (ATOM_TCB *tcb_ptr, uint8_t priority, void (*entry_poin
              * calls to atomThreadStackCheck() to get an indication of how
              * much stack has been used during runtime.
              */
-		    count = (int32_t)stack_size;
+		    count = stack_size;
 
 #ifdef ATOM_FLIPFLIP
             // Only initialise bottom 50 bytes of stack with the
@@ -578,7 +578,7 @@ uint8_t atomThreadCreate (ATOM_TCB *tcb_ptr, uint8_t priority, void (*entry_poin
  * @retval ATOM_ERR_PARAM Bad parameters
  * @retval ATOM_ERR_QUEUE Error putting the thread on the ready queue
  */
-uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uint32_t *free_bytes)
+uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint16_t *used_bytes, uint16_t *free_bytes)
 {
     uint8_t status;
     uint8_t *stack_ptr;
@@ -607,7 +607,7 @@ uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uin
         }
 
         /* We quit the loop above on the count of the free bytes */
-        *free_bytes = (uint32_t)i;
+        *free_bytes = i;
 
         /* Calculate used bytes using our knowledge of the stack size */
         *used_bytes = tcb_ptr->stack_size - *free_bytes;
@@ -718,7 +718,7 @@ ATOM_TCB *atomCurrentContext (void)
  * @retval ATOM_OK Success
  * @retval ATOM_ERROR Initialisation error
  */
-uint8_t atomOSInit (void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check)
+uint8_t atomOSInit (void *idle_thread_stack_bottom, uint16_t idle_thread_stack_size, uint8_t idle_thread_stack_check)
 {
     uint8_t status;
 

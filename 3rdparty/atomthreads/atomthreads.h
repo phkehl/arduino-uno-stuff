@@ -25,14 +25,14 @@
 
 /* ***** atomkernel.c ******************************************************** */
 
-uint8_t atomOSInit (void *idle_thread_stack_bottom, uint32_t idle_thread_stack_size, uint8_t idle_thread_stack_check);
+uint8_t atomOSInit (void *idle_thread_stack_bottom, uint16_t idle_thread_stack_size, uint8_t idle_thread_stack_check);
 void atomOSStart (void);
 void atomSched (uint8_t timer_tick);
 void atomIntEnter (void);
 void atomIntExit (uint8_t timer_tick);
 ATOM_TCB *atomCurrentContext (void);
-uint8_t atomThreadCreate (ATOM_TCB *tcb_ptr, uint8_t priority, void (*entry_point)(uint32_t), uint32_t entry_param, void *stack_bottom, uint32_t stack_size, uint8_t stack_check);
-uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint32_t *used_bytes, uint32_t *free_bytes);
+uint8_t atomThreadCreate (ATOM_TCB *tcb_ptr, uint8_t priority, void (*entry_point)(uint32_t), uint32_t entry_param, void *stack_bottom, uint16_t stack_size, uint8_t stack_check);
+uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint16_t *used_bytes, uint16_t *free_bytes);
 uint8_t tcbEnqueuePriority (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr);
 ATOM_TCB *tcbDequeueHead (ATOM_TCB **tcb_queue_ptr);
 ATOM_TCB *tcbDequeueEntry (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr);

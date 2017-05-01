@@ -272,7 +272,7 @@ void osPrintTaskList(void)
     {
         const OS_TASK_t *pkTask = tasks[ix];
 #  ifdef ATOM_STACK_CHECKING
-        uint32_t used, free;
+        uint16_t used, free;
         atomThreadStackCheck(pkTask, &used, &free);
 #  else
         uint32_t free = 0;
@@ -280,7 +280,7 @@ void osPrintTaskList(void)
         const uint16_t load = (uint16_t)(((float)rtAll[ix] * 100.0f / (float)rtTot * 10.0f) + 0.5);
         const uint8_t loadInt = load / 10;
         const uint8_t loadFrac = load - (10 * loadInt);
-        PRINT("mon: tsk: %"PRIu8" %s %c %"PRIu8" %2"PRIu32" %2"PRIu8".%"PRIu8,// " PC %p",
+        PRINT("mon: tsk: %"PRIu8" %s %c %"PRIu8" %2"PRIu16" %2"PRIu8".%"PRIu8,// " PC %p",
             ix, pkTask->name,
             pkTask->suspended ? 'S' : 'R', pkTask->priority, free, loadInt, loadFrac);//, pc[ix]);
         hwTxFlush();
@@ -303,7 +303,7 @@ void osTaskCreate(const char *taskName, const uint16_t priority, OS_TASK_t *pTas
     }
     else
     {
-        DEBUG("os: task '%s' (stack %" PRIu16 "@%p, prio %" PRIu16", tcb %p)",
+        DEBUG("os: task '%s' (stack %"PRIu16"@%p, prio %"PRIu16", tcb %p)",
               taskName, stackSize, pStack, priority, pTask);
 
         pTask->name = taskName;

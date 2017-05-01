@@ -67,8 +67,8 @@ Some hardware resources are reserved for stuff functions:
   - The pin for this functionality can be configured via #FF_HW_LOAD_PIN.
 - Pin A1 has the 1kHz system tick signal
   - The pin for this functionality can be configured via #FF_HW_TICK_PIN.
-- Timer/Counter0 is used for the system tick, which runs the scheduler
-  - This cannot be configured.
+- Timer/Counter0 is used for the 1kHz system tick, which runs the scheduler
+  - This currently cannot be configured.
 - Timer/Counter1 (TCCR1) is used for runtime measurements (hwTIC() and hwTOC() functions)
   - Configuration: #FF_HW_NUM_TICTOC
 - Some of the SRAM is reserved and required for the system.

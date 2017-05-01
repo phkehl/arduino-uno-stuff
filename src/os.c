@@ -216,7 +216,7 @@ void osStatus(char *str, const size_t size)
         }
     }
 
-    snprintf_P(str, size, PSTR("msss=%"PRIu32" heap=%"PRIu16"/%"PRIu16"/%"PRIu16),
+    snprintf_P(str, size, PSTR("ticks=%"PRIu32" heap=%"PRIu16"/%"PRIu16"/%"PRIu16),
         osTaskGetTicks(), minFree, totFree,
         (uint16_t)FF_OS_HEAP_SIZE/*(uint16_t)(__malloc_heap_end - __malloc_heap_start)*/);
 }
@@ -225,7 +225,7 @@ void osStatus(char *str, const size_t size)
 
 void osStatus(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("msss=%"PRIu32), osTaskGetTicks());
+    snprintf_P(str, size, PSTR("ticks=%"PRIu32), osTaskGetTicks());
 }
 
 #endif // (FF_OS_HEAP_SIZE > 0)
@@ -369,6 +369,11 @@ inline void osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks)
 
 
 inline uint32_t osTaskGetTicks(void)
+{
+    return atomTimeGet();
+}
+
+inline uint32_t osTaskGetMsss(void)
 {
     return atomTimeGet();
 }

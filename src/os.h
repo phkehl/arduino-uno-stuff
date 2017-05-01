@@ -77,6 +77,10 @@ bool osTaskIsSchedulerRunning(void);
 //! get ticks since start
 uint32_t osTaskGetTicks(void);
 
+//! get milliseconds since start
+uint32_t osTaskGetMsss(void);
+
+
 //! delay task
 /*!
     \param[in] timeout  number of ticks to wait

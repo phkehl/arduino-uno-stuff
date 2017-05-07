@@ -24,8 +24,8 @@
 #define FF_HW_RX_BUFSIZE 50
 #define FF_HW_TX_BUFSIZE 150
 
-// use all UBX messages
-#define FF_UBX_NAV_PVT_USE       1
+// use some UBX messages
+#define FF_UBX_NAV_PVT_USE       1 // this is all we really need...
 #define FF_UBX_NAV_AOPSTATUS_USE 0
 #define FF_UBX_NAV_CLOCK_USE     0
 #define FF_UBX_NAV_POSECEF_USE   0

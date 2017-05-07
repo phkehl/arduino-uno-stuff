@@ -195,8 +195,113 @@ static void sClockDoConfig(void)
     }
 }
 
+//------------------------------------------------------------------------------
 
+typedef enum CLKMOT_STEP_e
+{
+    CLKMOT_STEP_1   = 0, // step 1
+    CLKMOT_STEP_2   = 1, // step 2
+    CLKMOT_STEP_3   = 2, // step 3
+    CLKMOT_STEP_4   = 3, // step 4
+    CLKMOT_STEP_N   = 4, // number of steps
+    CLKMOT_STEP_OFF = 5  // coils off
+} CLKMOT_STEP_t;
 
+static void sClockMotSet(const CLKMOT_STEP_t step)
+{
+    // http://www.tigoe.net/pcomp/code/circuits/motors/stepper-motors/
+    switch (step)
+    {
+        case CLKMOT_STEP_4: // 1 0 1 0  ->  + +
+            PIN_HIGH(CLKMOT_PIN_I1);
+            PIN_LOW(CLKMOT_PIN_I2);
+            PIN_HIGH(CLKMOT_PIN_I3);
+            PIN_LOW(CLKMOT_PIN_I4);
+            break;
+        case CLKMOT_STEP_3: // 0 1 1 0  ->  - +
+            PIN_LOW(CLKMOT_PIN_I1);
+            PIN_HIGH(CLKMOT_PIN_I2);
+            PIN_HIGH(CLKMOT_PIN_I3);
+            PIN_LOW(CLKMOT_PIN_I4);
+            break;
+        case CLKMOT_STEP_2: // 0 1 0 1  ->  - -
+            PIN_LOW(CLKMOT_PIN_I1);
+            PIN_HIGH(CLKMOT_PIN_I2);
+            PIN_LOW(CLKMOT_PIN_I3);
+            PIN_HIGH(CLKMOT_PIN_I4);
+            break;
+        case CLKMOT_STEP_1: // 1 0 0 1  ->  + -
+            PIN_HIGH(CLKMOT_PIN_I1);
+            PIN_LOW(CLKMOT_PIN_I2);
+            PIN_LOW(CLKMOT_PIN_I3);
+            PIN_HIGH(CLKMOT_PIN_I4);
+            break;
+        case CLKMOT_STEP_OFF: // 0 0 0 0
+        case CLKMOT_STEP_N:
+        default:
+            PIN_LOW(CLKMOT_PIN_I1);
+            PIN_LOW(CLKMOT_PIN_I2);
+            PIN_LOW(CLKMOT_PIN_I3);
+            PIN_LOW(CLKMOT_PIN_I4);
+            break;
+    }
+}
+
+// configuration 1: old HP motor, small wheel:
+//     - 48 steps
+//     - 20 cogs
+//     wheel:
+//     - 50 cogs
+//     clock:
+//     - 60 minutes
+//     - 24 hours
+//     ==> 60 minutes: 50 / 20 * 48 = 120 steps
+//     ==> 24 hours: 120 * 24 = 2880 steps
+//
+// configuration 2: old HP motor, big wheel:
+//     - 48 steps
+//     - 20 cogs
+//     wheel:
+// -     96 cogs
+//     clock:
+//     - 60 minutes
+//     - 24 hours
+//     ==> 60 minutes: 96 / 20 * 48 = 230.4 steps
+//     ==> 1 minute: 230.4 / 60 = 3.84 steps
+//     ==> 24 hours: 230.4 * 24 = 5529.6 steps
+//     ==> 5 days: 5529.6 * 5 = 27648 steps
+//
+// configuration 3: China "28BYJ-48" motor with reduction gear
+//     the datasheet claims 64 steps and reduction 1:64, but it's ~63.7:
+//     http://forum.arduino.cc/index.php?topic=71964.msg1149466#msg1149466
+//     (31*32*26*22)/(11*10*9*9) = 283712/4455 = 25792/405 = 63.68395...
+//
+//     time:          phase (steps):   (motor is 32 steps for one revolution)
+//     00:00     0         0
+//     00:01     1         33.96            1 / 60 * 32 * 63.68
+//     01:00    60       2037.89           60 / 60 * 32 * 63.68
+//     12:00   720      24454.64
+//     18:00  1080      36681.96
+//     24:00  1440      48909.27         1440 / 60 * 32 * 63.68
+//
+
+// current clock stepper motor step
+static CLKMOT_STEP_t sClockMotPos;
+
+// move fast
+#define CLOCK_MOVE_FAST() \
+    do { sClockMotSet(sClockMotPos); osTaskDelay(2);   \
+         sClockMotPos++; sClockMotPos %= CLKMOT_STEP_N; } while (0)
+
+// move slower but more precisely (?)
+#define CLOCK_MOVE_SLOW(steps, delay) \
+    do { uint16_t _s = steps; \
+         while (_s--) { \
+           sClockMotSet(sClockMotPos); osTaskDelay(delay); \
+           sClockMotPos++; sClockMotPos %= CLKMOT_STEP_N; \
+           sClockMotSet(sClockMotPos); osTaskDelay(delay); \
+         } \
+         sClockMotSet(CLKMOT_STEP_OFF); } while (0)
 
 
 /* ***** application task **************************************************** */
@@ -232,6 +337,23 @@ static void sAppTask(void *pArg)
         sSecondsSet(sec);
         sec++;
         osTaskDelay(1000);
+    }
+#endif
+#if 0
+    while (ENDLESS)
+    {
+        for (uint16_t steps = 1; steps <= 200; steps += 10)
+        {
+            DEBUG("steps=%"PRIu16, steps);
+            CLOCK_MOVE_SLOW(steps, 2);
+            osTaskDelay(500);
+        }
+        uint16_t steps = 5000;
+        while (steps--)
+        {
+            CLOCK_MOVE_FAST();
+        }
+        sClockMotSet(CLKMOT_STEP_OFF);
     }
 #endif
 
@@ -296,10 +418,7 @@ void appInit(void)
     PIN_OUTPUT(CLKMOT_PIN_I2);
     PIN_OUTPUT(CLKMOT_PIN_I3);
     PIN_OUTPUT(CLKMOT_PIN_I4);
-    PIN_LOW(CLKMOT_PIN_I1);
-    PIN_LOW(CLKMOT_PIN_I2);
-    PIN_LOW(CLKMOT_PIN_I3);
-    PIN_LOW(CLKMOT_PIN_I4);
+    sClockMotSet(CLKMOT_STEP_OFF);
 
     // minutes and hours "zero" position sensors (switches)
     PIN_INPUT(CLKZERO_MIN);

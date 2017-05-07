@@ -149,13 +149,17 @@ void gnssStringifyEpoch(const GNSS_EPOCH_t *pkEpoch, char *str, const uint8_t si
         pkEpoch->lat, pkEpoch->lon, pkEpoch->alt, skPaccStrs[pkEpoch->hAcc], skPaccStrs[pkEpoch->vAcc],
         (uint8_t)pkEpoch->day, (uint8_t)pkEpoch->month, (uint8_t)pkEpoch->year, pkEpoch->dateValid ? 'Y' : 'N',
         (uint8_t)pkEpoch->hour, (uint8_t)pkEpoch->min, (uint8_t)pkEpoch->sec,
-        pkEpoch->timeValid ? 'Y' : 'N', pkEpoch->leapValid ? 'Y' : 'N', skTaccStrs[pkEpoch->tAcc]
-
-
-        );
-
-    str[size-1] = '\0';
+        pkEpoch->timeValid ? 'Y' : 'N', pkEpoch->leapValid ? 'Y' : 'N', skTaccStrs[pkEpoch->tAcc]);
 }
+
+void gnssStringifyTime(const GNSS_EPOCH_t *pkEpoch, char *str, const uint8_t size)
+{
+    snprintf_P(str, size, PSTR("%02"PRIu8":%02"PRIu8":%02"PRIu8" (%c%c, %S)"),
+        (uint8_t)pkEpoch->hour, (uint8_t)pkEpoch->min, (uint8_t)pkEpoch->sec,
+        pkEpoch->timeValid ? 'Y' : 'N', pkEpoch->leapValid ? 'Y' : 'N', skTaccStrs[pkEpoch->tAcc]);
+}
+
+
 
 //--------------------------------------------------------------------------------------------------
 

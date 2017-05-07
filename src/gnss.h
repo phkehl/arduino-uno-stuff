@@ -143,6 +143,14 @@ bool gnssGetEpoch(GNSS_EPOCH_t *pEpoch, int32_t timeout);
 */
 void gnssStringifyEpoch(const GNSS_EPOCH_t *pkEpoch, char *str, const uint8_t size);
 
+//! stringify time-of-day epoch data for PRINT()ing it
+/*!
+    \param[in]  pkEpoch  epoch data to stringify
+    \param[out] str      the target string
+    \param[in]  size     the maximum size of the string (suggested size: 25)
+*/
+void gnssStringifyTime(const GNSS_EPOCH_t *pkEpoch, char *str, const uint8_t size);
+
 
 /* *************************************************************************** */
 

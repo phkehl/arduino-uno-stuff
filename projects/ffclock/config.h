@@ -14,14 +14,15 @@
 /* *************************************************************************** */
 
 
-//  LED for the system load and status
+// LED for the system load and status
 #define FF_HW_LOAD_PIN _PD4
 
-//! system tick signal
+// system tick signal
 #define FF_HW_TICK_PIN _PD5
 
-//! serial port input buffer size
-#define FF_HW_RX_BUFSIZE 125
+// serial port input and output buffer sizes
+#define FF_HW_RX_BUFSIZE 50
+#define FF_HW_TX_BUFSIZE 150
 
 // use all UBX messages
 #define FF_UBX_NAV_PVT_USE       1

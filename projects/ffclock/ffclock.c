@@ -376,6 +376,7 @@ static void sClockMoveOneMinute(void)
 //------------------------------------------------------------------------------
 
 static GNSS_EPOCH_t sEpoch;
+static OS_MUTEX_t sEpochMutex;
 
 
 /* ***** application task **************************************************** */
@@ -453,16 +454,17 @@ static void sAppTask(void *pArg)
     // keep running...
     while (ENDLESS)
     {
-        if (gnssGetEpoch(&sEpoch, 5000))
+        if (gnssGetEpoch(NULL, 5) && osMutexClaim(&sEpochMutex, 5))
         {
-            sSecondsSet(sEpoch.sec);
-            static char str[120];
-            gnssStringifyEpoch(&sEpoch, str, sizeof(str));
-            PRINT("epoch %s", str);
-        }
-        else
-        {
-            WARNING("no epoch :-(");
+            if (gnssGetEpoch(&sEpoch, -1))
+            {
+                osMutexRelease(&sEpochMutex);
+
+                sSecondsSet(sEpoch.sec);
+                static char str[120];
+                gnssStringifyEpoch(&sEpoch, str, sizeof(str));
+                PRINT("epoch %s", str);
+            }
         }
     } // ENDLESS
 }
@@ -481,7 +483,15 @@ static void sAppStatus(char *str, const size_t size)
     PRINT("mon: gnss: %s", str);
     const int n = snprintf_P(str, size, PSTR("clock %02"PRIu8":%02"PRIu8", gnss "),
         CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime));
-    gnssStringifyTime(&sEpoch, &str[n], size - n);
+    if (osMutexClaim(&sEpochMutex, 10))
+    {
+        gnssStringifyTime(&sEpoch, &str[n], size - n);
+        osMutexRelease(&sEpochMutex);
+    }
+    else
+    {
+        ERROR("clock: mx");
+    }
 }
 
 
@@ -535,6 +545,8 @@ void appInit(void)
     PIN_LOW(SECONDS_LED_PIN_5);
     PIN_OUTPUT(SECONDS_LED_PIN_6);
     PIN_LOW(SECONDS_LED_PIN_6);
+
+    osMutexCreate(&sEpochMutex);
 }
 
 // starts the user application task

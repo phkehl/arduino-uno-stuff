@@ -49,22 +49,25 @@ uint32_t sMsssLastEpoch;
 //bool sUbxNavStatusSeen;
 //#endif
 
-static OS_MUTEX_t     sEpochMx;    // access protection for sEpoch
-static OS_SEMAPHORE_t sNewTimeSem; // new time solution available semaphore
+static OS_MUTEX_t     sEpochMx;     // access protection for sEpoch
+static OS_SEMAPHORE_t sNewEpochSem; // new time solution available semaphore
 
 bool gnssGetEpoch(GNSS_EPOCH_t *pEpoch, int32_t timeout)
 {
     if (timeout >= 0)
     {
-        if (osSemaphoreTake(&sNewTimeSem, timeout) == false)
+        if (osSemaphoreTake(&sNewEpochSem, timeout) == false)
         {
             return false;
         }
     }
 
-    osMutexClaim(&sEpochMx, 0);
-    memcpy(pEpoch, &sEpoch, sizeof(*pEpoch));
-    osMutexRelease(&sEpochMx);
+    if (pEpoch != NULL)
+    {
+        osMutexClaim(&sEpochMx, 0);
+        memcpy(pEpoch, &sEpoch, sizeof(*pEpoch));
+        osMutexRelease(&sEpochMx);
+    }
 
     return true;
 }
@@ -80,7 +83,7 @@ void gnssStartTask(void)
     DEBUG("gnss: start");
 
     osMutexCreate(&sEpochMx);
-    osSemaphoreCreate(&sNewTimeSem, 0);
+    osSemaphoreCreate(&sNewEpochSem, 0);
 
     sMsssLastNofix = osTaskGetMsss();
 #if (FF_GNSS_PARSER == 1)
@@ -211,7 +214,7 @@ static void sGnssTask(void *pArg)
 
                                 osMutexRelease(&sEpochMx);
 
-                                osSemaphoreGive(&sNewTimeSem, true);
+                                osSemaphoreGive(&sNewEpochSem, true);
                             }
                             else
                             {

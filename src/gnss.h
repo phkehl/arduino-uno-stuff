@@ -124,9 +124,9 @@ typedef struct GNSS_EPOCH_s
 } GNSS_EPOCH_t;
 
 
-//! get current epoch data
+//! get epoch data
 /*!
-    \param[out] pEpoch   epoch structure
+    \param[out] pEpoch   epoch structure, or #NULL
     \param[in]  timeout  number of ticks to wait at most (0 to wait forever,
                          or -1 to not wait at all, i.e. get latest known time)
     \returns true if a new epoch was available within the \c timeout

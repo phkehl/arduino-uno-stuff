@@ -87,6 +87,8 @@ static void sAppTask(void *pArg)
             }
         }
 #else
+#  if 1
+        // wait for epoch and get the data in one step
         static GNSS_EPOCH_t epoch;
         if (gnssGetEpoch(&epoch, 5000))
         {
@@ -98,6 +100,24 @@ static void sAppTask(void *pArg)
         {
             WARNING("no epoch :-(");
         }
+#  else
+        // wait for epoch and get the data in two steps
+        if (gnssGetEpoch(NULL, 5000))
+        {
+            DEBUG("new epoch available");
+            static GNSS_EPOCH_t epoch;
+            if (gnssGetEpoch(&epoch, -1))
+            {
+                static char str[120];
+                gnssStringifyEpoch(&epoch, str, sizeof(str));
+                PRINT("epoch %s", str);
+            }
+        }
+        else
+        {
+            WARNING("no epoch :-(");
+        }
+#  endif
 #endif
     }
 }

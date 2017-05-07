@@ -303,6 +303,80 @@ static CLKMOT_STEP_t sClockMotPos;
          } \
          sClockMotSet(CLKMOT_STEP_OFF); } while (0)
 
+//------------------------------------------------------------------------------
+
+// clock display zero calibration
+#define CLOCK_CALIB_HOUR 12
+#define CLOCK_CALIB_MIN  26
+
+// approximate stepper steps required to advance one minute
+#define CLOCK_APPROX_STEPS_PER_MIN 33.7 // 2036 / 60 = 33.9
+
+// actual stepper steps required to advance one minute
+const uint8_t skClockCalib[] PROGMEM =
+{
+    // 26 -> 27, 27 -> 28, ...
+    32, 32, 36, 36, 32, 32, 36, 32, 36, 32, //  0 ..  9  -->  26 .. 35
+    36, 32, 36, 32, 32, 36, 32, 36, 32, 36, // 10 .. 19  -->  36 .. 45
+    32, 36, 32, 36, 36, 36, 32, 36, 32, 32, // 20 .. 29  -->  46 .. 55
+    36, 36, 32, 32, 32, 36, 36, 36, 36, 36, // 30 .. 39  -->  56 .. 59 / 00 .. 05
+    36, 32, 36, 32, 32, 32, 36, 32, 36, 32, // 40 .. 49  -->             06 .. 15
+    32, 36, 36, 32, 32, 32, 32, 36, 36, 32  // 50 .. 59  -->             16 .. 25
+    //                        ... 25 -> 26
+};
+
+//! currently displayed clock time (in minutes)
+static uint16_t sClockTime;
+
+// convert hours/minutes to minutes time
+#define CLOCK_HM2T(h, m) (((uint16_t)(h) * (uint16_t)60) + (uint16_t)(m))
+
+// convert minutes time to hours
+#define CLOCK_T2H(t)     ((uint8_t)((uint16_t)(t) / 60))
+
+// convert minutes time to minutes
+#define CLOCK_T2M(t)     ((uint8_t)((uint16_t)(t) % 60))
+
+// advance clock one minute
+static void sClockMoveOneMinute(void)
+{
+    const uint8_t min = CLOCK_T2M(sClockTime);
+    const uint8_t calibIx = min >= 26 ?
+        min - CLOCK_CALIB_MIN    :
+        (uint8_t)NUMOF(skClockCalib) - CLOCK_CALIB_MIN + min;
+    uint8_t steps = pgm_read_byte(&skClockCalib[calibIx]);
+
+    sClockTime++;
+    if (sClockTime == CLOCK_HM2T(24,0))
+    {
+        sClockTime = CLOCK_HM2T(0,0);
+    }
+
+    DEBUG("clock: move %2"PRIu8" %2"PRIu8" %02"PRIu8":%02"PRIu8,
+        calibIx, steps, CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime));
+
+    /*
+    // special move back to the minutes zero
+    if (calibIx == (uint8_t)(NUMOF(skClockCalib)-1))
+    {
+        uint16_t steps2 = 0;
+        while (hwClkGetZeroMinutes())
+        {
+            CLOCK_MOVE_SLOW(1, 5);
+            steps2++;
+        }
+        DEBUG("clock: zero %2u", steps2);
+    }
+    else
+    */    {
+        CLOCK_MOVE_SLOW(steps, 2);
+    }
+}
+
+//------------------------------------------------------------------------------
+
+static GNSS_EPOCH_t sEpoch;
+
 
 /* ***** application task **************************************************** */
 
@@ -356,6 +430,13 @@ static void sAppTask(void *pArg)
         sClockMotSet(CLKMOT_STEP_OFF);
     }
 #endif
+#if 0
+    while (ENDLESS)
+    {
+        sClockMoveOneMinute();
+        osTaskDelay(2000);
+    }
+#endif
 
     // enter config mode if both buttons are pressed on boot
     if (sButtonAPressed() && sButtonBPressed())
@@ -372,12 +453,11 @@ static void sAppTask(void *pArg)
     // keep running...
     while (ENDLESS)
     {
-        static GNSS_EPOCH_t epoch;
-        if (gnssGetEpoch(&epoch, 5000))
+        if (gnssGetEpoch(&sEpoch, 5000))
         {
-            sSecondsSet(epoch.sec);
+            sSecondsSet(sEpoch.sec);
             static char str[120];
-            gnssStringifyEpoch(&epoch, str, sizeof(str));
+            gnssStringifyEpoch(&sEpoch, str, sizeof(str));
             PRINT("epoch %s", str);
         }
         else
@@ -399,7 +479,9 @@ static void sAppStatus(char *str, const size_t size)
     gnssStatus(str, size);
     hwTxFlush();
     PRINT("mon: gnss: %s", str);
-    /*const int n = */snprintf_P(str, size, PSTR("status..."));
+    const int n = snprintf_P(str, size, PSTR("clock %02"PRIu8":%02"PRIu8", gnss "),
+        CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime));
+    gnssStringifyTime(&sEpoch, &str[n], size - n);
 }
 
 

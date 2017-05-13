@@ -22,7 +22,7 @@
 
 // serial port input and output buffer sizes
 #define FF_HW_RX_BUFSIZE 50
-#define FF_HW_TX_BUFSIZE 150
+#define FF_HW_TX_BUFSIZE 250
 
 // use some UBX messages
 #define FF_UBX_NAV_PVT_USE       1 // this is all we really need...

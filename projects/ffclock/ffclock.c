@@ -50,17 +50,20 @@
 #define SECONDS_LED_PIN_5 _PC4
 #define SECONDS_LED_PIN_6 _PC5
 
+// recalibration threshold [min]
+#define CLOCK_RECALIB_THRS 10
+
 
 /* ***** application functions *********************************************** */
 
 static inline bool sIsMinutesZeroPos(void)
 {
-    return PIN_GET(CLKZERO_MIN);
+    return PIN_GET(CLKZERO_MIN) ? false : true;
 }
 
 static inline bool sIsHoursZeroPos(void)
 {
-    return PIN_GET(CLKZERO_HRS);
+    return PIN_GET(CLKZERO_HRS) ? false : true;
 }
 
 //------------------------------------------------------------------------------
@@ -119,6 +122,77 @@ static void sSecondsSet(const uint8_t sec)
     if (sec & BIT(3)) { PIN_HIGH(SECONDS_LED_PIN_4); } else { PIN_LOW(SECONDS_LED_PIN_4); }
     if (sec & BIT(4)) { PIN_HIGH(SECONDS_LED_PIN_5); } else { PIN_LOW(SECONDS_LED_PIN_5); }
     if (sec & BIT(5)) { PIN_HIGH(SECONDS_LED_PIN_6); } else { PIN_LOW(SECONDS_LED_PIN_6); }
+}
+
+//------------------------------------------------------------------------------
+
+// FIXME: use timers?
+
+static int8_t sEffectState;
+
+// do the "Larson scanner" thing on the seconds display
+static void sLarsonScanner(const bool init)
+{
+    if (init)
+    {
+        sEffectState = 1;
+    }
+    else
+    {
+        sEffectState++;
+        if (sEffectState > 6)
+        {
+            sEffectState = -5;
+        }
+        else if (sEffectState == 0)
+        {
+            sEffectState = 2;
+        }
+    }
+    sSecondsSet(1 << (ABS(sEffectState)-1));
+}
+
+// do a blinking progress bar style thing
+static void sClockProgress(const uint8_t p)
+{
+    if (p == 0)
+    {
+        sEffectState = 0;
+    }
+    else
+    {
+        sEffectState++;
+    }
+    if (sEffectState % 2)
+    {
+        switch (p)
+        {
+            case 0: sSecondsSet(0x00); break; // ......
+            case 1: sSecondsSet(0x20); break; // *.....
+            case 2: sSecondsSet(0x30); break; // **....
+            case 3: sSecondsSet(0x38); break; // ***...
+            case 4: sSecondsSet(0x3c); break; // ****..
+            case 5: sSecondsSet(0x3e); break; // *****.
+            default:
+            case 6: sSecondsSet(0x3f); break; // ******
+        }
+    }
+    else
+    {
+        sSecondsSet(0x00);
+    }
+}
+
+// blink seconds display
+static void sClockBlink(uint8_t n)
+{
+    while (n--)
+    {
+        sSecondsSet(0xff);
+        osTaskDelay(125);
+        sSecondsSet(0x00);
+        osTaskDelay(125);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -214,35 +288,35 @@ static void sClockMotSet(const CLKMOT_STEP_t step)
     {
         case CLKMOT_STEP_4: // 1 0 1 0  ->  + +
             PIN_HIGH(CLKMOT_PIN_I1);
-            PIN_LOW(CLKMOT_PIN_I2);
+            PIN_LOW( CLKMOT_PIN_I2);
             PIN_HIGH(CLKMOT_PIN_I3);
-            PIN_LOW(CLKMOT_PIN_I4);
+            PIN_LOW( CLKMOT_PIN_I4);
             break;
         case CLKMOT_STEP_3: // 0 1 1 0  ->  - +
-            PIN_LOW(CLKMOT_PIN_I1);
+            PIN_LOW( CLKMOT_PIN_I1);
             PIN_HIGH(CLKMOT_PIN_I2);
             PIN_HIGH(CLKMOT_PIN_I3);
-            PIN_LOW(CLKMOT_PIN_I4);
+            PIN_LOW( CLKMOT_PIN_I4);
             break;
         case CLKMOT_STEP_2: // 0 1 0 1  ->  - -
-            PIN_LOW(CLKMOT_PIN_I1);
+            PIN_LOW( CLKMOT_PIN_I1);
             PIN_HIGH(CLKMOT_PIN_I2);
-            PIN_LOW(CLKMOT_PIN_I3);
+            PIN_LOW( CLKMOT_PIN_I3);
             PIN_HIGH(CLKMOT_PIN_I4);
             break;
         case CLKMOT_STEP_1: // 1 0 0 1  ->  + -
             PIN_HIGH(CLKMOT_PIN_I1);
-            PIN_LOW(CLKMOT_PIN_I2);
-            PIN_LOW(CLKMOT_PIN_I3);
+            PIN_LOW( CLKMOT_PIN_I2);
+            PIN_LOW( CLKMOT_PIN_I3);
             PIN_HIGH(CLKMOT_PIN_I4);
             break;
-        case CLKMOT_STEP_OFF: // 0 0 0 0
-        case CLKMOT_STEP_N:
+        case CLKMOT_STEP_OFF:
+        case CLKMOT_STEP_N: // 0 0 0 0  ->  . .
         default:
-            PIN_LOW(CLKMOT_PIN_I1);
-            PIN_LOW(CLKMOT_PIN_I2);
-            PIN_LOW(CLKMOT_PIN_I3);
-            PIN_LOW(CLKMOT_PIN_I4);
+            PIN_LOW( CLKMOT_PIN_I1);
+            PIN_LOW( CLKMOT_PIN_I2);
+            PIN_LOW( CLKMOT_PIN_I3);
+            PIN_LOW( CLKMOT_PIN_I4);
             break;
     }
 }
@@ -337,6 +411,8 @@ static uint16_t sClockTime;
 // convert minutes time to minutes
 #define CLOCK_T2M(t)     ((uint8_t)((uint16_t)(t) % 60))
 
+#define CLOCK_THM_FMT "%02"PRIu8":%02"PRIu8
+
 // advance clock one minute
 static void sClockMoveOneMinute(void)
 {
@@ -352,31 +428,260 @@ static void sClockMoveOneMinute(void)
         sClockTime = CLOCK_HM2T(0,0);
     }
 
-    DEBUG("clock: move %2"PRIu8" %2"PRIu8" %02"PRIu8":%02"PRIu8,
+    DEBUG("clock: move %2"PRIu8" %2"PRIu8" "CLOCK_THM_FMT,
         calibIx, steps, CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime));
 
-    /*
     // special move back to the minutes zero
     if (calibIx == (uint8_t)(NUMOF(skClockCalib)-1))
     {
         uint16_t steps2 = 0;
-        while (hwClkGetZeroMinutes())
+        while (sIsMinutesZeroPos())
         {
             CLOCK_MOVE_SLOW(1, 5);
             steps2++;
         }
-        DEBUG("clock: zero %2u", steps2);
+        DEBUG("clock: zero %2"PRIu16, steps2);
     }
     else
-    */    {
+    {
         CLOCK_MOVE_SLOW(steps, 2);
     }
 }
+
+// move clock display (quickly) to the desired time
+static void sClockMoveTo(const uint16_t T)
+{
+    const uint16_t T24 = CLOCK_HM2T(24, 0);
+#if 1
+    // somewhere before the calibrated 0 (xx:16)
+    const uint16_t T0 = (((T + T24 - 1 - (CLOCK_CALIB_MIN + 10)) / 60) * 60) % T24;
+
+    // move there fast and approximately
+    const uint16_t dt0 = (T0 > sClockTime) ? (T0 - sClockTime) : (T0 + T24 - sClockTime);
+    uint16_t steps = (uint16_t)((float)dt0 * (float)CLOCK_APPROX_STEPS_PER_MIN);
+
+    DEBUG("clock: fast "CLOCK_THM_FMT" -> "CLOCK_THM_FMT" -> "CLOCK_THM_FMT" dt=%"PRIu16" steps=%"PRIu16,
+          CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime),
+          CLOCK_T2H(T), CLOCK_T2M(T),
+          CLOCK_T2H(T0), CLOCK_T2M(T0), dt0, steps);
+    sLarsonScanner(true);
+    while (steps--)
+    {
+        CLOCK_MOVE_FAST();
+        if ((steps % 32) == 0)
+        {
+            sLarsonScanner(false);
+        }
+    }
+
+    sClockBlink(5);
+
+    // slowly move to the calibrated zero (xx:26)
+    while (!sIsMinutesZeroPos())
+    {
+        if ((++steps % 32) == 0)
+        {
+            sLarsonScanner(FALSE);
+        }
+        CLOCK_MOVE_FAST();
+    }
+    osTaskDelay(250);
+    while (sIsMinutesZeroPos())
+    {
+        CLOCK_MOVE_SLOW(1, 5);
+    }
+
+    // now we're at xx:26 and need to go a few more minutes to hh:mm
+    sClockTime = T0 + CLOCK_CALIB_MIN;
+
+#else // FIXME: fix this, should be more reliable
+
+    // closest minutes zero point (xx:26) before the desired time
+    const uint16_t T0 = ((((T + T24 - 1 - CLOCK_CALIB_MIN) / 60) * 60) % T24) + CLOCK_CALIB_MIN;
+
+    // hours to go
+    const uint16_t dt0 = (T0 > sClockTime) ? (T0 - sClockTime) : (T0 + T24 - sClockTime);
+    uint8_t hours = (dt0 / 60) + 1;
+
+    DEBUG("clock: fast "CLOCK_THM_FMT" -> "CLOCK_THM_FMT": "CLOCK_THM_FMT" %"PRIu8,
+          CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime),
+          CLOCK_T2H(T), CLOCK_T2M(T),
+          CLOCK_T2H(T0), CLOCK_T2M(T0), hours);
+
+    sLarsonScanner(true);
+    while (hours--)
+    {
+        DEBUG("clock: hours=%"PRIu8, hours);
+        uint16_t steps = 0;
+        while (!sIsMinutesZeroPos())
+        {
+            CLOCK_MOVE_FAST();
+            if ((++steps % 32) == 0)
+            {
+                sLarsonScanner(false);
+            }
+        }
+        while (sIsMinutesZeroPos())
+        {
+            CLOCK_MOVE_SLOW(1, 5);
+        }
+    }
+
+    // now we're at xx:26 and need to go a few more minutes to hh:mm
+    sClockTime = T0;
+
+#endif
+
+    sClockBlink(4);
+
+    // advance slowly (in a controlled way) until the desired time
+    while (sClockTime != T)
+    {
+        sClockMoveOneMinute();
+        sLarsonScanner(FALSE);
+    }
+    sSecondsSet(0);
+}
+
+// do zero calibration
+static void sClockDoCalibration(void)
+{
+    PRINT("clock: calibrate");
+
+    // ***** 1) move a bit slowly (for the show) *****
+
+    {
+        // forget time
+        sClockTime = 0;
+
+        // flash a bit for fun..
+        sClockBlink(5);
+
+        sClockProgress(0);
+        sClockProgress(1);
+
+        // move a bit slowly..
+        CLOCK_MOVE_SLOW(5*64, 5);
+    }
+
+    // ***** 2) make sure the zero triggers is not active *****
+
+    {
+        DEBUG("clock: calib: asserting triggers low");
+
+        // assert none of the triggers are active...
+        while (sIsMinutesZeroPos() || sIsHoursZeroPos())
+        {
+
+            CLOCK_MOVE_FAST();
+        }
+
+        sClockProgress(0);
+        sClockProgress(2);
+
+        // ..and move a bit further
+        uint8_t n = 32;
+        while (n--)
+        {
+            CLOCK_MOVE_SLOW(5*64/32, 2);
+            sClockProgress(2);
+        }
+    }
+
+    // ***** 3) approach hours wheel zero point (fast) *****
+
+    {
+        sClockProgress(0);
+        sClockProgress(3);
+
+        DEBUG("clock: calib: approaching hours zero");
+
+        // go until trigger
+        uint16_t n = 0;
+        while (!sIsHoursZeroPos())
+        {
+            // move a bit
+            CLOCK_MOVE_FAST();
+            if ((n++ % 64) == 0)
+            {
+                sClockProgress(3);
+            }
+        }
+    }
+
+    // ***** 4) approach minutes zero point (slowly) and go just beyond it (very slowly) *****
+
+    {
+        DEBUG("clock: calib: approaching minutes zero");
+        sClockProgress(0);
+        sClockProgress(4);
+
+        // go until trigger
+        uint16_t n = 0;
+        while (!sIsMinutesZeroPos())
+        {
+            CLOCK_MOVE_FAST();
+            if ((n++ % 64) == 0)
+            {
+                sClockProgress(4);
+            }
+        }
+
+        sClockProgress(0);
+        sClockProgress(5);
+
+        // slowly go just beyond the minutes zero point
+        osTaskDelay(500);
+        while (sIsMinutesZeroPos())
+        {
+            CLOCK_MOVE_SLOW(1, 5);
+        }
+
+        // now we should be at 12:26h, the calibrated zero
+        sClockTime = CLOCK_HM2T(CLOCK_CALIB_HOUR, CLOCK_CALIB_MIN);
+        DEBUG("clock: calib: at " STRINGIFY(CLOCK_CALIB_HOUR) ":" STRINGIFY(CLOCK_CALIB_MIN));
+
+    }
+
+    // ***** calibration done *****
+
+    {
+        sClockProgress(0);
+        sClockProgress(6);
+        PRINT("clock: calibrated");
+        sClockBlink(5);
+        osTaskDelay(1000);
+    }
+}
+
+
 
 //------------------------------------------------------------------------------
 
 static GNSS_EPOCH_t sEpoch;
 static OS_MUTEX_t sEpochMutex;
+
+#define GNSS_TIME_OKAY(ep) (ep.timeValid && (ep.tAcc <= GNSS_TACC_500MS))
+
+
+//------------------------------------------------------------------------------
+
+// clock state machine states
+typedef enum CLOCK_STATE_e
+{
+    CLOCK_STATE_NONE   = 0, // don't know, initial state
+    CLOCK_STATE_CALIB  = 1, // calibrating
+    CLOCK_STATE_WAIT   = 2, // wait for GNSS time
+    CLOCK_STATE_TICK   = 3  // ticking
+} CLOCK_STATE_t;
+
+// current clock state machine state
+static CLOCK_STATE_t sClockState;
+
+static const char skClockStateStrs[][6] PROGMEM =
+{
+    { "NONE\0" }, { "CALIB\0" }, { "WAIT\0" }, { "TICK\0" }
+};
 
 
 /* ***** application task **************************************************** */
@@ -438,6 +743,58 @@ static void sAppTask(void *pArg)
         osTaskDelay(2000);
     }
 #endif
+#if 0
+    while (ENDLESS)
+    {
+        DEBUG("zero: min=%S hrs=%S",
+            sIsMinutesZeroPos() ? PSTR("yes") : PSTR("no"),
+            sIsHoursZeroPos()   ? PSTR("yes") : PSTR("no"));
+        osTaskDelay(1000);
+    }
+#endif
+#if 0
+    sClockDoCalibration();
+#endif
+#if 0
+    // to manually come up with the skClockCalib[] table
+    sClockDoCalibration();
+    uint16_t steps = 0;
+    while (ENDLESS)
+    {
+        if (sButtonAPressed())
+        {
+            CLOCK_MOVE_SLOW(4, 5);
+            steps += 4;
+            DEBUG("clock: A %"PRIu16, steps);
+        }
+        if (sButtonBPressed())
+        {
+            _CLOCK_MOVE_SLOW(32, 5);
+            steps += 16;
+            DEBUG("clock: B %"PRIu16, steps);
+        }
+        osTaskDelay(5);
+    }
+#endif
+#if 0
+    while (ENDLESS)
+    {
+        if (gnssGetEpoch(NULL, 5) && osMutexClaim(&sEpochMutex, 5))
+        {
+            if (gnssGetEpoch(&sEpoch, -1))
+            {
+                osMutexRelease(&sEpochMutex);
+
+                sSecondsSet(sEpoch.sec);
+                static char str[120];
+                gnssStringifyEpoch(&sEpoch, str, sizeof(str));
+                PRINT("epoch %S %s",
+                    GNSS_TIME_OKAY(sEpoch) ? PSTR(":-)") : PSTR(":-("), str);
+
+            }
+        }
+    }
+#endif
 
     // enter config mode if both buttons are pressed on boot
     if (sButtonAPressed() && sButtonBPressed())
@@ -450,23 +807,187 @@ static void sAppTask(void *pArg)
         sClockReadConfig();
     }
 
+    // states
+    bool haveTime = FALSE;
+    CLOCK_STATE_t clockStatePrev = CLOCK_STATE_NONE;
+    sClockMotPos = CLKMOT_STEP_1;
+    sClockState = CLOCK_STATE_NONE;
 
-    // keep running...
+    // run clock
     while (ENDLESS)
     {
-        if (gnssGetEpoch(NULL, 5) && osMutexClaim(&sEpochMutex, 5))
+        // debug state transitions
+        if (clockStatePrev != sClockState)
         {
-            if (gnssGetEpoch(&sEpoch, -1))
-            {
-                osMutexRelease(&sEpochMutex);
-
-                sSecondsSet(sEpoch.sec);
-                static char str[120];
-                gnssStringifyEpoch(&sEpoch, str, sizeof(str));
-                PRINT("epoch %s", str);
-            }
+            DEBUG("clock: state -> %S", skClockStateStrs[sClockState]);
+            clockStatePrev = sClockState;
         }
+
+        // run state machine
+        switch (sClockState)
+        {
+            // ***** initial state -> go calibrate *****************************
+            case CLOCK_STATE_NONE:
+                sClockState = CLOCK_STATE_CALIB;
+                break;
+
+
+            // ***** calibrate zero offset and move display to 00:00 ***********
+
+            case CLOCK_STATE_CALIB:
+            {
+                // calibrate
+                sClockDoCalibration();
+
+                // wait for updated GNSS time information
+                haveTime = false;
+                if (gnssGetEpoch(NULL, 5000) && osMutexClaim(&sEpochMutex, 5))
+                {
+                    if (gnssGetEpoch(&sEpoch, -1))
+                    {
+                        osMutexRelease(&sEpochMutex);
+                        if (GNSS_TIME_OKAY(sEpoch))
+                        {
+                            haveTime = true;
+                        }
+                    }
+                }
+
+                // go to current time if GNSS time is known
+                if (haveTime)
+                {
+                    const int16_t t = ((int16_t)CLOCK_HM2T(sEpoch.hour, sEpoch.min)
+                        + (int16_t)sClockTzOffset * 60) % (int16_t)(24 * 60);
+                    sClockMoveTo((uint16_t)t);
+                    sClockState = CLOCK_STATE_TICK;
+                }
+                // go to 00:00 otherwise
+                else
+                {
+                    sClockMoveTo(CLOCK_HM2T(0,0));
+                    PRINT("clock: waiting for GNSS time");
+                    sClockState = CLOCK_STATE_WAIT;
+                }
+                break;
+            }
+
+            // ***** wait for GNSS time ****************************************
+
+            case CLOCK_STATE_WAIT:
+            {
+                // wait for updated GNSS time information
+                if (gnssGetEpoch(NULL, 5000) && osMutexClaim(&sEpochMutex, 5))
+                {
+                    if (gnssGetEpoch(&sEpoch, -1))
+                    {
+                        osMutexRelease(&sEpochMutex);
+                        if (GNSS_TIME_OKAY(sEpoch))
+                        {
+                            PRINT("clock: GNSS time okay");
+
+                            // set time on display
+                            const int16_t t = ((int16_t)CLOCK_HM2T(sEpoch.hour, sEpoch.min)
+                                + (int16_t)sClockTzOffset * 60) % (int16_t)(24 * 60);
+                            const int16_t dt = t - (int16_t)sClockTime;
+
+                            // we're close..
+                            if ( (dt > 0) && (dt < 120) )
+                            {
+                                sLarsonScanner(true);
+                                uint16_t n = (uint16_t)dt;
+                                while (n != 0)
+                                {
+                                    sClockMoveOneMinute();
+                                    sLarsonScanner(false);
+                                }
+                            }
+                            // way off, use fast moving
+                            else
+                            {
+                                sClockMoveTo(t);
+                            }
+
+                            // go tick
+                            sClockState = CLOCK_STATE_TICK;
+                        }
+                        // still waiting..
+                        else
+                        {
+                            sClockBlink(2);
+                        }
+                    }
+                }
+                break;
+            }
+
+            // ***** tick, tock, ... *******************************************
+
+            case CLOCK_STATE_TICK:
+            {
+                // wait for updated GNSS time information
+                if (gnssGetEpoch(NULL, 5000) && osMutexClaim(&sEpochMutex, 5))
+                {
+                    if (gnssGetEpoch(&sEpoch, -1))
+                    {
+                        osMutexRelease(&sEpochMutex);
+
+                        // print epoch info
+                        static char str[120];
+                        gnssStringifyEpoch(&sEpoch, str, sizeof(str));
+                        DEBUG("epoch %S %s",
+                            GNSS_TIME_OKAY(sEpoch) ? PSTR(":-)") : PSTR(":-("), str);
+
+                        // time valid?
+                        if (GNSS_TIME_OKAY(sEpoch))
+                        {
+                            // update the seconds display
+                            sSecondsSet(sEpoch.sec);
+
+                            // compare time with our time
+                            const int16_t t = ((int16_t)CLOCK_HM2T(sEpoch.hour, sEpoch.min)
+                                + (int16_t)sClockTzOffset * 60) % (int16_t)(24 * 60);
+                            const int16_t dt = (int16_t)sClockTime - t;
+
+                            // warn if clock display is ahead
+                            if (dt > 0)
+                            {
+                                sClockBlink(3);
+                            }
+
+                            // recalibrate if the time diverged too much from the display
+                            if (ABS(dt) > CLOCK_RECALIB_THRS)
+                            {
+                                WARNING("clock: display off by %+"PRIi16, dt);
+                                sClockState = CLOCK_STATE_NONE;
+                            }
+
+                            // on time or display lagging behind
+                            if (dt < 0)
+                            {
+                                sClockMoveOneMinute();
+                            }
+                        }
+                        // time invalid --> wait for time
+                        else
+                        {
+                            WARNING("clock: GNSS time invalid");
+                            sClockState = CLOCK_STATE_WAIT;
+                        }
+                    }
+                }
+                break;
+            }
+
+            default:
+                sClockMotSet(CLKMOT_STEP_OFF);
+                osTaskDelay(100);
+                break;
+
+        } // switch (sClockState)
+
+
     } // ENDLESS
+
 }
 
 
@@ -481,8 +1002,8 @@ static void sAppStatus(char *str, const size_t size)
     gnssStatus(str, size);
     hwTxFlush();
     PRINT("mon: gnss: %s", str);
-    const int n = snprintf_P(str, size, PSTR("clock %02"PRIu8":%02"PRIu8", gnss "),
-        CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime));
+    const int n = snprintf_P(str, size, PSTR("clock %S %02"PRIu8":%02"PRIu8", tz %+"PRIi8", gnss "),
+        skClockStateStrs[sClockState], CLOCK_T2H(sClockTime), CLOCK_T2M(sClockTime), sClockTzOffset);
     if (osMutexClaim(&sEpochMutex, 10))
     {
         gnssStringifyTime(&sEpoch, &str[n], size - n);

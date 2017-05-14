@@ -6,6 +6,8 @@
 
     \addtogroup ALIMATRIX
     @{
+
+    \todo is the constant refreshing really needed?
 */
 
 #include <string.h>        // libc: string operations

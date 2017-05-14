@@ -9,6 +9,8 @@
 
     \todo implement precise task runtime statistics
 
+    \todo implement IRQ load statistics
+
     \todo look into http://mark3os.com/docs/html/index.html
 */
 

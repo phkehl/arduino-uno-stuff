@@ -678,10 +678,12 @@ typedef enum CLOCK_STATE_e
 // current clock state machine state
 static CLOCK_STATE_t sClockState;
 
+#ifndef __DOXYGEN__ // STFU
 static const char skClockStateStrs[][6] PROGMEM =
 {
     { "NONE\0" }, { "CALIB\0" }, { "WAIT\0" }, { "TICK\0" }
 };
+#endif
 
 
 /* ***** application task **************************************************** */

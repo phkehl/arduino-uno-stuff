@@ -175,6 +175,14 @@ static void sGnssTask(void *pArg)
         // wait for data to become available on the serial port
         uint8_t n = hwGetRxBufSize(0);
 
+        // delay a bit when there is no data
+        // if we don't do this n will often be 1 and we'll be wasting CPU time
+        // and we don't need to be very "real-time" here
+        if (n == 0)
+        {
+            osTaskDelay(1);
+        }
+
         // process incoming data
         while (n--)
         {

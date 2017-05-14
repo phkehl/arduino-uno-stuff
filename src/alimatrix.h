@@ -13,7 +13,7 @@
     - pin 11 is the data output (MOSI), connect to MOSI (data in) of the LED matrix module
     - pin 10 is the slave select signal (SS), connect to CE (chip enable?) of the LED matrix module
 
-    See \ref EXAMPLES_EX7 for a demonstration.
+    See \ref EXAMPLES_EX7 and \ref EXAMPLES_EX8 for a demonstrations.
 
     <img src="../../doc/alimatrix1.jpg">
     <img src="../../doc/alimatrix2.jpg">
@@ -36,11 +36,24 @@ void alimatrixInit(void);
 //! start driving matrix
 void alimatrixStart(void);
 
+/*!
+    \name simple operation mode functions
+
+    Set #FF_ALIMATRIX_MODE to 1 to use these.
+
+    @{
+*/
+
 //! clear matrix
+/*!
+    \note Only available if #FF_ALIMATRIX_MODE is 1.
+*/
 void alimatrixClear(void);
 
 //! set pixel
 /*!
+    \note Only available if #FF_ALIMATRIX_MODE is 1.
+
     \param[in] x      x coordinate
     \param[in] y      y coordinate
     \param[in] red    turn on red LED at coordinate
@@ -51,6 +64,8 @@ void alimatrixSetXY(const uint8_t x, const uint8_t y, const bool red, const bool
 
 //! set whole row
 /*!
+    \note Only available if #FF_ALIMATRIX_MODE is 1.
+
     \param[in] row    row number
     \param[in] red    bitmap for red LEDs in row
     \param[in] green  bitmap for green LEDs in row
@@ -58,6 +73,28 @@ void alimatrixSetXY(const uint8_t x, const uint8_t y, const bool red, const bool
 */
 void alimatrixSetRow(const uint8_t row, const uint8_t red, const uint8_t green, const uint8_t blue);
 
+//@}
+
+/* *************************************************************************** */
+
+/*!
+    \name extend operation mode functions
+
+    Set #FF_ALIMATRIX_MODE to 2 to use this.
+
+    @{
+*/
+
+//! update matrix framebuffer
+/*!
+    This assumes that \c data is formatted suitably for the 8x8 matrix (i.e. it's 8 x 8 x 3 = 192
+    bytes in size).
+
+    \param[in] data  data
+*/
+void alimatrixUpdate(const uint8_t *data);
+
+//@}
 
 /* *************************************************************************** */
 

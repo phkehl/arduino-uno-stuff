@@ -16,7 +16,7 @@
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
-#include "alimatrix.h"     // ff: some Aliexpress LED matrix driver
+#include "alimatrix.h"     // ff: Aliexpress LED matrix driver
 
 #include "ex7.h"
 
@@ -74,18 +74,6 @@ static void sAppTask(void *pArg)
         alimatrixSetXY(0, 0, true,  false, false); // red     R.......
         osTaskDelay(2000);
 
-        PRINT("colours");
-        alimatrixClear();
-        alimatrixSetRow(7, 0x00, 0x80, 0x00); // x.......
-        alimatrixSetRow(6, 0x00, 0xc0, 0x00); // xx......
-        alimatrixSetRow(5, 0x00, 0xe0, 0x00); // xxx.....
-        alimatrixSetRow(4, 0x00, 0xf0, 0x00); // xxxx....
-        alimatrixSetRow(3, 0x00, 0xf8, 0x00); // xxxxx...
-        alimatrixSetRow(2, 0x00, 0xfc, 0x00); // xxxxxx..
-        alimatrixSetRow(1, 0x00, 0xfe, 0x00); // xxxxxxx.
-        alimatrixSetRow(0, 0x00, 0xff, 0x00); // xxxxxxxx
-        osTaskDelay(2000);
-
         PRINT("green triangle");
         alimatrixClear();
         alimatrixSetRow(7, 0x00, 0x80, 0x00); // x.......
@@ -129,26 +117,6 @@ static void sAppTask(void *pArg)
                 osTaskDelay(5);
             }
         }
-    }
-
-/*
-static uint8_t fb[8][3] =
-{
-    { 0x18, 0x00, 0x00 },
-};
-*/
-
-    while (ENDLESS)
-    {
-        DEBUG("app..");
-
-        // waste some CPU...
-        uint32_t n = 500000;
-        while (n--)
-        {
-
-        }
-        osTaskDelay(1000);
     }
 }
 

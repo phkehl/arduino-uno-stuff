@@ -227,6 +227,14 @@
 
 /* *************************************************************************** */
 
+//! aliexpress matrix operation mode (1 = simple, 2 = with brightness control)
+#if !defined(FF_ALIMATRIX_MODE) || defined(__DOXYGEN__)
+#  define FF_ALIMATRIX_MODE 1
+#endif
+
+
+/* *************************************************************************** */
+
 #endif // __DEFCONFIG_H__
 
 //@}

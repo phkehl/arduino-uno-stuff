@@ -56,7 +56,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define NOTICE(fmt, args...) \
-    CS_ENTER; debugConsts(DEBUG_LEVEL_NOTICE); printf_P(PSTR(fmt "\n"), ## args); CS_LEAVE
+    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_NOTICE); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
 
 
 //! prints a print
@@ -70,7 +70,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define PRINT(fmt, args...) \
-    CS_ENTER; debugConsts(DEBUG_LEVEL_PRINT); printf_P(PSTR(fmt "\n"), ## args); CS_LEAVE
+    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_PRINT); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
 
 
 //! prints a warning
@@ -84,7 +84,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define WARNING(fmt, args...) \
-    CS_ENTER; debugConsts(DEBUG_LEVEL_WARNING); printf_P(PSTR(fmt "\n"), ## args); CS_LEAVE
+    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_WARNING); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
 
 
 //! prints an error
@@ -98,7 +98,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define ERROR(fmt, args...) \
-    CS_ENTER; debugConsts(DEBUG_LEVEL_ERROR); printf_P(PSTR(fmt "\n"), ## args); CS_LEAVE
+    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_ERROR); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
 
 
 //! prints a debug message
@@ -113,7 +113,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
 */
 #if ( (FF_DEBUG_LEVEL > 0) || defined(__DOXYGEN__) )
 #  define DEBUG(fmt, args...) \
-    CS_ENTER; debugConsts(DEBUG_LEVEL_DEBUG); printf_P(PSTR(fmt "\n"), ## args); CS_LEAVE
+    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_DEBUG); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
 #else
 #  define DEBUG(...) /* nothing */
 #endif

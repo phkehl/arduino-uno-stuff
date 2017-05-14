@@ -1,10 +1,10 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: some Aliexpress LED matrix driver (see \ref ALIMATRIX)
+    \brief flipflip's Arduino Uno stuff: Aliexpress LED matrix driver (see \ref ALIMATRIX)
 
     - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \defgroup ALIMATRIX Some Aliexpress LED Matrix Driver
+    \defgroup ALIMATRIX Aliexpress LED Matrix Driver
     \ingroup FF
 
     This implements a driver for some Aliexpress LED matrix based on the 74HC595 chip. It uses the following pins:
@@ -40,9 +40,22 @@ void alimatrixStart(void);
 void alimatrixClear(void);
 
 //! set pixel
+/*!
+    \param[in] x      x coordinate
+    \param[in] y      y coordinate
+    \param[in] red    turn on red LED at coordinate
+    \param[in] green  turn on green LED at coordinate
+    \param[in] blue   turn on blue LED at coordinate
+*/
 void alimatrixSetXY(const uint8_t x, const uint8_t y, const bool red, const bool green, const bool blue);
 
 //! set whole row
+/*!
+    \param[in] row    row number
+    \param[in] red    bitmap for red LEDs in row
+    \param[in] green  bitmap for green LEDs in row
+    \param[in] blue   bitmap for blue LEDs in row
+*/
 void alimatrixSetRow(const uint8_t row, const uint8_t red, const uint8_t green, const uint8_t blue);
 
 

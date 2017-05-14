@@ -1,6 +1,6 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: some Aliexpress LED matrix driver (see \ref ALIMATRIX)
+    \brief flipflip's Arduino Uno stuff: Aliexpress LED matrix driver (see \ref ALIMATRIX)
 
     - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
@@ -16,7 +16,7 @@
 #include "config.h"        // ff: configuration
 #include "os.h"            // ff: operating system abstractions
 #include "debug.h"         // ff: debugging
-#include "alimatrix.h"     // ff: some Aliexpress LED matrix driver
+#include "alimatrix.h"     // ff: Aliexpress LED matrix driver
 
 
 /* ************************************************************************** */

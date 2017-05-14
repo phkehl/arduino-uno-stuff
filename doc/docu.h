@@ -50,6 +50,7 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 - \ref FXLOOP
 - \ref UBX
 - \ref GNSS
+- \ref ALIMATRIX
 - See also the [source code](files.html), the \ref P_REFERENCES below, the \ref EXAMPLES, the \ref PROJECTS
   and the [AVR libc docu](../avr-libc/html/index.html).
 

@@ -18,7 +18,7 @@
 
 #include <atomthreads.h>   // Atomthreads: kernel
 
-#include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
+#include <avr/interrupt.h> // avr: interrupt things
 #include <avr/pgmspace.h>  // avr: program space utilities
 #include <util/atomic.h>   // avr: atomically and non-atomically executed code blocks
 

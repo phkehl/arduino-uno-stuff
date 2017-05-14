@@ -35,7 +35,6 @@
 /* *************************************************************************** */
 
 //! initialise things (the SPI master interface)
-
 void ws2801Init(void);
 
 //! send data to the WS2891 chip(s)

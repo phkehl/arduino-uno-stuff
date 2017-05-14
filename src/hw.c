@@ -18,7 +18,7 @@
 #include <util/delay.h>    // avr: convenience functions for busy-wait delay loops
 #include <avr/wdt.h>       // avr: watchdog timer handling
 #include <avr/pgmspace.h>  // avr: program space utilities
-#include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
+#include <avr/interrupt.h> // avr: interrupt things
 #include <avr/boot.h>      // avr: boot loader support
 //#include <avr/signature.h> // avr: signature support
 

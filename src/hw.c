@@ -46,6 +46,7 @@
 #  error FF_HW_TX_BUFSIZE must be <= 255.
 #endif
 
+//------------------------------------------------------------------------------
 
 #if ( (FF_HW_RX_BUFSIZE > 0) || (FF_HW_TX_BUFSIZE > 0) )
 
@@ -87,6 +88,7 @@ static void sHwRxTxInit(void)
 static void sHwRxTxInit(void) { }
 #endif // ( (FF_HW_RX_BUFSIZE > 0) || (FF_HW_TX_BUFSIZE > 0) )
 
+//------------------------------------------------------------------------------
 
 #if (FF_HW_TX_BUFSIZE > 0)
 
@@ -114,7 +116,6 @@ void hwTxWaitEmpty(void)
         }
     }
 }
-
 
 // adds a character to the tx buffer
 static int16_t sHwOutputPutChar(char c, FILE *pFile)
@@ -175,6 +176,7 @@ static FILE sHwOutputDev = FDEV_SETUP_STREAM(sHwOutputPutChar, NULL, _FDEV_SETUP
 ISR(USART_UDRE_vect)
 {
     osIsrEnter();
+
     // load next char
     if (svHwTxBufSize != 0) // (svHwTxBufHead != svHwTxBufTail)
     {
@@ -209,8 +211,10 @@ static void sHwTxInit(void)
 
 #else
 static void sHwTxInit(void) { }
+void hwTxWaitEmpty(void) { }
 #endif // (FF_HW_TX_BUFSIZE > 0)
 
+//------------------------------------------------------------------------------
 
 #if (FF_HW_RX_BUFSIZE > 0)
 

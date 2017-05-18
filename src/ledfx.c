@@ -244,7 +244,7 @@ uint16_t ledfxLimitCurrent(const uint16_t maPerLed, const uint16_t maMax, uint16
             {
                 usedVal = newVal;
             }
-            //DEBUG("ix=%"PRIu16" d=%"PRIu16" n=%"PRIu32" -> u=%"PRIu32, ix, deltaVal, newVal, usedVal); hwTxFlush();
+            //DEBUG_W("ix=%"PRIu16" d=%"PRIu16" n=%"PRIu32" -> u=%"PRIu32, ix, deltaVal, newVal, usedVal);
         }
         if (limit)
         {
@@ -813,7 +813,7 @@ void ledfxDigit(const uint8_t digit, const uint16_t x0, const uint16_t y0,
         const uint8_t col = pgm_read_byte(&pDigit[x - x0]);
         for (uint16_t y = y0; (y < FF_LEDFX_NUM_Y) && (y < (y0 + 7)); y++)
         {
-            //DEBUG_F("x=%"PRIu16" col=%02"PRIx8" y=%"PRIu16" %02"PRIx8 " -- %"PRIu8,
+            //DEBUG_W("x=%"PRIu16" col=%02"PRIx8" y=%"PRIu16" %02"PRIx8 " -- %"PRIu8,
             //    x, col, y, BIT(y - y0), col & BIT(y - y0) ? 1 : 0);
             if (col & BIT(y - y0))
             {

@@ -64,7 +64,7 @@ void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const boo
             const uint16_t periodMax = INFO_PERIOD_MAX(ix);
             const uint8_t hzMin = periodMin ? 1000 / periodMin : 0;
             const uint8_t hzMax = periodMax ? 1000 / periodMax : 0;
-            PRINT_F("fxloop: %2"PRIu16" %-16S %5"PRIu32"ms @ %3"PRIu16"ms/%3"PRIu8"Hz .. %3"PRIu16"ms/%3"PRIu8"Hz",
+            PRINT_W("fxloop: %2"PRIu16" %-16S %5"PRIu32"ms @ %3"PRIu16"ms/%3"PRIu8"Hz .. %3"PRIu16"ms/%3"PRIu8"Hz",
                 ix + 1, INFO_NAME(ix), INFO_DURATION(ix), periodMin, hzMin, periodMax, hzMax);
         }
     }

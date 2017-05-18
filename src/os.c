@@ -282,10 +282,9 @@ void osPrintTaskList(void)
         const uint16_t load = (uint16_t)(((float)rtAll[ix] * 100.0f / (float)rtTot * 10.0f) + 0.5);
         const uint8_t loadInt = load / 10;
         const uint8_t loadFrac = load - (10 * loadInt);
-        PRINT("mon: tsk: %"PRIu8" %s %c %"PRIu8" %2"PRIu16" %2"PRIu8".%"PRIu8,// " PC %p",
+        PRINT_W("mon: tsk: %"PRIu8" %s %c %"PRIu8" %2"PRIu16" %2"PRIu8".%"PRIu8,// " PC %p",
             ix, pkTask->name,
             pkTask->suspended ? 'S' : 'R', pkTask->priority, free, loadInt, loadFrac);//, pc[ix]);
-        hwTxFlush();
     }
 }
 

@@ -53,11 +53,20 @@ void appCreateTask(void)
 // application task
 static void sAppTask(void *pArg)
 {
+    NOTICE("task");
+
     // not using the task argument
     UNUSED(pArg);
 
     // initialise random number generator
     hwMathSeedRandom(hwGetRandomSeed());
+
+    while (ENDLESS)
+    {
+        osTaskDelay(666);
+        DEBUG("task");
+    }
+
 
     alimatrixStart();
 
@@ -65,7 +74,7 @@ static void sAppTask(void *pArg)
 
     static uint32_t msss;
     msss = osTaskGetTicks();
-
+    uint8_t n = 0;
     static float sPlasmaState;
     ledfxPlasma(true, &sPlasmaState);
     while (ENDLESS)
@@ -74,6 +83,11 @@ static void sAppTask(void *pArg)
         //DEBUG("plasma %"PRIu32, msss);
         ledfxPlasma(false, &sPlasmaState);
         alimatrixUpdate(ledfxGetFrameBuffer());
+        if ((n++ % 50) == 0)
+        {
+            osTaskSuspendScheduler();
+            osTaskDelay(5000);
+        }
     }
 }
 

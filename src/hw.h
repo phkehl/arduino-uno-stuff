@@ -42,8 +42,8 @@ void hwLedLoadOn(void);
 // switch load debug LED off, configurable via #FF_HW_LOAD_PIN
 void hwLedLoadOff(void);
 
-// flush tx buffer to serial port, driven by system sSysTask()
-void hwTxFlush(void);
+// wait until transmit buffer is empty
+void hwTxWaitEmpty(void);
 
 
 /* ************************************************************************** */

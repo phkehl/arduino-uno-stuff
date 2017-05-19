@@ -604,19 +604,35 @@ uint32_t hwGetRandomSeed(void)
 
 #if (FF_HW_NUM_TICTOC > 0)
 
-#define HW_TICTOC_FREQ (F_CPU/1024)
-#define HW_NUM_TICTOC_COUNTERS 4
+//#define HW_TICTOC_FREQ (F_CPU/1024)
+#define HW_TICTOC_FREQ (F_CPU/8)
+
 static uint16_t sHwTicTocRegs[FF_HW_NUM_TICTOC];
 
 static void sHwTicTocInit(void)
 {
-    // setup TIC/TOC performance counter
-    TCCR1A = 0;         // normal mode
-    TCCR1B = BIT(CS12) | BIT(CS10); // prescale clk/1024
+    // setup tic/toc performance counter,
+    // using 16bit Timer/Counter1
+
+    // normal operation, OC1A/OC1B disconnected.
+    TCCR1A = 0;
+    // no PWM stuff
     TCCR1C = 0;
+
+    // 16_000_000 / 1024 = 15625 clk/step
+    // "1 TC step" = 0.064ms, 65536 steps = 4194ms
+    //TCCR1B = BIT(CS12) | BIT(CS10); // prescale clk/1024
+
+    // 16_000_000 / 1 = 16_000_000 clk/step
+    // "1 TC step" = 0.0000625, 65536 steps = 4.096ms
+    //TCCR1B = BIT(CS10);
+
+    // 16_000_000 / 8 = 2_000_000 clk/step
+    // "1 TC step" = 0.0005ms, 65536 steps = 32.768ms
+    TCCR1B = BIT(CS11);
 }
 
-void hwTic(const uint16_t reg)
+void hwTic(const uint8_t reg)
 {
     if (reg < FF_HW_NUM_TICTOC)
     {
@@ -624,21 +640,23 @@ void hwTic(const uint16_t reg)
     }
 }
 
-uint16_t hwToc(const uint16_t reg)
+uint16_t hwToc(const uint8_t reg)
 {
     uint16_t res = 0;
     if (reg < FF_HW_NUM_TICTOC)
     {
+        //const uint16_t delta = (uint16_t)TCNT1 - sHwTicTocRegs[reg];
+        //res = ((uint32_t)delta * 1000 * 10) / (uint32_t)HW_TICTOC_FREQ;
         const uint16_t delta = (uint16_t)TCNT1 - sHwTicTocRegs[reg];
-        res = ((uint32_t)delta * 1000 * 10) / (uint32_t)HW_TICTOC_FREQ;
+        res = delta / (HW_TICTOC_FREQ/1000/1000);
     }
     return res;
 }
 
 #else
 static void sHwTicTocInit(void) { }
-void hwTic(const uint16_t reg) { UNUSED(reg); }
-uint16_t hwToc(const uint16_t reg) { UNUSED(reg); return 0; }
+void hwTic(const uint8_t reg) { UNUSED(reg); }
+uint16_t hwToc(const uint8_t reg) { UNUSED(reg); return 0; }
 #endif // (FF_HW_NUM_TICTOC > 0)
 
 

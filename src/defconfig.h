@@ -45,7 +45,7 @@
 #  define FF_HW_TX_BUFSIZE 125
 #endif
 
-//! number of runtime counters for hwTic() and hwToc(), will use Timer/Counter1 if > 0
+//! number of runtime counters for hwTic() and hwToc(), will use Timer/Counter1 hardware if > 0
 #if !defined(FF_HW_NUM_TICTOC) || defined(__DOXYGEN__)
 #  define FF_HW_NUM_TICTOC 1
 #endif

@@ -171,7 +171,7 @@ uint32_t hwGetRandomSeed(void);
 
     \param[in] reg  register (< #FF_HW_NUM_TICTOC)
 */
-void hwTic(const uint16_t reg);
+void hwTic(const uint8_t reg);
 
 //! stop runtime measurement
 /*!
@@ -179,9 +179,11 @@ void hwTic(const uint16_t reg);
 
     \param[in] reg  register (< #FF_HW_NUM_TICTOC)
 
-    \return  the measurement [0.1ticks]
+    \return  the measurement [us], or 0 if \c reg > #FF_HW_NUM_TICTOC
+
+    \note The result wraps at 32.768ms.
 */
-uint16_t hwToc(const uint16_t reg);
+uint16_t hwToc(const uint8_t reg);
 
 //@}
 

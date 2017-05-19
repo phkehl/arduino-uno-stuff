@@ -15,6 +15,10 @@
 
     See \ref EXAMPLES_EX7 and \ref EXAMPLES_EX8 for a demonstrations.
 
+    References:
+
+    - [SN74HC595](../SN74HC595.pdf) 8-Bit Shift Register With 3-State Output Registers
+
     <img src="../../doc/alimatrix1.jpg">
     <img src="../../doc/alimatrix2.jpg">
 

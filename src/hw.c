@@ -140,8 +140,10 @@ static int16_t sHwOutputPutChar(char c, FILE *pFile)
             CLRBITS(UCSR0B, BIT(UDRIE0));
             loop_until_bit_is_set(UCSR0A, UDRE0);
             UDR0 = c;
+            return 0;
         }
     }
+    // FIXME: and what when IRQs are off and the scheduler is running?
 
     CS_ENTER;
 

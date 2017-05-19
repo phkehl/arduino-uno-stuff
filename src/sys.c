@@ -60,37 +60,23 @@ static void sSysTask(void *pArg)
     UNUSED(pArg);
 
     uint32_t msss = osTaskGetTicks();
-
-#warning cleanup here
-    uint16_t tick = 0;
+    static uint8_t period;
 
     while (ENDLESS)
     {
-        osTaskDelayUntil(&msss, 10);
-        tick++;
-
-        /* ***** stuff to be done ten milliseconds ***** */
-
-//        hwTxFlush();
-
+        osTaskDelayUntil(&msss, 1000);
 
         /* ***** stuff to be done every second ***** */
 
-        if ((tick % 100) == 0)
-        {
-            //DEBUG_W("sys.. %"PRIu16" %"PRIu32, tick, msss);
-
-            hwAssertWatchdog();
-        }
-
+        hwAssertWatchdog();
+        period++;
 
         /* ***** stuff to be done every FF_SYS_MON_PERIOD seconds ***** */
 
 #if (FF_SYS_MON_VERBOSE > 0)
-        if ((tick % (100 * FF_SYS_MON_PERIOD)) == 0)
+        if ((period % FF_SYS_MON_PERIOD) == 0)
         {
-            //DEBUG_W("mon... %"PRIu16" %"PRIu32, tick, msss);
-            tick = 0;
+            period = 0;
 
             // os status
             {

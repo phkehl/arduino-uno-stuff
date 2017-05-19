@@ -129,11 +129,9 @@ static void sAppTask(void *pArg)
 static void sAppStatus(char *str, const size_t size)
 {
     ubxStatus(str, size);
-    hwTxFlush();
-    PRINT("mon: ubx: %s", str);
+    PRINT_W("mon: ubx: %s", str);
     gnssStatus(str, size);
-    hwTxFlush();
-    PRINT("mon: gnss: %s", str);
+    PRINT_W("mon: gnss: %s", str);
     /*const int n = */snprintf_P(str, size, PSTR("status..."));
 }
 

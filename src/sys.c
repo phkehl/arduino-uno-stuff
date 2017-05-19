@@ -60,43 +60,29 @@ static void sSysTask(void *pArg)
     UNUSED(pArg);
 
     uint32_t msss = osTaskGetTicks();
-
-    uint16_t tick = 0;
+    static uint8_t period;
 
     while (ENDLESS)
     {
-        osTaskDelayUntil(&msss, 10);
-        tick++;
-
-        /* ***** stuff to be done ten milliseconds ***** */
-
-        hwTxFlush();
-
+        osTaskDelayUntil(&msss, 1000);
 
         /* ***** stuff to be done every second ***** */
 
-        if ((tick % 100) == 0)
-        {
-            //DEBUG("sys.. %"PRIu16" %"PRIu32, tick, msss); hwTxFlush();
-
-            hwAssertWatchdog();
-        }
-
+        hwAssertWatchdog();
+        period++;
 
         /* ***** stuff to be done every FF_SYS_MON_PERIOD seconds ***** */
 
 #if (FF_SYS_MON_VERBOSE > 0)
-        if ((tick % (100 * FF_SYS_MON_PERIOD)) == 0)
+        if ((period % FF_SYS_MON_PERIOD) == 0)
         {
-            //DEBUG("mon... %"PRIu16" %"PRIu32, tick, msss); hwTxFlush();
-            tick = 0;
+            period = 0;
 
             // os status
             {
                 char str[64];
                 osStatus(str, sizeof(str));
-                hwTxFlush();
-                PRINT("mon: os: %s", str);
+                PRINT_W("mon: os: %s", str);
             }
 
             // task list
@@ -106,13 +92,11 @@ static void sSysTask(void *pArg)
             {
                 char str[64];
                 hwStatus(str, sizeof(str));
-                hwTxFlush();
-                PRINT("mon: hw: %s", str);
+                PRINT_W("mon: hw: %s", str);
                 if (sSysMonFunc)
                 {
                     sSysMonFunc(str, sizeof(str));
-                    hwTxFlush();
-                    PRINT("mon: app: %s", str);
+                    PRINT_W("mon: app: %s", str);
                 }
             }
         }

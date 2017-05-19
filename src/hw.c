@@ -35,10 +35,18 @@
 #if ( (FF_HW_RX_BUFSIZE > 0) && (FF_HW_RX_BUFSIZE < 50) )
 #  error FF_HW_RX_BUFSIZE must be >= 50 bytes or it will not be useful.
 #endif
+#if (FF_HW_RX_BUFSIZE > 255)
+#  error FF_HW_RX_BUFSIZE must be <= 255.
+#endif
 
 #if ( (FF_HW_TX_BUFSIZE > 0) && (FF_HW_TX_BUFSIZE < 50) )
 #  error FF_HW_TX_BUFSIZE must be >= 50 bytes or it will not be useful.
 #endif
+#if (FF_HW_TX_BUFSIZE > 255)
+#  error FF_HW_TX_BUFSIZE must be <= 255.
+#endif
+
+//------------------------------------------------------------------------------
 
 #if ( (FF_HW_RX_BUFSIZE > 0) || (FF_HW_TX_BUFSIZE > 0) )
 
@@ -80,41 +88,33 @@ static void sHwRxTxInit(void)
 static void sHwRxTxInit(void) { }
 #endif // ( (FF_HW_RX_BUFSIZE > 0) || (FF_HW_TX_BUFSIZE > 0) )
 
+//------------------------------------------------------------------------------
 
 #if (FF_HW_TX_BUFSIZE > 0)
 
-static char      sHwTxBuf[FF_HW_TX_BUFSIZE]; // output buffer
-static uint8_t   sHwTxBufHead;               // write-to-buffer pointer (index)
-static uint8_t   sHwTxBufTail;               // read-from-buffer pointer (index)
-static uint8_t   sHwTxBufSize;               // size of buffered data
-static uint8_t   sHwTxBufPeak;               // peak output buffer size
-static uint16_t  sHwTxBufDrop;               // number of dropped bytes
+static volatile char      svHwTxBuf[FF_HW_TX_BUFSIZE]; // output buffer
+static volatile uint8_t   svHwTxBufHead;               // write-to-buffer pointer (index)
+static volatile uint8_t   svHwTxBufTail;               // read-from-buffer pointer (index)
+static volatile uint8_t   svHwTxBufSize;               // size of buffered data
+static volatile uint8_t   svHwTxBufPeak;               // peak output buffer size
+static volatile uint16_t  svHwTxBufDrop;               // number of dropped bytes
 
-static uint8_t sHwTxFlush(void)
+void hwTxWaitEmpty(void)
 {
-    // send queued characters
-    if (sHwTxBufSize)
+    if (osTaskIsSchedulerRunning())
     {
-        // character to send
-        const char c = /*~*/sHwTxBuf[sHwTxBufTail];
-
-        // cancel and arm the tx complete interrupt and load next byte into the data register
-        if (osTaskIsSchedulerRunning())
+        while (svHwTxBufSize == sizeof(svHwTxBuf))
         {
-            SETBITS(UCSR0A, BIT(TXC0));
-            SETBITS(UCSR0B, BIT(TXCIE0));
+            osTaskDelay(1);
         }
-        UDR0 = c;
-
-        // move tail
-        CS_ENTER;
-        sHwTxBufTail += 1;
-        sHwTxBufTail %= sizeof(sHwTxBuf);
-        sHwTxBufSize--;
-        CS_LEAVE;
     }
-
-    return sHwTxBufSize;
+    else
+    {
+        while (svHwTxBufSize != 0)
+        {
+            // busy-wait
+        }
+    }
 }
 
 // adds a character to the tx buffer
@@ -123,36 +123,51 @@ static int16_t sHwOutputPutChar(char c, FILE *pFile)
     int16_t res = 1;
     UNUSED(pFile);
 
+    // guarantee output if the scheduler is not running
+    if (!osTaskIsSchedulerRunning())
+    {
+        // we can use the buffer if interrupts are enabled
+        if (SREG & BIT(7))
+        {
+            while (svHwTxBufSize == sizeof(svHwTxBuf))
+            {
+                // busy-wait
+            }
+        }
+        // we must send right away if interrupts are not enabled
+        else
+        {
+            CLRBITS(UCSR0B, BIT(UDRIE0));
+            loop_until_bit_is_set(UCSR0A, UDRE0);
+            UDR0 = c;
+            return 0;
+        }
+    }
+    // FIXME: and what when IRQs are off and the scheduler is running?
+
     CS_ENTER;
 
-    if ( (sHwTxBufSize == 0) || (sHwTxBufHead != sHwTxBufTail) )
+    // add to buffer
+    if ( (svHwTxBufSize == 0) || (svHwTxBufHead != svHwTxBufTail) )
     {
-        sHwTxBuf[sHwTxBufHead] = c;
-        sHwTxBufHead += 1;
-        sHwTxBufHead %= sizeof(sHwTxBuf);
-        sHwTxBufSize++;
-        if (sHwTxBufSize > sHwTxBufPeak)
+        svHwTxBuf[svHwTxBufHead] = c;
+        svHwTxBufHead += 1;
+        svHwTxBufHead %= sizeof(svHwTxBuf);
+        svHwTxBufSize++;
+        if (svHwTxBufSize > svHwTxBufPeak)
         {
-            sHwTxBufPeak = sHwTxBufSize;
+            svHwTxBufPeak = svHwTxBufSize;
         }
         res = 0;
+        SETBITS(UCSR0B, BIT(UDRIE0));
     }
+    // drop the char if the buffer is full
     else
     {
-        sHwTxBufDrop++;
+        svHwTxBufDrop++;
     }
 
     CS_LEAVE;
-
-    // flush now unless print task is running
-    if (!osTaskIsSchedulerRunning())
-    {
-        do {
-            loop_until_bit_is_set(UCSR0A, UDRE0);
-        } while (sHwTxFlush());
-
-        return 0;
-    }
 
     return res;
 }
@@ -160,13 +175,24 @@ static int16_t sHwOutputPutChar(char c, FILE *pFile)
 // the output file handle (write-only)
 static FILE sHwOutputDev = FDEV_SETUP_STREAM(sHwOutputPutChar, NULL, _FDEV_SETUP_WRITE);
 
-static OS_SEMAPHORE_t sHwTxReadySem;
-
-ISR(USART_TX_vect) // UART, tx complete
+ISR(USART_UDRE_vect)
 {
     osIsrEnter();
-    CLRBITS(UCSR0B, BIT(TXCIE0)); // USART tx complete interrupt enable
-    osSemaphoreGive(&sHwTxReadySem, true);
+
+    // load next char
+    if (svHwTxBufSize != 0) // (svHwTxBufHead != svHwTxBufTail)
+    {
+        const char c = /*~*/svHwTxBuf[svHwTxBufTail];
+        svHwTxBufTail += 1;
+        svHwTxBufTail %= sizeof(svHwTxBuf);
+        svHwTxBufSize--;
+        UDR0 = c;
+    }
+    else
+    {
+        CLRBITS(UCSR0B, BIT(UDRIE0));
+    }
+
     osIsrLeave();
 }
 
@@ -178,31 +204,19 @@ static void sHwTxInit(void)
 
     // initialise output
     stdout = &sHwOutputDev;         // assign the debug port to stdout
-    sHwTxBufHead = 0;           // initialise the output buffer
-    sHwTxBufTail = 0;
-    sHwTxBufSize = 0;
-    sHwTxBufPeak = 0;
-    sHwTxBufDrop = 0;
-
-    // output sync
-    osSemaphoreCreate(&sHwTxReadySem, 0);
-}
-
-void hwTxFlush(void)
-{
-    // flush all pending bytes
-    while (sHwTxFlush())
-    {
-        // wait for tx complete
-        osSemaphoreTake(&sHwTxReadySem, 10);
-    }
+    svHwTxBufHead = 0;           // initialise the output buffer
+    svHwTxBufTail = 0;
+    svHwTxBufSize = 0;
+    svHwTxBufPeak = 0;
+    svHwTxBufDrop = 0;
 }
 
 #else
 static void sHwTxInit(void) { }
-void hwTxFlush(void) { }
+void hwTxWaitEmpty(void) { }
 #endif // (FF_HW_TX_BUFSIZE > 0)
 
+//------------------------------------------------------------------------------
 
 #if (FF_HW_RX_BUFSIZE > 0)
 
@@ -310,7 +324,9 @@ static void sHwRxInit(void)
     osSemaphoreCreate(&sHwRxReadySem, 0);
 
     // enable RX complete interrupt
+#if (FF_HW_RX_BUFSIZE > 0)
     SETBITS(UCSR0B, BIT(RXCIE0));
+#endif
 }
 
 #else
@@ -366,15 +382,12 @@ __FORCEINLINE void hwLedLoadOff(void) { }
 
 /* ***** exception handling & reset debugging ******************************* */
 
-const char skHwPanicStr0[] PROGMEM = "NONE";
-const char skHwPanicStr1[] PROGMEM = "HW";
-const char skHwPanicStr2[] PROGMEM = "OS";
-const char skHwPanicStr3[] PROGMEM = "OTHER";
-
-const PGM_P const skHwPanicStr[] PROGMEM =
+#ifndef __DOXYGEN__ // STFU
+const const char skHwPanicStr[][6] PROGMEM =
 {
-    skHwPanicStr0, skHwPanicStr1, skHwPanicStr2, skHwPanicStr3
+    { "NONE\0" }, { "HW\0" }, { "OS\0" }, { "OTHER\0" }
 };
+#endif
 
 void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
 {
@@ -410,8 +423,7 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
 
         DEBUG(":-(");
         ERROR("PANIC @ %"PRIu32": 0x%"PRIx16" %S (0x%08"PRIx32", 0x%08"PRIx32")",
-              (uint32_t)msss, (uint16_t)reason,
-              (PGM_P)pgm_read_word(&skHwPanicStr[reason]), u0, u1);
+              (uint32_t)msss, (uint16_t)reason, skHwPanicStr[reason], u0, u1);
 
         sHwLedLoadInit();
         uint32_t timeLeft = time ? time : 1;
@@ -817,11 +829,11 @@ void hwStatus(char *str, const uint16_t size)
     snprintf_P(str, size,
         PSTR("rxbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16") txbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         svHwRxBufSize, svHwRxBufPeak, sizeof(svHwRxBuf), svHwRxBufDrop,
-        sHwTxBufSize, sHwTxBufPeak, sizeof(sHwTxBuf), sHwTxBufDrop);
+        svHwTxBufSize, svHwTxBufPeak, sizeof(svHwTxBuf), svHwTxBufDrop);
     svHwRxBufPeak = 0;
     svHwRxBufDrop = 0;
-    sHwTxBufPeak = 0;
-    sHwTxBufDrop = 0;
+    svHwTxBufPeak = 0;
+    svHwTxBufDrop = 0;
 #elif (FF_HW_RX_BUFSIZE > 0)
     snprintf_P(str, size,
         PSTR("rxbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
@@ -831,9 +843,9 @@ void hwStatus(char *str, const uint16_t size)
 #elif (FF_HW_TX_BUFSIZE > 0)
     snprintf_P(str, size,
         PSTR("txbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
-        sHwTxBufSize, sHwTxBufPeak, sizeof(sHwTxBuf), sHwTxBufDrop);
-    sHwTxBufPeak = 0;
-    sHwTxBufDrop = 0;
+        svHwTxBufSize, svHwTxBufPeak, sizeof(svHwTxBuf), svHwTxBufDrop);
+    svHwTxBufPeak = 0;
+    svHwTxBufDrop = 0;
 #endif
     str[size-1] = '\0';
 }

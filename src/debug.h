@@ -119,20 +119,20 @@ void debugConsts(const DEBUG_LEVEL_t k);
 #endif
 
 
-//! like NOTICE() but will wait for output to finish \hideinitializer
-#define NOTICE_F(fmt, args...)  NOTICE(fmt, ## args);  hwTxFlush()
+//! like NOTICE() but will wait for empty tx buffer \hideinitializer
+#define NOTICE_W(fmt, args...)  hwTxWaitEmpty(); NOTICE(fmt, ## args)
 
-//! like PRINT() but will wait for output to finish \hideinitializer
-#define PRINT_F(fmt, args...)   PRINT(fmt, ## args);   hwTxFlush()
+//! like PRINT() but will wait for empty tx buffer \hideinitializer
+#define PRINT_W(fmt, args...)   hwTxWaitEmpty(); PRINT(fmt, ## args)
 
-//! like WARNING() but will wait for output to finish \hideinitializer
-#define WARNING_F(fmt, args...) WARNING(fmt, ## args); hwTxFlush()
+//! like WARNING() but will wait for empty tx buffer \hideinitializer
+#define WARNING_W(fmt, args...) hwTxWaitEmpty(); WARNING(fmt, ## args)
 
-//! like ERROR() but will wait for output to finish \hideinitializer
-#define ERROR_F(fmt, args...)   ERROR(fmt, ## args);   hwTxFlush()
+//! like ERROR() but will wait for empty tx buffer \hideinitializer
+#define ERROR_W(fmt, args...)   hwTxWaitEmpty(); ERROR(fmt, ## args)
 
-//! like DEBUG() but will wait for output to finish \hideinitializer
-#define DEBUG_F(fmt, args...)   DEBUG(fmt, ## args);   hwTxFlush()
+//! like DEBUG() but will wait for empty tx buffer \hideinitializer
+#define DEBUG_W(fmt, args...)   hwTxWaitEmpty(); DEBUG(fmt, ## args)
 
 
 /* *************************************************************************** */

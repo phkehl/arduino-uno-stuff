@@ -1,0 +1,5 @@
+--ignore-directory=is:doc/avr-libc
+--ignore-directory=is:doc/html
+--ignore-directory=is:3rdparty/simavr
+
+

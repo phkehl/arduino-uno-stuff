@@ -103,7 +103,7 @@ void hwTxWaitEmpty(void)
 {
     if (osTaskIsSchedulerRunning())
     {
-        while (svHwTxBufSize == sizeof(svHwTxBuf))
+        while (svHwTxBufSize != 0)
         {
             osTaskDelay(1);
         }

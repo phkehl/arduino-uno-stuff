@@ -7,9 +7,7 @@
     \addtogroup OS
     @{
 
-    \todo implement precise task runtime statistics
-
-    \todo implement IRQ load statistics
+    \todo implement precise task runtime statistics, incl. IRQ load statistics (if that's even possible...)
 
     \todo look into http://mark3os.com/docs/html/index.html
 */
@@ -92,9 +90,11 @@ void osInit(void)
     if (res == ATOM_OK)
     {
         // setup and enable the system tick timer (TCCR = Timer/Counter Control Register)
-        TCCR0A = /*BIT(COM0A0)             // toggle OC0A on compare match
+        TCCR0A = /*BIT(COM0A0)              // toggle OC0A on compare match
                |*/ BIT(WGM01);              // clear timer on compare (CTC) mode TOP=OC0A
         // 1000 Hz
+        // 16_000_000 / 64 = 250000 clk/step
+        // "1 TC step" = 0.004ms, 250 steps = 1.000ms
         TCCR0B = BIT(CS00) | BIT(CS01);    // prescale clk/64
         OCR0A  = (F_CPU / 64 / 1000) - 1;  // 1ms ticks on output compare register A (= 249.0 @ 16MHz)
 
@@ -116,8 +116,6 @@ void osInit(void)
 }
 
 
-//static volatile uint16_t svOsRuntimeCounter = 0;
-
 // task tick routine, runs the scheduler
 //ISR(TIMER0_COMPA_vect, ISR_NAKED)
 ISR(TIMER0_COMPA_vect)
@@ -126,16 +124,11 @@ ISR(TIMER0_COMPA_vect)
     hwLedTickToggle();
     // note that the load LED is toggled in atomThreadSwitch()
 
-    // sum up runtime per task
+    // add runtime to task
+    // FIXME: other stuff is happening, too (timers, interrupts)
     ATOM_TCB *pTCB = atomCurrentContext();
     if (pTCB != NULL)
     {
-        //const uint32_t rtcnt = hwGetRuntimeCounter();
-        //const uint16_t delta = (rtcnt - svOsRuntimeCounter);
-        //pTCB->runtime += delta;
-        //svOsRuntimeCounter = rtcnt;
-
-        // FIXME this is only an approximation
         pTCB->runtime++;
     }
 

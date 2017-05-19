@@ -435,41 +435,6 @@ static void atomTimerCallbacks (void)
         /* Is this entry due? */
         if (--(next_ptr->cb_ticks) == 0)
         {
-#if 0
-#ifdef ATOM_FLIPFLIP
-            if (next_ptr->cb_repeat > 0)
-            {
-                next_ptr->cb_ticks = next_ptr->cb_repeat;
-                prev_ptr = next_ptr;
-            }
-            else
-            {
-                /* Remove the entry from the timer list */
-                if (next_ptr == timer_queue)
-                {
-                    /* We're removing the list head */
-                    timer_queue = next_ptr->next_timer;
-                }
-                else
-                {
-                    /* We're removing a mid or tail timer */
-                    prev_ptr->next_timer = next_ptr->next_timer;
-                }
-            }
-#else // ATOM_FLIPFLIP
-            /* Remove the entry from the timer list */
-            if (next_ptr == timer_queue)
-            {
-                /* We're removing the list head */
-                timer_queue = next_ptr->next_timer;
-            }
-            else
-            {
-                /* We're removing a mid or tail timer */
-                prev_ptr->next_timer = next_ptr->next_timer;
-            }
-#endif // ATOM_FLIPFLIP
-#endif
             /* Remove the entry from the timer list */
             if (next_ptr == timer_queue)
             {

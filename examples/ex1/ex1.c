@@ -85,11 +85,13 @@ static void sAppTask(void *pArg)
 
         // waste some CPU
         PIN_HIGH(LED2_PIN);
+        hwTic(0);
         uint32_t foo = 0;
-        for (uint16_t ix = 0; ix < 12345; ix++)
+        for (uint32_t ix = 0; ix < 1234567; ix++)
         {
             foo += ix;
         }
+        DEBUG("dt=%"PRIu16, hwToc(1));
         PIN_LOW(LED2_PIN);
     }
 }

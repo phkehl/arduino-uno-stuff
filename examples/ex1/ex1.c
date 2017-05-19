@@ -74,7 +74,7 @@ static void sAppTask(void *pArg)
 
         // delay a bit
         osTaskDelay(123);
-        DEBUG("foo");
+        DEBUG("foo %"PRIu16, TCNT1);
         osTaskDelay(123);
         DEBUG("bar");
         osTaskDelay(123);
@@ -84,15 +84,17 @@ static void sAppTask(void *pArg)
         sAppCnt++;
 
         // waste some CPU
+        hwTic(0);
         PIN_HIGH(LED2_PIN);
         hwTic(0);
         uint32_t foo = 0;
-        for (uint32_t ix = 0; ix < 1234567; ix++)
+        for (uint16_t ix = 0; ix < 22345; ix++)
         {
             foo += ix;
         }
         DEBUG("dt=%"PRIu16, hwToc(1));
         PIN_LOW(LED2_PIN);
+        DEBUG("dt=%"PRIu16, hwToc(0));
     }
 }
 

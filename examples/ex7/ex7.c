@@ -63,6 +63,7 @@ static void sAppTask(void *pArg)
     while (ENDLESS)
     {
         PRINT("some pixels");
+        hwTic(0);
         alimatrixClear();
         alimatrixSetXY(1, 7, true,  true,  true);  // white   .W......
         alimatrixSetXY(5, 6, false, true,  true);  // cyan    .....C..
@@ -72,9 +73,11 @@ static void sAppTask(void *pArg)
         //                                                    ........
         alimatrixSetXY(2, 1, false, true,  false); // green   ..G.....
         alimatrixSetXY(0, 0, true,  false, false); // red     R.......
+        DEBUG("%"PRIu16, hwToc(0));
         osTaskDelay(2000);
 
         PRINT("green triangle");
+        hwTic(0);
         alimatrixClear();
         alimatrixSetRow(7, 0x00, 0x80, 0x00); // x.......
         alimatrixSetRow(6, 0x00, 0xc0, 0x00); // xx......
@@ -84,9 +87,11 @@ static void sAppTask(void *pArg)
         alimatrixSetRow(2, 0x00, 0xfc, 0x00); // xxxxxx..
         alimatrixSetRow(1, 0x00, 0xfe, 0x00); // xxxxxxx.
         alimatrixSetRow(0, 0x00, 0xff, 0x00); // xxxxxxxx
+        DEBUG("%"PRIu16, hwToc(0));
         osTaskDelay(2000);
 
         PRINT("red heart");
+        hwTic(0);
         alimatrixClear();
         alimatrixSetRow(7, 0x00, 0x00, 0x00); // ........
         alimatrixSetRow(6, 0x66, 0x00, 0x00); // .xx..xx.
@@ -96,6 +101,7 @@ static void sAppTask(void *pArg)
         alimatrixSetRow(2, 0x7e, 0x00, 0x00); // .xxxxxx.
         alimatrixSetRow(1, 0x3c, 0x00, 0x00); // ..xxxx..
         alimatrixSetRow(0, 0x18, 0x00, 0x00); // ...xx...
+        DEBUG("%"PRIu16, hwToc(0));
         osTaskDelay(2000);
 
         PRINT("random");

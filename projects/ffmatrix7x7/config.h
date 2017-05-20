@@ -15,6 +15,7 @@
 
 // ../common/ffmatrix.c configuration
 #define FFMATRIX_MODEL      77
+#define FFMATRIX_DRIVER     1           // LED driver (1 = WS2801, 2 = Alimatrix)
 #define FFMATRIX_FLUSH_LED  _PC5        // LED lit while data is written to the LED strip
 #define FFMATRIX_SPEED_POT  HW_ADC_PC3  // potentiometer to change speed
 #define FFMATRIX_BRIGHT_POT HW_ADC_PC4  // potentiometer to change brightness

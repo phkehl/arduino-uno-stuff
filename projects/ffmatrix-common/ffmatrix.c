@@ -20,16 +20,27 @@
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
 #include "hsv2rgb.h"       // ff: HSV to RGV conversion
-#include "ws2801.h"        // ff: WS2801 LED driver
 #include "ledfx.h"         // ff: LED effects
 #include "fxloop.h"        // ff: effects loops
+#if (FFMATRIX_DRIVER == 1)
+#  include "ws2801.h"      // ff: WS2801 LED driver
+#elif  (FFMATRIX_DRIVER == 2)
+#  include "alimatrix.h"   // ff: Aliexpress LED matrix driver
+#else
+#  error Illegal value for FFMATRIX_DRIVER
+#endif
 
 #include "ffmatrix.h"
 
-#if (!defined FFMATRIX_MODEL) || (!defined FFMATRIX_FLUSH_LED) || (!defined FFMATRIX_SPEED_POT) || (!defined FFMATRIX_BRIGHT_POT)
+#if (!defined FFMATRIX_MODEL) || (!defined FFMATRIX_FLUSH_LED)
 #  error missing configuration
 #endif
-
+#if (!defined FFMATRIX_SPEED_POT) && (defined FFMATRIX_BRIGHT_POT)
+#  error missing configuration
+#endif
+#if (defined FFMATRIX_SPEED_POT) && (!defined FFMATRIX_BRIGHT_POT)
+#  error missing configuration
+#endif
 
 /* ***** application init **************************************************** */
 
@@ -41,7 +52,7 @@ static void sLedFlush(void);
 // initialise the user application
 void appInit(void)
 {
-    DEBUG("ffmatrix7x7: init");
+    DEBUG("ffmatrix: init");
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
@@ -51,7 +62,12 @@ void appInit(void)
     PIN_LOW(FFMATRIX_FLUSH_LED);
 
     // initialise LED matrix
+#if (FFMATRIX_DRIVER == 1)
     ws2801Init();
+#endif
+#if (FFMATRIX_DRIVER == 2)
+    alimatrixInit();
+#endif
     ledfxClear(0, 0);
     sLedFlush();
 
@@ -81,7 +97,9 @@ void appInit(void)
 #endif
 
     // initialise ADC
+#if (defined FFMATRIX_SPEED_POT) || (defined FFMATRIX_BRIGHT_POT)
     hwAdcInit(FFMATRIX_SPEED_POT | FFMATRIX_BRIGHT_POT, false);
+#endif
 }
 
 // starts the user application task
@@ -103,8 +121,13 @@ static /*inline*/ void sLedFlush(void)
 {
     PIN_HIGH(FFMATRIX_FLUSH_LED);
 
+#if (FFMATRIX_DRIVER == 1)
     ledfxLimitCurrent(FFMATRIX_MA_PER_LED, FFMATRIX_PSU_MAX_MA, &sCurrent);
     ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+#endif
+#if (FFMATRIX_DRIVER == 2)
+    alimatrixUpdate(ledfxGetFrameBuffer());
+#endif
 
     PIN_LOW(FFMATRIX_FLUSH_LED);
 }
@@ -226,8 +249,12 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 
 #define TRANSTIME 750
 
+#if (FFMATRIX_DRIVER == 2)
+static uint8_t sBrightness = 0; // no brightness adjustments, i.e. full brightness
+#else
 static uint8_t sBrightness = 50;
-static uint8_t sSpeed = 50;
+#endif
+static uint8_t sSpeed = 80;
 static volatile bool svButtonPressed;
 
 ISR(INT0_vect) // external interrupt 0
@@ -269,6 +296,11 @@ static void sAppTask(void *pArg)
 
     // initialise random number generator
     hwMathSeedRandom(hwGetRandomSeed());
+
+    // start Alimatrix display
+#if (FFMATRIX_DRIVER == 2)
+    alimatrixStart();
+#endif
 
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
@@ -355,12 +387,16 @@ static void sAppTask(void *pArg)
 
         // read grey pot for brightness, convert from linear reading to exponential brightness level
         // (i.e. start increasing brightness slowly; use smaller brightness steps at the lower end)
+#if (defined FFMATRIX_BRIGHT_POT)
         const float pot1 = hwAdcGetScaled(FFMATRIX_BRIGHT_POT, 1, 55374); // log(254) * 10000
         sBrightness = (uint8_t)expf(pot1 / 10000); // 1.0..254.01 --> 1..254
+#endif
 
         // read black pot, adjust effect speed
+#if (defined FFMATRIX_SPEED_POT)
         const int32_t pot2 = hwAdcGetScaled(FFMATRIX_SPEED_POT, 0, 100); // black
         sSpeed = (uint8_t)pot2;
+#endif
 
         // delay until it's time to run the next iteration of the effect
         if ( fxloopWait(sSpeed) )

@@ -14,22 +14,12 @@
 /* *************************************************************************** */
 
 // ../common/ffmatrix.c configuration
-#define FFMATRIX_MODEL      58
-#define FFMATRIX_DRIVER     1           // LED driver (1 = WS2801, 2 = Alimatrix)
+#define FFMATRIX_MODEL      88
+#define FFMATRIX_DRIVER     2           // LED driver (1 = WS2801, 2 = Alimatrix)
 #define FFMATRIX_FLUSH_LED  _PC5        // LED lit while data is written to the LED strip
-#define FFMATRIX_SPEED_POT  HW_ADC_PC2  // potentiometer to change speed
-#define FFMATRIX_BRIGHT_POT HW_ADC_PC3  // potentiometer to change brightness
-#define FFMATRIX_MA_PER_LED 60          // [mA] per LED if fully lit
-#define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
 
 // idle thread stack size
 #define FF_OS_IDLE_STACK 85
-
-// LED for the system load and status
-#define FF_HW_LOAD_PIN _PD3
-
-// system tick signal
-#define FF_HW_TICK_PIN _PD4
 
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0
@@ -38,20 +28,20 @@
 #define FF_HSV2RGB_METHOD 2
 
 // matrix dimension
-#define FF_LEDFX_NUM_X 5
+#define FF_LEDFX_NUM_X 8
 #define FF_LEDFX_NUM_Y 8
 
 // we have this many LEDs
 #define FF_LEDFX_NUM_LED ((FF_LEDFX_NUM_X) * (FF_LEDFX_NUM_Y))
 
 // LED matrix arrangement
-#define FF_LEDFX_XY_ARR 3
+//#define FF_LEDFX_XY_ARR 3
 
 // BRG colour ordering
-#define FF_LEDFX_ORDER 123
+//#define FF_LEDFX_ORDER 123
 
-// SPI master speed
-#define FF_WS2801_SPI_SPEED 1000
+// use 8 brightness levels
+#define FF_ALIMATRIX_MODE 3
 
 // system monitor period
 #define FF_SYS_MON_PERIOD 1

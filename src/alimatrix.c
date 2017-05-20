@@ -6,8 +6,6 @@
 
     \addtogroup ALIMATRIX
     @{
-
-    \todo is the constant refreshing really needed?
 */
 
 #include <string.h>        // libc: string operations
@@ -138,10 +136,11 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
 
 // frame x rows x colours
 static volatile uint8_t svFb[_N*8][3];
+static uint8_t svFbTmp[_N*8][3];
 
 void alimatrixUpdate(const uint8_t *data)
 {
-    memset(svFb, 0, sizeof(svFb));
+    memset(svFbTmp, 0, sizeof(svFbTmp));
     for (uint8_t row = 0; row < 8; row++)
     {
         const uint8_t rowOffs = row * (8 * 3);
@@ -163,19 +162,22 @@ void alimatrixUpdate(const uint8_t *data)
 #  else
 #    error ouch
 #  endif
-                if (c1 >= thrs) { svFb[layIx][0] |= bit; }
-                if (c2 >= thrs) { svFb[layIx][1] |= bit; }
-                if (c3 >= thrs) { svFb[layIx][2] |= bit; }
+                if (c1 >= thrs) { svFbTmp[layIx][0] |= bit; }
+                if (c2 >= thrs) { svFbTmp[layIx][1] |= bit; }
+                if (c3 >= thrs) { svFbTmp[layIx][2] |= bit; }
             }
         }
         for (uint8_t lay = 0; lay < _N; lay++)
         {
             const uint8_t layIx = (8 * lay) + row;
-            svFb[layIx][0] = ~svFb[layIx][0];
-            svFb[layIx][1] = ~svFb[layIx][1];
-            svFb[layIx][2] = ~svFb[layIx][2];
+            svFbTmp[layIx][0] = ~svFbTmp[layIx][0];
+            svFbTmp[layIx][1] = ~svFbTmp[layIx][1];
+            svFbTmp[layIx][2] = ~svFbTmp[layIx][2];
         }
     }
+    CS_ENTER;
+    memcpy(svFb, svFbTmp, sizeof(svFb));
+    CS_LEAVE;
 }
 
 static volatile uint8_t svRow;

@@ -65,19 +65,40 @@ static void sAppTask(void *pArg)
 
     static uint32_t msss;
     msss = osTaskGetTicks();
-    uint8_t n = 0;
-    static float sPlasmaState;
-    ledfxPlasma(true, &sPlasmaState);
+    static uint16_t n;
+    static float sF;
+    static uint8_t sU;
+
     while (ENDLESS)
     {
-        osTaskDelayUntil(&msss, 100);
-        //DEBUG("plasma %"PRIu32, msss);
-        ledfxPlasma(false, &sPlasmaState);
-        alimatrixUpdate(ledfxGetFrameBuffer());
-        if ((n++ % 50) == 0)
+        DEBUG("hueflow");
+        n = 400;
+        ledfxConcentricHueFlow(true, 1, &sU);
+        while (n--)
         {
-            osTaskSuspendScheduler();
-            osTaskDelay(5000);
+            osTaskDelayUntil(&msss, 50);
+            ledfxConcentricHueFlow(false, 1, &sU);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+
+        DEBUG("rainbow");
+        n = 200;
+        ledfxRainbow(true, 0, 0, &sU);
+        while (n--)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxRainbow(false, 0, 0, &sU);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+
+        DEBUG("plasma");
+        n = 200;
+        ledfxPlasma(true, &sF);
+        while (n--)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxPlasma(false, &sF);
+            alimatrixUpdate(ledfxGetFrameBuffer());
         }
     }
 }

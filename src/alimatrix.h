@@ -13,6 +13,11 @@
     - pin 11 is the data output (MOSI), connect to MOSI (data in) of the LED matrix module
     - pin 10 is the slave select signal (SS), connect to CE (chip enable?) of the LED matrix module
 
+    Two modes are available:
+    - #FF_ALIMATRIX_MODE 1 where the three colours per LED can be toggled
+    - #FF_ALIMATRIX_MODE 2 where four different brightness levels per colour and LED are available
+      (using duty-cycling)
+
     See \ref EXAMPLES_EX7 and \ref EXAMPLES_EX8 for a demonstrations.
 
     References:

@@ -16,9 +16,8 @@ Most importantly it comes with a real-time scheduler (currently based on a
 modified Atomthreads) that allows to run multiple tasks. The modifications
 include runtime per-thread and total system load indicators (on serial port
 debug output and via a LED). A system task is compiled-in and started
-automatically. It asserts the watchdog, runs the buffered serial transmit and
-outputs system monitoring information (task load, stack high water marks, and
-more).
+automatically. It asserts the watchdog and outputs system monitoring information
+(task load, stack high water marks, and more).
 
 ## Usage
 

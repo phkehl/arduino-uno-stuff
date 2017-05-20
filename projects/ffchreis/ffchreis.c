@@ -178,31 +178,31 @@ static uint16_t sFxTest(const uint16_t frame)
     switch (mode)
     {
         case 0:
-            DEBUG_F("RGB %3"PRIu8, vStep);
+            DEBUG_W("RGB %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, vStep, vStep);
             break;
         case 1:
-            DEBUG_F("R %3"PRIu8, vStep);
+            DEBUG_W("R %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, 0, 0);
             break;
         case 2:
-            DEBUG_F("G %3"PRIu8, vStep);
+            DEBUG_W("G %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, 0, vStep, 0);
             break;
         case 3:
-            DEBUG_F("B %3"PRIu8, vStep);
+            DEBUG_W("B %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, 0, 0, vStep);
             break;
         case 4:
-            DEBUG_F("RG %3"PRIu8, vStep);
+            DEBUG_W("RG %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, vStep, 0);
             break;
         case 5:
-            DEBUG_F("RB %3"PRIu8, vStep);
+            DEBUG_W("RB %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, vStep, 0, vStep);
             break;
         case 6:
-            DEBUG_F("GB %3"PRIu8, vStep);
+            DEBUG_W("GB %3"PRIu8, vStep);
             ledfxFillRGB(0, 0, 0, vStep, vStep);
             break;
     }

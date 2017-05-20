@@ -71,6 +71,34 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
+        DEBUG("rgbdemo");
+        for (uint8_t val = 5; val < 255; val += 10)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillRGB(0, 0, val, 0, 0);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+        for (uint8_t val = 5; val < 255; val += 10)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillRGB(0, 0, 0, val, 0);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+        for (uint8_t val = 5; val < 255; val += 10)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillRGB(0, 0, 0, 0, val);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+
+        DEBUG("huedemo");
+        for (uint8_t hue = 0; hue < 255; hue += 5)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillHSV(0, 0, hue, 255, 255);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+
         DEBUG("hueflow");
         n = 400;
         ledfxConcentricHueFlow(true, 1, &sU);

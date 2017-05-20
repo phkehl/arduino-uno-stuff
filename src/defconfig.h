@@ -227,7 +227,7 @@
 
 /* *************************************************************************** */
 
-//! aliexpress matrix operation mode (1 = simple, 2 = with brightness control)
+//! aliexpress matrix operation mode (1 = simple, 2 = 4 brightness levels, 3 = 8 brightness levels)
 #if !defined(FF_ALIMATRIX_MODE) || defined(__DOXYGEN__)
 #  define FF_ALIMATRIX_MODE 1
 #endif

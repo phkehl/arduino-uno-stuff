@@ -11,12 +11,20 @@
 
     - pin 13 is the clock output (SCK), connect to CLK (clock in) of the LED matrix module
     - pin 11 is the data output (MOSI), connect to MOSI (data in) of the LED matrix module
-    - pin 10 is the slave select signal (SS), connect to CE (chip enable?) of the LED matrix module
+    - pin 10 is the slave select signal (SS), connect to CE of the LED matrix module
 
-    Two modes are available:
+    The matrix uses four 8-bit shift registers: three are used for the eight pixels in a row (each
+    pixel has three LEDs: red, green and blue) and the fourth is used to select the row.  In order
+    to use all eight rows in parallel, one has to scan the rows quickly to create the impression
+    that all of them are lit at the same time. This code uses interrupts to do so.
+
+    Three modes are available:
     - #FF_ALIMATRIX_MODE 1 where the three colours per LED can be toggled
+      (uses 24 bytes of RAM for the framebuffer)
     - #FF_ALIMATRIX_MODE 2 where four different brightness levels per colour and LED are available
-      (using duty-cycling)
+      (uses 192 bytes of RAM for the framebuffers)
+    - #FF_ALIMATRIX_MODE 3 where eight different brightness levels per colour and LED are available
+      (uses 384 bytes of RAM for the framebuffers)
 
     See \ref EXAMPLES_EX7 and \ref EXAMPLES_EX8 for a demonstrations.
 
@@ -87,9 +95,9 @@ void alimatrixSetRow(const uint8_t row, const uint8_t red, const uint8_t green, 
 /* *************************************************************************** */
 
 /*!
-    \name extend operation mode functions
+    \name extended operation mode functions
 
-    Set #FF_ALIMATRIX_MODE to 2 to use this.
+    Set #FF_ALIMATRIX_MODE to 2 or 3 to use this.
 
     @{
 */
@@ -98,6 +106,8 @@ void alimatrixSetRow(const uint8_t row, const uint8_t red, const uint8_t green, 
 /*!
     This assumes that \c data is formatted suitably for the 8x8 matrix (i.e. it's 8 x 8 x 3 = 192
     bytes in size).
+
+    \note Only available if #FF_ALIMATRIX_MODE is 2 or 3.
 
     \param[in] data  data
 */

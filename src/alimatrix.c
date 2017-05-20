@@ -18,7 +18,7 @@
 #include "debug.h"         // ff: debugging
 #include "alimatrix.h"     // ff: Aliexpress LED matrix driver
 
-#if (FF_ALIMATRIX_MODE != 1) && (FF_ALIMATRIX_MODE != 2)
+#if (FF_ALIMATRIX_MODE != 1) && (FF_ALIMATRIX_MODE != 2) && (FF_ALIMATRIX_MODE != 3)
 #  error illegal value for FF_ALIMATRIX_MODE
 #endif
 
@@ -40,7 +40,7 @@ void alimatrixInit(void)
 #endif
 
     // enable, master mode, f/64 (250kHz)
-#if (FF_ALIMATRIX_MODE == 2)
+#if (FF_ALIMATRIX_MODE == 2) || (FF_ALIMATRIX_MODE == 3)
     SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
     SPSR = 0;
 #endif
@@ -129,10 +129,13 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
 
 
 /* ************************************************************************** */
-#if (FF_ALIMATRIX_MODE == 2)
+#if (FF_ALIMATRIX_MODE == 2) || (FF_ALIMATRIX_MODE == 3)
 
-//#  define _N 8
-#  define _N 4
+#  if (FF_ALIMATRIX_MODE == 2)
+#    define _N 4
+#  else
+#    define _N 8
+#  endif
 
 // frame x rows x colours
 static volatile uint8_t svFb[_N*8][3];
@@ -154,10 +157,10 @@ void alimatrixUpdate(const uint8_t *data)
             for (uint8_t lay = 0; lay < _N; lay++)
             {
                 const uint8_t layIx = (8 * lay) + row;
-#  if _N == 4
+#  if (_N == 4)
                 const uint8_t thrs = BIT((2 * lay) + 1) - 1;
                 //const uint8_t thrs = 1 + (lay * 50);
-#  elif _N == 8
+#  elif (_N == 8)
                 const uint8_t thrs = BIT(lay + 1) - 1;
 #  else
 #    error ouch
@@ -216,7 +219,7 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
     osIsrLeave();
 }
 
-#endif // (FF_ALIMATRIX_MODE == 2)
+#endif // (FF_ALIMATRIX_MODE == 2) || (FF_ALIMATRIX_MODE == 3)
 
 /* ************************************************************************** */
 //@}

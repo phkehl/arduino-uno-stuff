@@ -19,7 +19,7 @@
 #define FF_LEDFX_NUM_Y 8
 #define FF_LEDFX_NUM_LED (FF_LEDFX_NUM_X * FF_LEDFX_NUM_Y)
 
-#define FF_ALIMATRIX_MODE 3
+#define FF_ALIMATRIX_MODE 2
 
 // complete configuration by including the defaults
 #include "defconfig.h"

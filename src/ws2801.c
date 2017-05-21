@@ -6,6 +6,8 @@
 
     \addtogroup WS2801
     @{
+
+    \todo use interrupts
 */
 
 #include "stdstuff.h"      // ff: useful macros and types

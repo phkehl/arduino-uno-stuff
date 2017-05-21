@@ -58,10 +58,162 @@ static void sAppTask(void *pArg)
     // initialise random number generator
     hwMathSeedRandom(hwGetRandomSeed());
 
+#if 0
+    while (ENDLESS)
+    {
+        PIN_LOW(_D10);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x11; loop_until_bit_is_set(SPSR, SPIF);
+        osTaskDelay(1); PIN_HIGH(_D10);
+        osTaskDelay(2000);
+
+        PIN_LOW(_D10);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x11; loop_until_bit_is_set(SPSR, SPIF);
+        osTaskDelay(1); PIN_HIGH(_D10);
+        osTaskDelay(2000);
+
+        PIN_LOW(_D10);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x11; loop_until_bit_is_set(SPSR, SPIF);
+        osTaskDelay(1); PIN_HIGH(_D10);
+        osTaskDelay(2000);
+
+        PIN_LOW(_D10);
+        SPDR = 0xf0; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x11; loop_until_bit_is_set(SPSR, SPIF);
+        osTaskDelay(1); PIN_HIGH(_D10);
+        osTaskDelay(2000);
+
+        PIN_LOW(_D10);
+        SPDR = 0xf0; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x11; loop_until_bit_is_set(SPSR, SPIF);
+        osTaskDelay(1); PIN_HIGH(_D10);
+        osTaskDelay(2000);
+
+        PIN_LOW(_D10);
+        SPDR = 0xff; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x11; loop_until_bit_is_set(SPSR, SPIF);
+        osTaskDelay(1); PIN_HIGH(_D10);
+        osTaskDelay(2000);
+
+        PIN_LOW(_D10);
+        SPDR = 0xf0; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x00; loop_until_bit_is_set(SPSR, SPIF);
+        SPDR = 0x11; loop_until_bit_is_set(SPSR, SPIF);
+        osTaskDelay(1); PIN_HIGH(_D10);
+        osTaskDelay(2000);
+    }
+#endif
+
     alimatrixStart();
 
     while (ENDLESS)
     {
+        PRINT("all");
+        alimatrixClear();
+        alimatrixSetRow(7, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(6, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(5, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(4, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(3, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(2, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(1, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(0, 0xff, 0x00, 0x00); // xxxxxxxx
+        osTaskDelay(10000);
+
+        PRINT("red");
+        alimatrixClear();
+        alimatrixSetRow(7, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(6, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(5, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(4, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(3, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(2, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(1, 0xff, 0x00, 0x00); // xxxxxxxx
+        alimatrixSetRow(0, 0xff, 0x00, 0x00); // xxxxxxxx
+        osTaskDelay(2000);
+        PRINT("green");
+        alimatrixClear();
+        alimatrixSetRow(7, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(6, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(5, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(4, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(3, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(2, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(1, 0x00, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(0, 0x00, 0xff, 0x00); // xxxxxxxx
+        osTaskDelay(2000);
+        PRINT("blue");
+        alimatrixClear();
+        alimatrixSetRow(7, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(6, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(5, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(4, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(3, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(2, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(1, 0x00, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(0, 0x00, 0x00, 0xff); // xxxxxxxx
+        osTaskDelay(2000);
+        PRINT("red+green");
+        alimatrixClear();
+        alimatrixSetRow(7, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(6, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(5, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(4, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(3, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(2, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(1, 0xff, 0xff, 0x00); // xxxxxxxx
+        alimatrixSetRow(0, 0xff, 0xff, 0x00); // xxxxxxxx
+        osTaskDelay(2000);
+        PRINT("red+blue");
+        alimatrixClear();
+        alimatrixSetRow(7, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(6, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(5, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(4, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(3, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(2, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(1, 0xff, 0x00, 0xff); // xxxxxxxx
+        alimatrixSetRow(0, 0xff, 0x00, 0xff); // xxxxxxxx
+        osTaskDelay(2000);
+        PRINT("green+blue");
+        alimatrixClear();
+        alimatrixSetRow(7, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(6, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(5, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(4, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(3, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(2, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(1, 0x00, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(0, 0x00, 0xff, 0xff); // xxxxxxxx
+        osTaskDelay(2000);
+        PRINT("red+green+blue");
+        alimatrixClear();
+        alimatrixSetRow(7, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(6, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(5, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(4, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(3, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(2, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(1, 0xff, 0xff, 0xff); // xxxxxxxx
+        alimatrixSetRow(0, 0xff, 0xff, 0xff); // xxxxxxxx
+        osTaskDelay(2000);
+        continue;
+
         PRINT("some pixels");
         hwTic(0);
         alimatrixClear();

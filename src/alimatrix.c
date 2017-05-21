@@ -96,6 +96,7 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
 {
     osIsrEnter();
 
+#if 0
     if (svByte == 0)
     {
         PIN_HIGH(_D10);
@@ -121,6 +122,80 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
         SPDR = BIT(svRow);
         svByte = 0;
     }
+#else
+    // reds
+    if (svByte == 0)
+    {
+        PIN_HIGH(_D10);
+        svRow++;
+        svRow %= 8;
+
+        PIN_LOW(_D10);
+        SPDR = ~svFb[svRow][0];
+        svByte++;
+    }
+    else if (svByte == 1)
+    {
+        SPDR = 0xff;
+        svByte++;
+    }
+    else if (svByte == 2)
+    {
+        SPDR = 0xff;
+        svByte++;
+    }
+    else if (svByte == 3)
+    {
+        SPDR = BIT(svRow);
+        svByte++;
+    }
+    // blues
+    else if (svByte == 4)
+    {
+        PIN_HIGH(_D10);
+        PIN_LOW(_D10);
+        SPDR = 0xff;
+        svByte++;
+    }
+    else if (svByte == 5)
+    {
+        SPDR = ~svFb[svRow][1];
+        svByte++;
+    }
+    else if (svByte == 6)
+    {
+        SPDR = 0xff;
+        svByte++;
+    }
+    else if (svByte == 7)
+    {
+        SPDR = BIT(svRow);
+        svByte++;
+    }
+    // greens
+    else if (svByte == 8)
+    {
+        PIN_HIGH(_D10);
+        PIN_LOW(_D10);
+        SPDR = 0xff;
+        svByte++;
+    }
+    else if (svByte == 9)
+    {
+        SPDR = 0xff;
+        svByte++;
+    }
+    else if (svByte == 10)
+    {
+        SPDR = ~svFb[svRow][2];
+        svByte++;
+    }
+    else //if (svByte == 11)
+    {
+        SPDR = BIT(svRow);
+        svByte = 0;
+    }
+#endif
 
     osIsrLeave();
 }
@@ -141,27 +216,41 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
 static volatile uint8_t svFb[_N*8][3];
 static uint8_t svFbTmp[_N*8][3];
 
+typedef struct MATRIX_s
+{
+    uint8_t xy[8][8][3];
+} MATRIX_t;
+
 void alimatrixUpdate(const uint8_t *data)
 {
     memset(svFbTmp, 0, sizeof(svFbTmp));
+    const MATRIX_t *pkM = (const MATRIX_t *)data;
     for (uint8_t row = 0; row < 8; row++)
     {
-        const uint8_t rowOffs = row * (8 * 3);
+//        const uint8_t rowOffs = row * (8 * 3);
         for (uint8_t col = 0; col < 8; col++)
         {
-            const uint8_t colOffs = rowOffs + (3 * col);
-            const uint8_t c1 = data[colOffs + 0];
-            const uint8_t c2 = data[colOffs + 1];
-            const uint8_t c3 = data[colOffs + 2];
+//            const uint8_t colOffs = rowOffs + (3 * col);
+//            const uint8_t c1 = data[colOffs + 0];
+//            const uint8_t c2 = data[colOffs + 1];
+//            const uint8_t c3 = data[colOffs + 2];
+            const uint8_t c1 = pkM->xy[row][col][0];
+            const uint8_t c2 = pkM->xy[row][col][1];
+            const uint8_t c3 = pkM->xy[row][col][2];
             const uint8_t bit = BIT(col);
             for (uint8_t lay = 0; lay < _N; lay++)
             {
                 const uint8_t layIx = (8 * lay) + row;
 #  if (_N == 4)
-                const uint8_t thrs = BIT((2 * lay) + 1) - 1;
+                //const uint8_t thrs = BIT((2 * lay) + 1) - 1;
                 //const uint8_t thrs = 1 + (lay * 50);
+                const uint8_t thrsLut[] = { 1, 75, 150, 225 };
+                const uint8_t thrs = thrsLut[layIx];
 #  elif (_N == 8)
-                const uint8_t thrs = BIT(lay + 1) - 1;
+                //const uint8_t thrs = BIT(lay + 1) - 1;
+                //const uint8_t thrsLut[] = { 1, 32, 64, 96, 128, 160, 192, 225 }
+                const uint8_t thrsLut[] = { 1, 35, 70, 105, 140, 175, 210, 245 };
+                const uint8_t thrs = thrsLut[layIx];
 #  else
 #    error ouch
 #  endif
@@ -190,6 +279,7 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
 {
     osIsrEnter();
 
+#if 1
     if (svByte == 0)
     {
         PIN_HIGH(_D10);
@@ -215,6 +305,7 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
         SPDR = BIT(svRow % 8);
         svByte = 0;
     }
+#endif
 
     osIsrLeave();
 }

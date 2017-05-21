@@ -71,25 +71,56 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        DEBUG("rgbdemo");
-        for (uint8_t val = 5; val < 255; val += 10)
+        DEBUG("rgbdemo: red");
+        for (uint8_t val = 1; val < 250; val += 5)
         {
             osTaskDelayUntil(&msss, 100);
             ledfxFillRGB(0, 0, val, 0, 0);
             alimatrixUpdate(ledfxGetFrameBuffer());
         }
-        for (uint8_t val = 5; val < 255; val += 10)
+        DEBUG("rgbdemo: green");
+        for (uint8_t val = 1; val < 250; val += 5)
         {
             osTaskDelayUntil(&msss, 100);
             ledfxFillRGB(0, 0, 0, val, 0);
             alimatrixUpdate(ledfxGetFrameBuffer());
         }
-        for (uint8_t val = 5; val < 255; val += 10)
+        DEBUG("rgbdemo: blue");
+        for (uint8_t val = 1; val < 250; val += 5)
         {
             osTaskDelayUntil(&msss, 100);
             ledfxFillRGB(0, 0, 0, 0, val);
             alimatrixUpdate(ledfxGetFrameBuffer());
         }
+        DEBUG("rgbdemo: red+green");
+        for (uint8_t val = 1; val < 250; val += 5)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillRGB(0, 0, val, val, 0);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+        DEBUG("rgbdemo: red+blue");
+        for (uint8_t val = 1; val < 250; val += 5)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillRGB(0, 0, val, 0, val);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+        DEBUG("rgbdemo: green+blue");
+        for (uint8_t val = 1; val < 250; val += 5)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillRGB(0, 0, 0, val, val);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+        DEBUG("rgbdemo: red+green+blue");
+        for (uint8_t val = 1; val < 250; val += 5)
+        {
+            osTaskDelayUntil(&msss, 100);
+            ledfxFillRGB(0, 0, val, val, val);
+            alimatrixUpdate(ledfxGetFrameBuffer());
+        }
+        continue;
 
         DEBUG("huedemo");
         for (uint8_t hue = 0; hue < 255; hue += 5)

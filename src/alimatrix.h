@@ -18,6 +18,11 @@
     to use all eight rows in parallel, one has to scan the rows quickly to create the impression
     that all of them are lit at the same time. This code uses interrupts to do so.
 
+    \note Something with this cheap matrix is wrong: it cannot display any combination that includes
+          red, it would only lit the red but not the green or blue. Also, putting one LED to red in
+          a row and others to green or blue will make the latter two very dim. Something to do with
+          voltage drops or so perhaps?
+
     Three modes are available:
     - #FF_ALIMATRIX_MODE 1 where the three colours per LED can be toggled
       (uses 24 bytes of RAM for the framebuffer)
@@ -34,7 +39,6 @@
 
     <img src="../../doc/alimatrix1.jpg">
     <img src="../../doc/alimatrix2.jpg">
-
 
     @{
 */

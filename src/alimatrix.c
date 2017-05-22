@@ -259,6 +259,9 @@ void alimatrixUpdate(const uint8_t *data)
 #  if (N_SHADES == 4)
                 const uint8_t thrsLut[] = { 1, 75, 150, 225 };
                 const uint8_t thrs = thrsLut[shade];
+#  elif (N_SHADES == 8)
+                const uint8_t thrsLut[] = { 1, 32, 64, 96, 128, 160, 192, 224 };
+                const uint8_t thrs = thrsLut[shade];
 #  else
 #    error illegal value for N_SHADES
 #  endif
@@ -304,6 +307,8 @@ void alimatrixInit(void)
     // enable, master mode, f/32 (500kHz)
     //SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
     //SPSR = 0;
+
+
 
     DEBUG("alimatrix: init (%"PRIu8"+%"PRIu8")",
         (uint8_t)sizeof(sRowsTmp), (uint8_t)sizeof(svRows));

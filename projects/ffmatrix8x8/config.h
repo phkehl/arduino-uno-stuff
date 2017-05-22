@@ -24,9 +24,6 @@
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0
 
-// loose some memory by using a slightly smother hsv2rgb() conversion method
-#define FF_HSV2RGB_METHOD 2
-
 // matrix dimension
 #define FF_LEDFX_NUM_X 8
 #define FF_LEDFX_NUM_Y 8
@@ -40,8 +37,8 @@
 // BRG colour ordering
 //#define FF_LEDFX_ORDER 123
 
-// use 8 brightness levels
-#define FF_ALIMATRIX_MODE 3
+// use brightness levels
+#define FF_ALIMATRIX_MODE 2
 
 // system monitor period
 #define FF_SYS_MON_PERIOD 1

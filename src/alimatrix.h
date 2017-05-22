@@ -14,22 +14,15 @@
     - pin 10 is the slave select signal (SS), connect to CE of the LED matrix module
 
     The matrix uses four 8-bit shift registers: three are used for the eight pixels in a row (each
-    pixel has three LEDs: red, green and blue) and the fourth is used to select the row.  In order
-    to use all eight rows in parallel, one has to scan the rows quickly to create the impression
-    that all of them are lit at the same time. This code uses interrupts to do so.
-
-    \note Something with this cheap matrix is wrong: it cannot display any combination that includes
-          red, it would only lit the red but not the green or blue. Also, putting one LED to red in
-          a row and others to green or blue will make the latter two very dim. Something to do with
-          voltage drops or so perhaps?
+    pixel has three LEDs: red, green and blue) and the fourth is used to select the row. In order to
+    use all eight rows in parallel, one has to scan the rows quickly to create the impression that
+    all of them are lit at the same time. This code uses interrupts to do so.
 
     Three modes are available:
     - #FF_ALIMATRIX_MODE 1 where the three colours per LED can be toggled
       (uses 24 bytes of RAM for the framebuffer)
     - #FF_ALIMATRIX_MODE 2 where four different brightness levels per colour and LED are available
       (uses 192 bytes of RAM for the framebuffers)
-    - #FF_ALIMATRIX_MODE 3 where eight different brightness levels per colour and LED are available
-      (uses 384 bytes of RAM for the framebuffers)
 
     See \ref EXAMPLES_EX7 and \ref EXAMPLES_EX8 for a demonstrations.
 

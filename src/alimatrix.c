@@ -24,38 +24,6 @@
 
 
 /* ************************************************************************** */
-
-void alimatrixInit(void)
-{
-    // configure hardware SPI
-    PIN_OUTPUT(_D13); // SCK
-    PIN_OUTPUT(_D11); // MOSI
-    PIN_OUTPUT(_D10); // SS
-    PIN_HIGH(_D10);
-
-    // enable, master mode, f/128 (125kHz)
-#if (FF_ALIMATRIX_MODE == 1)
-    SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1) | BIT(SPR0);
-    SPSR = 0;
-#endif
-
-    // enable, master mode, f/64 (250kHz)
-#if (FF_ALIMATRIX_MODE == 2) || (FF_ALIMATRIX_MODE == 3)
-    SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
-    SPSR = 0;
-#endif
-
-    DEBUG("alimatrix: init");
-}
-
-void alimatrixStart(void)
-{
-    SPCR |= BIT(SPIE);
-    SPDR = 0;
-}
-
-
-/* ************************************************************************** */
 #if (FF_ALIMATRIX_MODE == 1)
 
 enum { RED = 0, GREEN = 2, BLUE = 1 };
@@ -89,6 +57,31 @@ void alimatrixSetRow(const uint8_t row, const uint8_t red, const uint8_t green, 
     }
 }
 
+void alimatrixInit(void)
+{
+    // configure hardware SPI
+    PIN_OUTPUT(_D13); // SCK
+    PIN_OUTPUT(_D11); // MOSI
+    PIN_OUTPUT(_D10); // SS
+    PIN_HIGH(_D10);
+
+    // enable, master mode, f/128 (125kHz)
+    SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1) | BIT(SPR0);
+    SPSR = 0;
+
+    // enable, master mode, f/64 (250kHz)
+    //SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
+    //SPSR = 0;
+
+    DEBUG("alimatrix: init (%"PRIu8")", (uint8_t)sizeof(svFb));
+}
+
+void alimatrixStart(void)
+{
+    SPCR |= BIT(SPIE);
+    SPDR = 0;
+}
+
 static volatile uint8_t svRow;
 static volatile uint8_t svByte;
 
@@ -96,33 +89,6 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
 {
     osIsrEnter();
 
-#if 0
-    if (svByte == 0)
-    {
-        PIN_HIGH(_D10);
-        svRow++;
-        svRow %= 8;
-
-        PIN_LOW(_D10);
-        SPDR = ~svFb[svRow][0];
-        svByte++;
-    }
-    else if (svByte == 1)
-    {
-        SPDR = ~svFb[svRow][1];
-        svByte++;
-    }
-    else if (svByte == 2)
-    {
-        SPDR = ~svFb[svRow][2];
-        svByte++;
-    }
-    else
-    {
-        SPDR = BIT(svRow);
-        svByte = 0;
-    }
-#else
     // reds
     if (svByte == 0)
     {
@@ -195,7 +161,6 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
         SPDR = BIT(svRow);
         svByte = 0;
     }
-#endif
 
     osIsrLeave();
 }
@@ -204,113 +169,310 @@ ISR(SPI_STC_vect) // SPI, serial transfer complete
 
 
 /* ************************************************************************** */
-#if (FF_ALIMATRIX_MODE == 2) || (FF_ALIMATRIX_MODE == 3)
 
-#  if (FF_ALIMATRIX_MODE == 2)
-#    define _N 4
-#  else
-#    define _N 8
-#  endif
+#if (FF_ALIMATRIX_MODE == 2)
 
-// frame x rows x colours
-static volatile uint8_t svFb[_N*8][3];
-static uint8_t svFbTmp[_N*8][3];
+#  define M_X 8
+#  define M_Y 8
+#  define M_RED   0
+#  define M_GREEN 1
+#  define M_BLUE  2
 
+// input matrix is 8 px * 8 px * 3 colours
 typedef struct MATRIX_s
 {
-    uint8_t xy[8][8][3];
+    uint8_t xy[M_Y][M_X][3];
 } MATRIX_t;
+
+// Something with this cheap matrix is wrong: if one enables different colours in the same row at
+// the same time some of the colours disappear. E.g. when you enable red(s) the blue(s) will
+// disappear (or get very dim). Probably something to do with the different voltage drops for the
+// different colours. Bad design?
+// To work around this we never display different colours in the same row but instead display one
+// after the other. Additionally we artificially generate four shades of brightness by enabling
+// the LEDs more or less often.
+// All this leads to the following scheme (each line is one "scan" of a single row):
+// ........ row 1 red   1
+// ........   .
+// ........   .
+// ........ row 8 red   1
+// ........ row 1 blue  1
+// ........   .
+// ........   .
+// ........ row 8 blue  1
+// ........ row 1 green 1
+// ........   .
+// ........   .
+// ........ row 8 green 1
+//       .
+//       .
+//       .
+// ........ row 1 red   4
+// ........   .
+// ........   .
+// ........ row 8 red   4
+// ........ row 1 blue  4
+// ........   .
+// ........   .
+// ........ row 8 blue  4
+// ........ row 1 green 4
+// ........   .
+// ........   .
+// ........ row 8 green 4
+//
+// i.e.: 4 shades * 3 colours * 8 rows
+
+#  define N_SHADES  4
+#  define N_COLOURS 3
+#  define N_ROWS    8
+#  define I_RED     0
+#  define I_GREEN   1
+#  define I_BLUE    2
+
+static volatile uint8_t svRows[N_SHADES][N_COLOURS][N_ROWS];
+static uint8_t sRowsTmp[N_SHADES][N_COLOURS][N_ROWS];
 
 void alimatrixUpdate(const uint8_t *data)
 {
-    memset(svFbTmp, 0, sizeof(svFbTmp));
+    // we operate on a temporary copy of the buffer; otherwise we generate
+    // flicker as the ISR is reading from the live copy as we go
+    memset(sRowsTmp, 0, sizeof(sRowsTmp));
     const MATRIX_t *pkM = (const MATRIX_t *)data;
-    for (uint8_t row = 0; row < 8; row++)
+
+    // for each x/y in the original (input) matrix
+    for (uint8_t y = 0; y < M_Y; y++)
     {
-//        const uint8_t rowOffs = row * (8 * 3);
-        for (uint8_t col = 0; col < 8; col++)
+        const uint8_t row = y; // y in the original matrix is a row in the target matrix
+        for (uint8_t x = 0; x < M_X; x++)
         {
-//            const uint8_t colOffs = rowOffs + (3 * col);
-//            const uint8_t c1 = data[colOffs + 0];
-//            const uint8_t c2 = data[colOffs + 1];
-//            const uint8_t c3 = data[colOffs + 2];
-            const uint8_t c1 = pkM->xy[row][col][0];
-            const uint8_t c2 = pkM->xy[row][col][1];
-            const uint8_t c3 = pkM->xy[row][col][2];
-            const uint8_t bit = BIT(col);
-            for (uint8_t lay = 0; lay < _N; lay++)
+            // x in the original matrix is a bit in the row of the target matrix
+            const uint8_t colBit = BIT(x);
+
+            // the input colour values
+            const uint8_t red   = pkM->xy[y][x][M_RED];
+            const uint8_t green = pkM->xy[y][x][M_GREEN];
+            const uint8_t blue  = pkM->xy[y][x][M_BLUE];
+
+            // determine which pixels should be lit at which shade
+            for (uint8_t shade = 0; shade < N_SHADES; shade++)
             {
-                const uint8_t layIx = (8 * lay) + row;
-#  if (_N == 4)
-                //const uint8_t thrs = BIT((2 * lay) + 1) - 1;
-                //const uint8_t thrs = 1 + (lay * 50);
+#  if (N_SHADES == 4)
                 const uint8_t thrsLut[] = { 1, 75, 150, 225 };
-                const uint8_t thrs = thrsLut[layIx];
-#  elif (_N == 8)
-                //const uint8_t thrs = BIT(lay + 1) - 1;
-                //const uint8_t thrsLut[] = { 1, 32, 64, 96, 128, 160, 192, 225 }
-                const uint8_t thrsLut[] = { 1, 35, 70, 105, 140, 175, 210, 245 };
-                const uint8_t thrs = thrsLut[layIx];
+                const uint8_t thrs = thrsLut[shade];
 #  else
-#    error ouch
+#    error illegal value for N_SHADES
 #  endif
-                if (c1 >= thrs) { svFbTmp[layIx][0] |= bit; }
-                if (c2 >= thrs) { svFbTmp[layIx][1] |= bit; }
-                if (c3 >= thrs) { svFbTmp[layIx][2] |= bit; }
+                // if the red/green/blue colour value is above the shade's theshold
+                if (red   >= thrs) { sRowsTmp[shade][I_RED  ][row] |= colBit; }
+                if (green >= thrs) { sRowsTmp[shade][I_GREEN][row] |= colBit; }
+                if (blue  >= thrs) { sRowsTmp[shade][I_BLUE ][row] |= colBit; }
             }
         }
-        for (uint8_t lay = 0; lay < _N; lay++)
-        {
-            const uint8_t layIx = (8 * lay) + row;
-            svFbTmp[layIx][0] = ~svFbTmp[layIx][0];
-            svFbTmp[layIx][1] = ~svFbTmp[layIx][1];
-            svFbTmp[layIx][2] = ~svFbTmp[layIx][2];
-        }
     }
+    // invert all bits
+    uint8_t *pByte = (uint8_t *)sRowsTmp;
+    uint16_t n = sizeof(sRowsTmp);
+    while (n != 0)
+    {
+        *pByte = ~(*pByte);
+        pByte++;
+        n--;
+    }
+
+    // copy temporary data to live data while stopping the ISR(s) only briefly
     CS_ENTER;
-    memcpy(svFb, svFbTmp, sizeof(svFb));
+    memcpy(svRows, sRowsTmp, sizeof(svRows));
     CS_LEAVE;
 }
 
-static volatile uint8_t svRow;
-static volatile uint8_t svByte;
+void alimatrixInit(void)
+{
+    // configure hardware SPI
+    PIN_OUTPUT(_D13); // SCK
+    PIN_OUTPUT(_D11); // MOSI
+    PIN_OUTPUT(_D10); // SS
+    PIN_HIGH(_D10);
+
+    // enable, master mode, f/128 (125kHz)
+    //SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1) | BIT(SPR0);
+    //SPSR = 0;
+
+    // enable, master mode, f/64 (250kHz)
+    SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
+    SPSR = 0;
+
+    // enable, master mode, f/32 (500kHz)
+    //SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
+    //SPSR = 0;
+
+    DEBUG("alimatrix: init (%"PRIu8"+%"PRIu8")",
+        (uint8_t)sizeof(sRowsTmp), (uint8_t)sizeof(svRows));
+}
+
+
+void alimatrixStart(void)
+{
+#  if 0
+    static uint8_t shade;
+    static uint8_t colour;
+    static uint8_t row = 255;
+    static uint8_t byte = 4;
+
+    while (ENDLESS)
+    {
+        if (byte == 4)
+        {
+            byte = 0;
+            row++;
+            if (row >= N_ROWS)
+            {
+                row = 0;
+                colour++;
+            }
+            if (colour >= N_COLOURS)
+            {
+                colour = 0;
+                shade++;
+            }
+            if (shade >= N_SHADES)
+            {
+                shade = 0;
+            }
+        }
+
+        uint8_t data;
+        // the 1st, 2nd or 3rd byte is the bitmat of the LEDs of this colour to lit
+        if (byte == colour)
+        {
+            data = 0x00;
+        }
+        // the last byte is the row to lit
+        else if (byte == 3)
+        {
+            data = BIT(row);
+        }
+        // don't enable any but the current colour
+        else
+        {
+            data = 0xff;
+        }
+
+        // latch previous 4 bytes and start outputting the next four
+        if (byte == 0)
+        {
+            DEBUG("---");
+        }
+
+        DEBUG("row %"PRIu8" shade %"PRIu8" colour %"PRIu8" byte=%"PRIu8" data=%02"PRIx8,
+            row, shade, colour, byte, data);
+        osTaskDelay(100);
+
+        byte++;
+    }
+#  endif
+
+    // enable serial transfer complete interrupt
+    SPCR |= BIT(SPIE);
+
+    // send a dummy byte to get things going
+    SPDR = 0x55;
+}
+
 
 ISR(SPI_STC_vect) // SPI, serial transfer complete
 {
     osIsrEnter();
 
-#if 1
-    if (svByte == 0)
-    {
-        PIN_HIGH(_D10);
-        svRow++;
-        svRow %= (_N * 8);
+    // determine which byte we need to send, we want:
+    // row 1, shade 1, colour 1  --> 4 bytes: c1 c2 c3 r1
+    // ..
+    // row 8, shade 1, colour 1
+    // row 1, shade 1, colour 2
+    // ..
+    // row 8, shade 1, colour 2
+    // row 1, shade 1, colour 3
+    // ..
+    // row 8, shade 1, colour 3
+    // .
+    // .
+    // row 1, shade 2, colour 1
+    // ..
+    // row 8, shade 2, colour 1
+    // row 1, shade 2, colour 2
+    // ..
+    // row 8, shade 2, colour 2
+    // row 1, shade 2, colour 3
+    // ..
+    // row 8, shade 2, colour 3
+    // .
+    // .
+    // .
+    // row 8, shade 4, colour 3
 
-        PIN_LOW(_D10);
-        SPDR = svFb[svRow][0];
-        svByte++;
-    }
-    else if (svByte == 1)
+    // so for one full frame we need to send
+    // 8 rows * 4 shades * 3 colours * 4 bytes/per row = 384 bytes = 3072 bits
+    // at 125kHz SPI speed this gives ~40 Hz refresh rate of 40 Hz (or 10Hz for the least bright shade)
+    // at 250kHz SPI speed this gives ~80 Hz refresh rate of 40 Hz (or 20Hz for the least bright shade)
+
+    static uint8_t shade;
+    static uint8_t colour;
+    static uint8_t row = 255; // start at row = 0 and
+    static uint8_t byte = 4;  // colour = 0
+
+    if (byte == 4)
     {
-        SPDR = svFb[svRow][1];
-        svByte++;
+        byte = 0;
+        row++;
+        if (row >= N_ROWS)
+        {
+            row = 0;
+            colour++;
+        }
+        if (colour >= N_COLOURS)
+        {
+            colour = 0;
+            shade++;
+        }
+        if (shade >= N_SHADES)
+        {
+            shade = 0;
+        }
     }
-    else if (svByte == 2)
+
+    uint8_t data;
+    // the 1st, 2nd or 3rd byte is the bitmat of the LEDs of this colour to lit
+    if (byte == colour)
     {
-        SPDR = svFb[svRow][2];
-        svByte++;
+        data = svRows[shade][colour][row];
     }
+    // the last byte is the row to lit
+    else if (byte == 3)
+    {
+        data = BIT(row);
+    }
+    // don't enable any but the current colour
     else
     {
-        SPDR = BIT(svRow % 8);
-        svByte = 0;
+        data = 0xff;
     }
-#endif
+
+    // latch previous 4 bytes and start outputting the next four
+    if (byte == 0)
+    {
+        PIN_HIGH(_D10);
+        PIN_LOW(_D10);
+    }
+
+    // send it
+    SPDR = data;
+
+    // prepare for next
+    byte++;
 
     osIsrLeave();
 }
 
-#endif // (FF_ALIMATRIX_MODE == 2) || (FF_ALIMATRIX_MODE == 3)
+#endif // (FF_ALIMATRIX_MODE == 2)
 
 /* ************************************************************************** */
 //@}

@@ -71,6 +71,19 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
+        DEBUG("rgbdemo: all");
+        ledfxFillRGB( 0,  7, 255,   0,   0);
+        ledfxFillRGB( 8, 15,   0, 255,   0);
+        ledfxFillRGB(16, 23,   0,   0, 255);
+        ledfxFillRGB(24, 31, 255, 255,   0);
+        ledfxFillRGB(32, 39, 255,   0, 255);
+        ledfxFillRGB(40, 47,   0, 255, 255);
+        ledfxFillRGB(48, 55, 255, 255, 255);
+        ledfxFillRGB(56, 63,   0,   0,   0);
+        alimatrixUpdate(ledfxGetFrameBuffer());
+        osTaskDelay(5000);
+
+
         DEBUG("rgbdemo: red");
         for (uint8_t val = 1; val < 250; val += 5)
         {
@@ -120,7 +133,6 @@ static void sAppTask(void *pArg)
             ledfxFillRGB(0, 0, val, val, val);
             alimatrixUpdate(ledfxGetFrameBuffer());
         }
-        continue;
 
         DEBUG("huedemo");
         for (uint8_t hue = 0; hue < 255; hue += 5)

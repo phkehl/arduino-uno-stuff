@@ -7,7 +7,8 @@
     \defgroup ALIMATRIX Aliexpress LED Matrix Driver
     \ingroup FF
 
-    This implements a driver for some Aliexpress LED matrix based on the 74HC595 chip. It uses the following pins:
+    This implements a driver for some Aliexpress LED matrix based on the 74HC595 chip. It uses the
+    following pins:
 
     - pin 13 is the clock output (SCK), connect to CLK (clock in) of the LED matrix module
     - pin 11 is the data output (MOSI), connect to MOSI (data in) of the LED matrix module
@@ -15,8 +16,8 @@
 
     The matrix uses four 8-bit shift registers: three are used for the eight pixels in a row (each
     pixel has three LEDs: red, green and blue) and the fourth is used to select the row. In order to
-    use all eight rows in parallel, one has to scan the rows quickly to create the impression that
-    all of them are lit at the same time. This code uses interrupts to do so.
+    use all eight rows in parallel, one has to scan (refresh) the rows quickly to create the
+    impression that all of them are lit at the same time. This code uses interrupts to do so.
 
     Three modes are available:
     - #FF_ALIMATRIX_MODE 1 where the three colours per LED can be toggled

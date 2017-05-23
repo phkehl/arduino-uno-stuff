@@ -16,7 +16,11 @@
 // ../common/ffmatrix.c configuration
 #define FFMATRIX_MODEL      88
 #define FFMATRIX_DRIVER     2           // LED driver (1 = WS2801, 2 = Alimatrix)
-#define FFMATRIX_FLUSH_LED  _PC5        // LED lit while data is written to the LED strip
+#define FFMATRIX_FLUSH_LED  _D4         // LED lit while data is written to the LED strip
+#define FFMATRIX_SPEED_POT  HW_ADC_A5   // potentiometer to change speed
+
+// system load LED
+#define FF_HW_LOAD_PIN _D3
 
 // idle thread stack size
 #define FF_OS_IDLE_STACK 85
@@ -32,7 +36,7 @@
 #define FF_LEDFX_NUM_LED ((FF_LEDFX_NUM_X) * (FF_LEDFX_NUM_Y))
 
 // LED matrix arrangement
-//#define FF_LEDFX_XY_ARR 3
+#define FF_LEDFX_XY_ARR 4
 
 // BRG colour ordering
 //#define FF_LEDFX_ORDER 123

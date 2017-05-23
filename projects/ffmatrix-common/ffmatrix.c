@@ -35,12 +35,7 @@
 #if (!defined FFMATRIX_MODEL) || (!defined FFMATRIX_FLUSH_LED)
 #  error missing configuration
 #endif
-#if (!defined FFMATRIX_SPEED_POT) && (defined FFMATRIX_BRIGHT_POT)
-#  error missing configuration
-#endif
-#if (defined FFMATRIX_SPEED_POT) && (!defined FFMATRIX_BRIGHT_POT)
-#  error missing configuration
-#endif
+
 
 /* ***** application init **************************************************** */
 
@@ -97,8 +92,12 @@ void appInit(void)
 #endif
 
     // initialise ADC
-#if (defined FFMATRIX_SPEED_POT) || (defined FFMATRIX_BRIGHT_POT)
+#if (defined FFMATRIX_SPEED_POT) && (defined FFMATRIX_BRIGHT_POT)
     hwAdcInit(FFMATRIX_SPEED_POT | FFMATRIX_BRIGHT_POT, false);
+#elif (defined FFMATRIX_SPEED_POT)
+    hwAdcInit(FFMATRIX_SPEED_POT, false);
+#elif (defined FFMATRIX_BRIGHT_POT)
+    hwAdcInit(FFMATRIX_BRIGHT_POT, false);
 #endif
 }
 
@@ -249,7 +248,7 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 
 #define TRANSTIME 750
 
-#if (FFMATRIX_DRIVER == 2)
+#if (!defined FFMATRIX_BRIGHT_POT)
 static uint8_t sBrightness = 0; // no brightness adjustments, i.e. full brightness
 #else
 static uint8_t sBrightness = 50;
@@ -301,6 +300,13 @@ static void sAppTask(void *pArg)
 #if (FFMATRIX_DRIVER == 2)
     alimatrixStart();
 #endif
+
+    ledfxSetMatrixRGB(0, 0, 255, 0, 0);
+    ledfxSetMatrixRGB(1, 1, 0, 255, 0);
+    ledfxSetMatrixRGB(2, 2, 0, 0, 255);
+    sLedFlush();
+    //while (ENDLESS) { osTaskDelay(10); }
+    osTaskDelay(1500);
 
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);

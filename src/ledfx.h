@@ -22,10 +22,10 @@ Supported LED matrix arrangements for LED electrically connected as 0-1-2-3-4-5-
 the bottom left, values for #FF_LEDFX_XY_ARR):
 
 \verbatim
-   y          (1)     (2)     (3)
-   ^         6 7 8   6 7 8   8 7 6
-   |         3 4 5   5 4 3   3 4 5
-   |         0 1 2   0 1 2   2 1 0
+   y          (1)     (2)     (3)     (4)
+   ^         6 7 8   6 7 8   8 7 6   8 7 6
+   |         3 4 5   5 4 3   3 4 5   5 4 3
+   |         0 1 2   0 1 2   2 1 0   2 1 0
    +---->x
 (0,0)
 \endverbatim

@@ -60,6 +60,8 @@ enum { _B_ = 0, _G_ = 1, _R_ = 2 };
 #  define XY_TO_IX(x, y) ( (y) % 2 ? ( (((y) + 1) * (FF_LEDFX_NUM_X)) - (x) - 1 ) : ( ((y) * (FF_LEDFX_NUM_X)) + (x) ) )
 #elif (FF_LEDFX_XY_ARR == 3)
 #  define XY_TO_IX(x, y) ( (y) % 2 ? ( ((y) * (FF_LEDFX_NUM_X)) + (x) ) : ( (((y) + 1) * (FF_LEDFX_NUM_X)) - 1 - (x) ) )
+#elif (FF_LEDFX_XY_ARR == 4)
+#  define XY_TO_IX(x, y) ( ((y) * (FF_LEDFX_NUM_X)) + (FF_LEDFX_NUM_X - 1 - (x)) )
 #else
 #  error Illegal value for FF_LEDFX_XY_ARR
 #endif

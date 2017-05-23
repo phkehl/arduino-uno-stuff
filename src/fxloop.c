@@ -161,7 +161,8 @@ void fxloopStatus(char *str, const size_t size)
     const uint8_t hz = sStatus.period ? 1000 / sStatus.period : 0;
     snprintf_P(str, size, PSTR("fx#%"PRIu8" %S %"PRIu32"/%"PRIu32" %"PRIu16"/%"PRIu16" %"PRIu16"ms/%"PRIu8"Hz"),
         sStatus.loopIx + 1,
-        sStatus.loopIx == UINT8_MAX ? (/* STFU */const wchar_t *)PSTR("---") : INFO_NAME(sStatus.loopIx),
+        (sStatus.loopIx == UINT8_MAX) || (sStatus.fxInfo == NULL) ?
+            (/* STFU */const wchar_t *)PSTR("---") : INFO_NAME(sStatus.loopIx),
         sStatus.runtime, sStatus.duration,
         sStatus.frameDrop, sStatus.frame,
         sStatus.period, hz);

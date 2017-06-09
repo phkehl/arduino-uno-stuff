@@ -10,7 +10,7 @@
     This implements an effect loops system that allows to run loops of (e.g. LED) effects (while
     doing other stuff, too). It will run user-supplied effect functions at appropriate times.
 
-    See \ref EXAMPLES_EX5 for a demonstration or \ref PROJECTS_FFMATRIX7X7 for an application.
+    See \ref EXAMPLES_EX05 for a demonstration or \ref PROJECTS_FFMATRIX7X7 for an application.
 
     @{
 */

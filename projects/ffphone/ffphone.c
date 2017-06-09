@@ -57,13 +57,13 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        PRINT("app... %"PRIu32, osTaskGetTicks());
+        DEBUG("app... %"PRIu32, osTaskGetTicks());
         uint32_t n = 55555;
         while (n--)
         {
 
         }
-        osTaskDelay(1000);
+        osTaskDelay(1234);
     }
 }
 
@@ -73,7 +73,8 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    /*const int n = */snprintf_P(str, size, PSTR("status..."));
+    const int n = snprintf_P(str, size, PSTR("status..."));
+    arf32Status(&str[n], size - n);
 }
 
 

@@ -13,7 +13,12 @@
 
 /* *************************************************************************** */
 
-#define FF_HW_LOAD_PIN _D13
+#define FF_HW_LOAD_PIN        _D13
+
+#define FF_HW_RX_BUFSIZE      0
+#define FF_HW_TX_BUFSIZE      255
+#define FF_OS_IDLE_STACK      150
+#define FF_SYS_TASK_STACK     350
 
 
 // complete configuration by including the defaults

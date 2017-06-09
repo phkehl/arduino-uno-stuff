@@ -42,13 +42,13 @@ static void sArf32Task(void *pArg)
 
     while (ENDLESS)
     {
-        PRINT("arf32... %"PRIu32, osTaskGetTicks());
+        DEBUG("arf32... %"PRIu32, osTaskGetTicks());
         uint32_t n = 55555;
         while (n--)
         {
 
         }
-        osTaskDelay(666);
+        osTaskDelay(2345);
     }
 }
 

@@ -23,7 +23,7 @@
 //#include <avr/signature.h> // avr: signature support
 
 #include "stdstuff.h"      // ff: useful macros and types
-#include "unopins.h"       // ff: Arduino Uno pins
+#include "arduinopins.h"   // ff: Arduino pins
 #include "config.h"        // ff: configuration
 #include "debug.h"         // ff: debugging
 #include "os.h"            // ff: operating system

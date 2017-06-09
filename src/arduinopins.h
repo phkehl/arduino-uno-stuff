@@ -1,10 +1,10 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: Arduino Uno pins (see \ref UNOPINS)
+    \brief flipflip's Arduino Uno stuff: Arduino Uno pins (see \ref ARDUINOPINS)
 
     - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \defgroup UNOPINS Arduino Uno Pins
+    \defgroup ARDUINOPINS Arduino Pins
     \ingroup FF
 
     See \ref P_PINOUTS.
@@ -12,8 +12,8 @@
     @{
 */
 
-#ifndef __UNOPINS_H__
-#define __UNOPINS_H__
+#ifndef __ARDUINOPINS_H__
+#define __ARDUINOPINS_H__
 
 #define PIN_TO_PORT(pin) CONCAT(PIN_PORT_,pin)
 #define PIN_TO_DDR(pin)  CONCAT(PIN_DDR_,pin)
@@ -253,7 +253,7 @@ PIN_HIGH(LED_PIN);
 #define PIN_BIT__PC5  PC5
 #define PIN_PIN__PC5  PINC
 
-#endif // __UNOPINS_H__
+#endif // __ARDUINOPINS_H__
 
 //@}
 // eof

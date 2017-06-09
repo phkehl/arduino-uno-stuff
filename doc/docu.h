@@ -41,7 +41,7 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 - \ref OS
 - \ref SYS
 - \ref STDSTUFF
-- \ref UNOPINS
+- \ref ARDUINOPINS
 - \ref HSV2RGB
 - \ref WS2801
 - \ref WS2812

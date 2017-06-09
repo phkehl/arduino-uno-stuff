@@ -1,10 +1,10 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: eighth example application (see \ref EXAMPLES_EX08)
+    \brief flipflip's Arduino Uno stuff: eighth example application (see \ref EXAMPLES_EX09)
 
     - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \addtogroup EXAMPLES_EX08
+    \addtogroup EXAMPLES_EX09
     @{
 */
 

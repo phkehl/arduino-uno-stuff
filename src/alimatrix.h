@@ -25,7 +25,7 @@
     - #FF_ALIMATRIX_MODE 2 where four different brightness levels per colour and LED are available
       (uses 192 bytes of RAM for the framebuffers)
 
-    See \ref EXAMPLES_EX7 and \ref EXAMPLES_EX8 for a demonstrations.
+    See \ref EXAMPLES_EX07 and \ref EXAMPLES_EX08 for a demonstrations.
 
     References:
 

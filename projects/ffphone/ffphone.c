@@ -1,10 +1,10 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: eighth example application (see \ref EXAMPLES_EX09)
+    \brief flipflip's Arduino Uno stuff: flipflip phone (see \ref PROJECTS_FFPHONE)
 
-    - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
+    - Copyright (c) 2011-2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \addtogroup EXAMPLES_EX09
+    \addtogroup PROJECTS_FFPHONE
     @{
 */
 
@@ -17,7 +17,8 @@
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
 
-#include "ex09.h"
+#include "arf32.h"
+#include "ffphone.h"
 
 
 /* ***** application init **************************************************** */
@@ -29,18 +30,20 @@ static void sAppTask(void *pArg);
 // initialise the user application
 void appInit(void)
 {
-    DEBUG("ex9: init");
+    DEBUG("ffphone: init");
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
 }
 
-// starts the user application task
+// starts the user application tasks
 void appCreateTask(void)
 {
-    static uint8_t stack[250];
+    static uint8_t stack[350];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
+
+    arf32Start();
 }
 
 
@@ -55,7 +58,7 @@ static void sAppTask(void *pArg)
     while (ENDLESS)
     {
         PRINT("app... %"PRIu32, osTaskGetTicks());
-        uint32_t n = 555555;
+        uint32_t n = 55555;
         while (n--)
         {
 

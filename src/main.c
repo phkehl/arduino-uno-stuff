@@ -43,7 +43,7 @@ int main(void)
     appInit();
 
     // say hello
-    NOTICE("***** " FF_PROJECT " (" FF_BUILDVER " " FF_BUILDDATE ") *****");
+    NOTICE("***** " FF_PROJECT " (" FF_BUILDVER " " FF_BUILDDATE " " STRINGIFY(__AVR_DEVICE_NAME__) ") *****");
     PRINT("-- Stuff " FF_FFVERSION " -- Copyright (c) Philippe Kehl. All rights reserved. --");
     PRINT("-- Atomthreads " FF_ATOMVERSION " -- Copyright (c) Kelvin Lawson. All rights reserved. --");
     PRINT("-- GCC " FF_GCCVERSION " -- Copyright (c) Free Software Foundation, Inc. --");

@@ -29,10 +29,6 @@
 #include "os.h"            // ff: operating system
 #include "hw.h"            // ff: hardware
 
-//#define __AVR_ATmega2560__ 1
-//#define __AVR_ATmega328P__ 1
-//#define __AVR_DEVICE_NAME__ atmega328p
-
 
 
 /* ***** serial port input and output *************************************** */

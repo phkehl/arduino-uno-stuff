@@ -16,7 +16,7 @@
 #ifndef __DEFCONFIG_H__
 #define __DEFCONFIG_H__
 
-#include "unopins.h"
+#include "arduinopins.h"
 
 /* *************************************************************************** */
 

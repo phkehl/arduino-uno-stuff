@@ -9,7 +9,7 @@
 */
 
 #include "stdstuff.h"      // ff: useful macros and types
-#include "unopins.h"       // ff: Arduino Uno pins
+#include "arduinopins.h"   // ff: Arduino pins
 #include "debug.h"         // ff: debugging output facility
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction

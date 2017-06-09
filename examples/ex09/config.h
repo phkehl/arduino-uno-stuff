@@ -15,6 +15,9 @@
 
 #define FF_HW_LOAD_PIN _D13
 
+#define FF_HW_LOAD_PIN _D13
+
+
 // complete configuration by including the defaults
 #include "defconfig.h"
 

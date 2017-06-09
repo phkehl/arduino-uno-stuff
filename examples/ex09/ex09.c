@@ -11,7 +11,7 @@
 #include <string.h>        // libc: string operations
 
 #include "stdstuff.h"      // ff: useful macros and types
-#include "unopins.h"       // ff: Arduino Uno pins
+#include "arduinopins.h"   // ff: Arduino pins
 #include "debug.h"         // ff: debugging output facility
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction
@@ -59,6 +59,11 @@ static void sAppTask(void *pArg)
     while (ENDLESS)
     {
         PRINT("app... %"PRIu32, osTaskGetTicks());
+        uint32_t n = 555555;
+        while (n--)
+        {
+
+        }
         osTaskDelay(1000);
     }
 }

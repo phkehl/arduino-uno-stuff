@@ -59,6 +59,11 @@ static void sAppTask(void *pArg)
     while (ENDLESS)
     {
         PRINT("app... %"PRIu32, osTaskGetTicks());
+        uint32_t n = 555555;
+        while (n--)
+        {
+
+        }
         osTaskDelay(1000);
     }
 }

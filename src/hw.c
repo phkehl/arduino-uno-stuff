@@ -29,6 +29,11 @@
 #include "os.h"            // ff: operating system
 #include "hw.h"            // ff: hardware
 
+//#define __AVR_ATmega2560__ 1
+//#define __AVR_ATmega328P__ 1
+//#define __AVR_DEVICE_NAME__ atmega328p
+
+
 
 /* ***** serial port input and output *************************************** */
 
@@ -175,7 +180,13 @@ static int16_t sHwOutputPutChar(char c, FILE *pFile)
 // the output file handle (write-only)
 static FILE sHwOutputDev = FDEV_SETUP_STREAM(sHwOutputPutChar, NULL, _FDEV_SETUP_WRITE);
 
+#if defined(__AVR_ATmega328P__)
 ISR(USART_UDRE_vect)
+#elif defined(__AVR_ATmega2560__)
+ISR(USART0_UDRE_vect)
+#else
+#  error Ouch!
+#endif
 {
     osIsrEnter();
 
@@ -264,7 +275,13 @@ static char sHwInputGetChar(FILE *pFile)
 // the input file handle (read-only)
 static FILE sHwInputDev = FDEV_SETUP_STREAM(NULL, sHwInputGetChar, _FDEV_SETUP_READ);
 
-ISR(USART_RX_vect) // UART, rx complete
+#if defined(__AVR_ATmega328P__)
+ISR(USART_RX_vect)
+#elif defined(__AVR_ATmega2560__)
+ISR(USART0_RX_vect)
+#else
+#  error Ouch!
+#endif
 {
     osIsrEnter();
 

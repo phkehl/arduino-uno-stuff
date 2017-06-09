@@ -106,11 +106,17 @@ See \ref PROJECTS.
 - [ATMEGA328P] Atmel 8-bit AVR RISC-based microcontroller (MCU)
   http://www.atmel.com/devices/atmega328p.aspx?tab=documents
 
+- [ATMEGA2560] 8-bit Atmel Microcontroller
+  http://www.microchip.com/wwwproducts/en/ATmega2560
+
 - [[UnoRev3](../Arduino_Uno_Rev3-schematic.pdf)]
   Arduino Uno Rev3 Schematics
 
 - [[NanoRev3](../ArduinoNano30Schematic.pdf)]
   Arduino Nano Rev3 Schematics
+
+- [[MegaRev3](../arduino-mega2560_R3-sch.pdf)]
+  Arduino Mega Rev3 Schematics
 
 - [\ref ATOM]
   Open Source RTOS by Kelvin Lawson (http://atomthreads.com, https://github.com/kelvinlawson/atomthreads/)
@@ -146,6 +152,13 @@ See \ref PROJECTS.
 
 \htmlonly
 <a href="../atmega382mlf.png"><img src="../atmega382mlf.png" width="100%"/></a>
+\endhtmlonly
+
+\subsection P_PINOUT_MEGA Arduino Mega Pinout
+(by Alberto (aka PighiXXX), http://www.pighixxx.com/test/pinoutspg/processors/)
+
+\htmlonly
+<a href="../mega.png"><img src="../mega.png" width="100%"/></a>
 \endhtmlonly
 
 

@@ -22,9 +22,11 @@ PROGSPEED   ?= 115200
 DEBUGSPEED  ?= $(PROGSPEED)
 
 # avrdude settings programming mode (Arduino, AVR ISP, USBtinyISP, etc.)
-AVRDUDEARGS ?= -c arduino -P $(DEBUGPORT) -b $(PROGSPEED) -D -V
+AVRDUDEPROG ?= arduino
+AVRDUDEARGS ?= -P $(DEBUGPORT) -b $(PROGSPEED) -D -V
 #AVRDUDEARGS ?= -P /dev/ttyUSB0 -b 19200 -c avrisp -V
 #AVRDUDEARGS ?= -c usbtiny -y -V -B 1
+AVRDUDEARGS += -c $(AVRDUDEPROG) 
 
 # path to stuff
 FFDIR       ?= ../arduino-uno-stuff
@@ -146,7 +148,7 @@ ATOMDIR     := $(FFDIR)/3rdparty/atomthreads
 LIGHTDIR    := $(FFDIR)/3rdparty/light_ws2812
 
 # target platform
-ATMEGANR    := 328p
+ATMEGANR    ?= 328p
 MCU         := atmega$(ATMEGANR)
 F_CPU       := 16000000UL
 

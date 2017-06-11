@@ -28,7 +28,7 @@ void sysInit(void)
 void sysCreateSystemTask(void)
 {
     static OS_TASK_t task;
-    osTaskCreate("sys", FF_SYS_TASK_PRIO, &task, sSysTaskStack, sizeof(sSysTaskStack), sSysTask,  NULL);
+    osTaskCreate("sys", FF_SYS_TASK_PRIO, &task, sSysTaskStack, sizeof(sSysTaskStack), sSysTask, NULL);
 }
 
 //uint16_t sysGetInitStackPointer(void) __FORCEINLINE;

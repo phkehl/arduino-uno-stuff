@@ -75,8 +75,9 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    const int n = snprintf_P(str, size, PSTR("status..."));
-    arf32Status(&str[n], size - n);
+    /*const int n = */snprintf_P(str, size, PSTR("status... "));
+    //arf32Status(&str[n], size - n);
+    arf32Status(NULL, 0);
 }
 
 

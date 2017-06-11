@@ -38,6 +38,9 @@ typedef enum LMX_PTYPE_e
 //! LMX9830 opcode values
 typedef enum LMX_OPCODE_e
 {
+    //! dummy, not a real opcode
+    LMX_OPCODE_NONE = 0xff,
+
     /*! perform soft reset [LMX9830, p.185]
         - #LMX_PTYPE_REQ:
           - no parameters */
@@ -61,12 +64,29 @@ typedef enum LMX_OPCODE_e
           - 1 byte: #LMX_ERROR_e */
     LMX_OPCODE_STORE_CLASS_OF_DEVICE = 0x28,
 
+    /*! request the user-friendly name for the local Bluetooth device
+        - #LMX_PTYPE_REQ:
+          - no parameters
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_ERROR_e
+          - 1 byte: name length (max. 40)
+          - n bytes: nul terminated string  */
+    LMX_OPCODE_GAP_READ_LOCAL_NAME = 0x03,
+
     /*! change the user-friendly name of the device [LMX9830, p.171]
         - #LMX_PTYPE_REQ:
           - max. 40 bytes: null-terminated character string
         - #LMX_PTYPE_CFM:
           - 1 byte: #LMX_ERROR_e */
     LMX_OPCODE_GAP_WRITE_LOCAL_NAME = 0x04,
+
+    /*! read the Bluetooth device address of the local Bluetooth device
+        - #LMX_PTYPE_REQ:
+          - no parameters
+          - 1 byte: #LMX_ERROR_e
+          - 6 bytes: address
+    */
+    LMX_OPCODE_GAP_READ_LOCAL_BDA = 0x05,
 
     /*! store new PIN code in NVS [LMX9830, p.182]
         - #LMX_PTYPE_REQ:
@@ -259,6 +279,10 @@ typedef enum LMX_PROTO_e
     LMX_STX = 0x02, //!< STX (Start of TeXt)
     LMX_ETX = 0x03  //!< ETX (End of TeXt)
 } LMX_PROTO_t;
+
+//! LMX command frame size (incl. sync chars)
+#define LMX_FRAME_SIZE (1 + 1 + 1 + 2 + 1 + 1)
+
 
 //! get description string for given packet type
 /*!

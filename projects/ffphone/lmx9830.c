@@ -41,6 +41,8 @@ PGM_P /* const char * */lmxGetOpcodeString(const LMX_OPCODE_t opcode)
         case LMX_OPCODE_RESTORE_FACTORY_SETTINGS:        return PSTR("RESTORE_FACTORY_SETTINGS");
         case LMX_OPCODE_STORE_CLASS_OF_DEVICE:           return PSTR("STORE_CLASS_OF_DEVICE");
         case LMX_OPCODE_GAP_WRITE_LOCAL_NAME:            return PSTR("GAP_WRITE_LOCAL_NAME");
+        case LMX_OPCODE_GAP_READ_LOCAL_NAME:             return PSTR("GAP_READ_LOCAL_NAME");
+        case LMX_OPCODE_GAP_READ_LOCAL_BDA:              return PSTR("GAP_READ_LOCAL_BDA");
         case LMX_OPCODE_GAP_SET_FIXED_PIN:               return PSTR("GAP_SET_FIXED_PIN");
         case LMX_OPCODE_SPP_INCOMING_LINK_ESTABLISHED:   return PSTR("SPP_INCOMING_LINK_ESTABLISHED");
         case LMX_OPCODE_SPP_LINK_RELEASED:               return PSTR("SPP_LINK_RELEASED");

@@ -45,9 +45,11 @@ typedef enum LMX_OPCODE_e
         - #LMX_PTYPE_REQ:
           - no parameters */
     LMX_OPCODE_RESET = 0x26,
+
     /*! the device is initialised and read to receive commands [LMX9830, p.185]
       - #LMX_PTYPE_IND:
-        - no parameters */
+        - 1 byte: number of bytes in software version string
+        - n bytes: software version string */
     LMX_OPCODE_DEVICE_READY = 0x25,
 
     /*! restore factory settings [LMX9830, p.185]
@@ -281,8 +283,10 @@ typedef enum LMX_PROTO_e
 } LMX_PROTO_t;
 
 //! LMX command frame size (incl. sync chars)
-#define LMX_FRAME_SIZE (1 + 1 + 1 + 2 + 1 + 1)
+#define LMX_FRAME_SIZE     (1 + 1 + 1 + 2 + 1 + 1)
 
+//! LMX command payload offset in message
+#define LMX_PAYLOAD_OFFSET (1 + 1 + 1 + 2 + 1)
 
 //! get description string for given packet type
 /*!

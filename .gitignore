@@ -4,4 +4,5 @@ doc/html
 examples/*/obj_*
 projects/*/obj_*
 3rdparty/simavr
+projects/ffphone/tmp
 

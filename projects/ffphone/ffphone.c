@@ -34,6 +34,8 @@ void appInit(void)
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
+
+    arf32Init();
 }
 
 // starts the user application tasks
@@ -57,7 +59,7 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        DEBUG("app... %"PRIu32, osTaskGetTicks());
+        //DEBUG("app... %"PRIu32, osTaskGetTicks());
         uint32_t n = 55555;
         while (n--)
         {

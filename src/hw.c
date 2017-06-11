@@ -322,8 +322,15 @@ __FORCEINLINE char hwReadNextChar(void)
 static void sHwRxInit(void)
 {
     // setup receive pin
-    CLRBITS(DDRD, BIT(PD0));
-    SETBITS(PORTD, BIT(PD0));
+#  if defined(__AVR_ATmega328P__)
+    PIN_INPUT(_PD0);
+    PIN_PULLUP_ON(_PD0);
+#  elif defined(__AVR_ATmega2560__)
+    PIN_INPUT(_PE0);
+    PIN_PULLUP_ON(_PE0);
+#  else
+#    error Ouch!
+#  endif
 
     // initialise input buffer
     stdin = &sHwInputDev;          // assign the input port to stdin

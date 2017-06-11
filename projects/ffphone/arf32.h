@@ -25,6 +25,8 @@
 
 /* *************************************************************************** */
 
+void arf32Init(void);
+
 void arf32Start(void);
 
 void arf32Status(char *str, const size_t size);

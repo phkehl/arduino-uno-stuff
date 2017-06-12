@@ -12,6 +12,9 @@
     and the Winbond W681360 voice codec chip.
 
     - [ARF32 User Guide](../../projects/ffphone/arf32_user_guide.pdf)
+    - [ARF32 Datasheet](../../projects/ffphone/arf32_datasheet.pdf)
+    - [ARF32 Audio User Guide](../../projects/ffphone/arf32_audio_user_guide.pdf)
+    - [ARF32 Audio Quick Start](../../projects/ffphone/arf32_audio_quick.pdf)
     - [W681360 Audio Codec](../../projects/ffphone/w681360_voice_codec.pdf)
     - see also \ref PROJECTS_FFPHONE_LMX9830 for those datasheets
 

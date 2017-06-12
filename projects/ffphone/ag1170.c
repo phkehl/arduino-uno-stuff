@@ -1,6 +1,6 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: Silvertel Ag1170 low power ringing SLIC module (see \ref PROJECTS_FFPHONE_AG1170)
+    \brief flipflip's Arduino Uno stuff: Silvertel Ag1170 Low Power Ringing SLIC module (see \ref PROJECTS_FFPHONE_AG1170)
 
     - Copyright (c) 2011-2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 

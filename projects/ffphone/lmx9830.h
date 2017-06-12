@@ -201,8 +201,24 @@ typedef enum LMX_OPCODE_e
           - 1 byte: RSSI */
     LMX_OPCODE_READ_RSSI = 0x20,
 
-    //! dummy opcode
-    LMX_OPCODE_ANY = 0xff
+    /*! set event filter
+        - #LMX_PTYPE_REQ:
+          - 1 byte: #LMX_EVENTFILTER_e
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_ERROR_e */
+    LMX_OPCODE_SET_EVENT_FILTER = 0x4e,
+
+    /*! ACL link established
+        - #LMX_PTYPE_IND:
+          - 6 bytes: address of remote device
+          - 1 byte: ACL error code (0x00 seems to mean "okay") */
+    LMX_OPCODE_GAP_ACL_ESTABLISHED = 0x50,
+
+    /*! ACL link terminated
+        - #LMX_PTYPE_IND:
+          - 6 bytes: address of remote device
+          - 1 byte: ACL error code (0x00 seems to mean "okay") */
+    LMX_OPCODE_GAP_ACL_TERMINATED = 0x51,
 
 } LMX_OPCODE_t;
 
@@ -289,6 +305,16 @@ typedef enum LMX_PROTO_e
     LMX_STX = 0x02, //!< STX (Start of TeXt)
     LMX_ETX = 0x03  //!< ETX (End of TeXt)
 } LMX_PROTO_t;
+
+
+//! event filter flags (#LMX_OPCODE_SET_EVENT_FILTER)
+typedef enum LMX_EVENTFILTER_e
+{
+    LMX_EVENTFILTER_ALL   = 0x00, //!< all events reported
+    LMX_EVENTFILTER_NOACL = 0x01, //!< no ACL link indicators (default)
+    LMX_EVENTFILTER_NONE  = 0x02, //!< no events reported, UART break still generated and detected
+    LMX_EVENTFILTER_NADA  = 0x03, //!< no events reported, UART break not generated or detected
+} LMX_EVENTFILTER_t;
 
 //! LMX command frame size (incl. sync chars)
 #define LMX_FRAME_SIZE     (1 + 1 + 1 + 2 + 1 + 1)

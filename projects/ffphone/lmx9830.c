@@ -56,6 +56,9 @@ PGM_P /* const char * */lmxGetOpcodeString(const LMX_OPCODE_t opcode)
         case LMX_OPCODE_GAP_REMOTE_DEVICE_NAME:          return PSTR("GAP_REMOTE_DEVICE_NAME");
         case LMX_OPCODE_SPP_SEND_DATA:                   return PSTR("SPP_SEND_DATA");
         case LMX_OPCODE_READ_RSSI:                       return PSTR("READ_RSSI");
+        case LMX_OPCODE_SET_EVENT_FILTER:                return PSTR("SET_EVENT_FILTER");
+        case LMX_OPCODE_GAP_ACL_ESTABLISHED:             return PSTR("GAP_ACL_ESTABLISHED");
+        case LMX_OPCODE_GAP_ACL_TERMINATED:              return PSTR("GAP_ACL_TERMINATED");
         default:                                         return PSTR("UNKN_OPCODE");
     }
 }

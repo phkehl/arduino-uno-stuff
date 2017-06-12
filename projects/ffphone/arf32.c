@@ -460,9 +460,9 @@ static int16_t sParse(const uint8_t *data, const uint8_t size)
 
     const char *errorStr = (payloadSize > 0) && (ptype == LMX_PTYPE_CFM) ?
         lmxGetErrorString(data[LMX_PAYLOAD_OFFSET]) : PSTR("n/a");
-    DEBUG("arf32: < 0x%02"PRIx8" %S 0x%02"PRIx8" %S : %S [%"PRIu16"]",
+    DEBUG("arf32: < 0x%02"PRIx8" %S 0x%02"PRIx8" %S [%"PRIu16"] : %S",
         ptype, lmxGetPtypeString(ptype), opcode, lmxGetOpcodeString(opcode),
-        errorStr, payloadSize);
+        payloadSize, errorStr);
 
     return (int16_t)messageSize;
 }
@@ -580,9 +580,21 @@ static void sProcess(uint8_t *data)
         case LMX_OPCODE_SET_PORTS_TO_OPEN:
         case LMX_OPCODE_STORE_CLASS_OF_DEVICE:
         case LMX_OPCODE_RESTORE_FACTORY_SETTINGS:
+        case LMX_OPCODE_SET_EVENT_FILTER:
         {
             const LMX_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
             DEBUG("arf32: %S (%S)", lmxGetErrorString(error), lmxGetOpcodeString(opcode));
+            break;
+        }
+
+        case LMX_OPCODE_GAP_ACL_ESTABLISHED:
+        case LMX_OPCODE_GAP_ACL_TERMINATED:
+        {
+            const uint8_t *pkAddr = &data[LMX_PAYLOAD_OFFSET];
+            DEBUG("arf32: %S addr=%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8" code=%02"PRIx8,
+                lmxGetOpcodeString(opcode),
+                pkAddr[0], pkAddr[1], pkAddr[2], pkAddr[3], pkAddr[4], pkAddr[5],
+                data[LMX_PAYLOAD_OFFSET + 6]);
             break;
         }
 
@@ -702,8 +714,13 @@ static bool sResetAndReconfigure(void)
     // parameters for the configuration requests below
     static const uint8_t skAudioConfig[] PROGMEM =
     {
-        LMX_AUDIOCODEC_MOTOROLA, LMX_AIRFORMAT_CVSD
+        LMX_AUDIOCODEC_MOTOROLA, LMX_AIRFORMAT_CVSD // FIXME: right?
     };
+    static const uint8_t skEventFilter[] PROGMEM =
+    {
+        LMX_EVENTFILTER_ALL // report all
+    };
+#if 0
     static const uint8_t skSdpRecord[] PROGMEM =
     {
         0x01, // RFCOMM port 1
@@ -723,6 +740,34 @@ static bool sResetAndReconfigure(void)
         0x1f, // 0x1f = features (0x01 = EC/NR, 0x02 = Call waiting / 3way calling, 0x04 = CLI presentation cap, 0x08 = voice recognition activation, 0x10 = remote volume control)
         0x00
     };
+    static const uint8_t skClassOfDevice[] PROGMEM =
+    {
+        0x08, 0x04, 0x22 // CoD handsfree 220408
+    };
+#else
+    static const uint8_t skSdpRecord[] PROGMEM =
+    {
+        0x01, // RFCOMM port 1
+        LMX_AUTH_INOUT, // authentication setting
+        LMX_ENC_INOUT,  // encryption setting
+        0x51, 0x00,     // SDP record size
+        // SDP record
+        0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x35, 0x06, 0x19, 0x08, 0x11, 0x19, 0x03, // 16
+        0x12, 0x04, 0x00, 0x35, 0x0c, 0x35, 0x03, 0x19, 0x00, 0x01, 0x35, 0x05, 0x19, 0x03, 0x00, 0x08, // 32
+        0x01, 0x05, 0x00, 0x35, 0x03, 0x19, 0x02, 0x10, 0x06, 0x00, 0x35, 0x09, 0x09, 0x6e, 0x65, 0x09, // 48
+        0x6a, 0x00, 0x09, 0x00, 0x01, 0x09, 0x00, 0x35, 0x08, 0x35, 0x06, 0x19, 0x08, 0x11, 0x09, 0x00, // 64
+        0x01, 0x00, 0x01, 0x25, 0x08, 0x48, 0x65, 0x61, 0x64, 0x73, 0x65, 0x74, 0x00, 0x02, 0x03, 0x28, // 80
+        0x01                                                                                            // 81 = 0x51
+    };
+    static const uint8_t skClassOfDevice[] PROGMEM =
+    {
+        0x04, 0x04, 0x22 // CoD headset 220404
+    };
+#endif
+    static const uint8_t skPortsToOpen[] PROGMEM =
+    {
+        0x01, 0x00, 0x00, 0x00 // bitmask, RFCOMM port 1
+    };
     static const uint8_t skDeviceName[] PROGMEM =
     {
         14, 'f', 'l', 'i', 'p', 'f', 'l', 'i', 'p', 'P', 'H', 'O', 'N', 'E', '\0'
@@ -730,14 +775,6 @@ static bool sResetAndReconfigure(void)
     static const uint8_t skPinCode[] PROGMEM =
     {
         4, '1', '2', '3', '4'
-    };
-    static const uint8_t skPortsToOpen[] PROGMEM =
-    {
-        0x01, 0x00, 0x00, 0x00 // 0x00000001
-    };
-    static const uint8_t skDeviceClass[] PROGMEM =
-    {
-        0x08, 0x04, 0x22 // 0x220408 handsfree (FIXME: really?)
     };
 
     // reset the chip
@@ -758,8 +795,37 @@ static bool sResetAndReconfigure(void)
         return false;
     }
 
+    // configure event filter
+    if (!sRequest(LMX_OPCODE_SET_EVENT_FILTER, skEventFilter, sizeof(skEventFilter), true, 250))
+    {
+        return false;
+    }
+
     // store for hands-free profile SDP record
     if (!sRequest(LMX_OPCODE_STORE_SDP_RECORD, skSdpRecord, sizeof(skSdpRecord), true, 250))
+    {
+        return false;
+    }
+
+#if 0
+    // enable configured SDP record FIXME: probably not needed
+    uint8_t enaSdpRecord[2];
+    enaSdpRecord[0] = LMX_SDPSTATE_ENABLE;
+    enaSdpRecord[1] = sInfo.sdpRecordId;
+    if (!sRequest(LMX_OPCODE_ENABLE_SDP_RECORD, enaSdpRecord, sizeof(enaSdpRecord), false, 250))
+    {
+        return false;
+    }
+#endif
+
+    // open ports
+    if (!sRequest(LMX_OPCODE_SET_PORTS_TO_OPEN, skPortsToOpen, sizeof(skPortsToOpen), true, 250))
+    {
+        return false;
+    }
+
+    // set class of device
+    if (!sRequest(LMX_OPCODE_STORE_CLASS_OF_DEVICE, skClassOfDevice, sizeof(skClassOfDevice), true, 250))
     {
         return false;
     }
@@ -772,27 +838,6 @@ static bool sResetAndReconfigure(void)
 
     // set PIN code
     if (!sRequest(LMX_OPCODE_GAP_SET_FIXED_PIN, skPinCode, sizeof(skPinCode), true, 250))
-    {
-        return false;
-    }
-
-    // enable configured SDP record
-    uint8_t enaSdpRecord[2];
-    enaSdpRecord[0] = LMX_SDPSTATE_ENABLE;
-    enaSdpRecord[1] = sInfo.sdpRecordId;
-    if (!sRequest(LMX_OPCODE_ENABLE_SDP_RECORD, enaSdpRecord, sizeof(enaSdpRecord), false, 250))
-    {
-        return false;
-    }
-
-    // open RFCOMM port 1 (to which the HFP is assigned)
-    if (!sRequest(LMX_OPCODE_SET_PORTS_TO_OPEN, skPortsToOpen, sizeof(skPortsToOpen), true, 250))
-    {
-        return false;
-    }
-
-    // set device class
-    if (!sRequest(LMX_OPCODE_STORE_CLASS_OF_DEVICE, skDeviceClass, sizeof(skDeviceClass), true, 250))
     {
         return false;
     }

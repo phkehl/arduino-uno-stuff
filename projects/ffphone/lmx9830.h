@@ -193,6 +193,14 @@ typedef enum LMX_OPCODE_e
           - 1 byte: local RFCOMM port [1..30] */
     LMX_OPCODE_SPP_SEND_DATA = 0x0f,
 
+    /*! get RSSI value for remote device
+        - #LMX_PTYPE_REQ:
+          - 6 bytes. device address
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_ERROR_e
+          - 1 byte: RSSI */
+    LMX_OPCODE_READ_RSSI = 0x20,
+
     //! dummy opcode
     LMX_OPCODE_ANY = 0xff
 
@@ -319,6 +327,14 @@ PGM_P /* const char * */lmxGetErrorString(const LMX_ERROR_t error);
     \returns the description string
 */
 PGM_P /* const char * */lmxGetLinkreleaseString(const LMX_RFCR_t linkrelease);
+
+//! get description string for given operation mode
+/*!
+    \param[in] mode  mode identifier
+
+    \returns the description string
+*/
+PGM_P /* const char * */lmxGetModeString(const LMX_MODE_t mode);
 
 
 #endif // __LMX9830_H__

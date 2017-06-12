@@ -55,6 +55,7 @@ PGM_P /* const char * */lmxGetOpcodeString(const LMX_OPCODE_t opcode)
         case LMX_OPCODE_GAP_LIST_PAIRED_DEVICES:         return PSTR("GAP_LIST_PAIRED_DEVICES");
         case LMX_OPCODE_GAP_REMOTE_DEVICE_NAME:          return PSTR("GAP_REMOTE_DEVICE_NAME");
         case LMX_OPCODE_SPP_SEND_DATA:                   return PSTR("SPP_SEND_DATA");
+        case LMX_OPCODE_READ_RSSI:                       return PSTR("READ_RSSI");
         default:                                         return PSTR("UNKN_OPCODE");
     }
 }
@@ -89,6 +90,16 @@ PGM_P /* const char * */lmxGetLinkreleaseString(const LMX_RFCR_t linkrelease)
         case LMX_RFCR_DLC_DISC_ACL_FAILURE:           return PSTR("DISC_ACL_FAILURE");
         case LMX_RFCR_DLC_DISC_LOWER_LAYER:           return PSTR("DISC_LOWER_LAYER");
         default:                                      return PSTR("UNKN_DISC");
+    }
+}
+
+PGM_P /* const char * */lmxGetModeString(const LMX_MODE_t mode)
+{
+    switch (mode)
+    {
+        case LMX_MODE_COMMAND:     return PSTR("COMMAND");
+        case LMX_MODE_TRANSPARENT: return PSTR("TRANSPARENT");
+        default:                   return PSTR("UNKN_MODE");
     }
 }
 

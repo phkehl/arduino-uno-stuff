@@ -9,9 +9,15 @@
     \defgroup LEDFX LED Effects
     \ingroup FF
 
-    This implements effects for LED matrices and strings. Adjust #FF_LEDFX_NUM_LED, #FF_LEDFX_ORDER,
-    and in case of an LED matrix also #FF_LEDFX_NUM_X, #FF_LEDFX_NUM_Y and #FF_LEDFX_XY_ARR, for
-    your setup. The "HSV" routines are affected by #FF_HSV2RGB_METHOD.
+    This implements effects for LED matrices and strings.
+
+    Configuration:
+    - #FF_LEDFX_NUM_LED
+    - #FF_LEDFX_ORDER
+    - #FF_LEDFX_NUM_X
+    - #FF_LEDFX_NUM_Y
+    - #FF_LEDFX_XY_ARR
+    - (#FF_HSV2RGB_METHOD)
 
     Initialise the hwMathGetRandom() random number generator before using these functions:
 \code{.c}

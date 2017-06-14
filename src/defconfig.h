@@ -110,13 +110,6 @@
 
 /* *************************************************************************** */
 
-//! \ref WS2812 implementation to use
-#if !defined (FF_WS2812_IMPL) || defined(__DOXYGEN__)
-#  define FF_WS2812_IMPL 1
-#endif
-
-/* *************************************************************************** */
-
 //! SPI master speed for the \ref WS2801 in kHz (125, 250, 500, 1000, 2000, 4000, 8000)
 #if !defined (FF_WS2801_SPI_SPEED) || defined(__DOXYGEN__)
 #  define FF_WS2801_SPI_SPEED 250

@@ -9,6 +9,9 @@
 
     Debugging output helpers.
 
+    Configuration:
+    - #FF_DEBUG_LEVEL
+
     @{
 */
 

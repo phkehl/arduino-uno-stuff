@@ -10,6 +10,19 @@
     This implements some of the protocol used by u-blox positioning (GNSS) receivers according to
     [u-blox M8 Receiver Description Including Protocol Specification (UBX-13003221)](../../projects/ffclock/docs/u-bloxM8_ReceiverDescriptionProtocolSpec_Public_(UBX-13003221).pdf).
 
+    Configuration:
+    - #FF_UBX_NAV_PVT_USE
+    - #FF_UBX_NAV_AOPSTATUS_USE
+    - #FF_UBX_NAV_CLOCK_USE
+    - #FF_UBX_NAV_POSECEF_USE
+    - #FF_UBX_NAV_VELECEF_USE
+    - #FF_UBX_NAV_STATUS_USE
+    - #FF_UBX_INF_ERROR_USE
+    - #FF_UBX_INF_WARNING_USE
+    - #FF_UBX_INF_NOTICE_USE
+    - #FF_UBX_INF_TEST_USE
+    - #FF_UBX_INF_DEBUG_USE
+
     See \ref EXAMPLES_EX06 for a demonstration.
 
     @{

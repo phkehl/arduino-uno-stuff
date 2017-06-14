@@ -1,6 +1,6 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: eighth example application (see \ref EXAMPLES_EX09)
+    \brief flipflip's Arduino Uno stuff: ninth example application (see \ref EXAMPLES_EX09)
 
     - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 

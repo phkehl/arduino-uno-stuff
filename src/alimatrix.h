@@ -19,11 +19,12 @@
     use all eight rows in parallel, one has to scan (refresh) the rows quickly to create the
     impression that all of them are lit at the same time. This code uses interrupts to do so.
 
-    Three modes are available:
-    - #FF_ALIMATRIX_MODE 1 where the three colours per LED can be toggled
-      (uses 24 bytes of RAM for the framebuffer)
-    - #FF_ALIMATRIX_MODE 2 where four different brightness levels per colour and LED are available
-      (uses 192 bytes of RAM for the framebuffers)
+    Configuration:
+    - #FF_ALIMATRIX_MODE
+      - 1 = three colours per LED can be toggled
+            (uses 24 bytes of RAM for the framebuffer)
+      - 2 = four different brightness levels per colour and LED are available
+            (uses 192 bytes of RAM for the framebuffers)
 
     See \ref EXAMPLES_EX07 and \ref EXAMPLES_EX08 for a demonstrations.
 
@@ -105,7 +106,7 @@ void alimatrixSetRow(const uint8_t row, const uint8_t red, const uint8_t green, 
     This assumes that \c data is formatted suitably for the 8x8 matrix (i.e. it's 8 x 8 x 3 = 192
     bytes in size).
 
-    \note Only available if #FF_ALIMATRIX_MODE is 2 or 3.
+    \note Only available if #FF_ALIMATRIX_MODE is 2.
 
     \param[in] data  data
 */

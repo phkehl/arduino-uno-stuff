@@ -9,7 +9,10 @@
 
     This implements a GNSS receiver abstraction.
 
-    Configuration: #FF_GNSS_TASK_PRIO, #FF_GNSS_TASK_STACK and #FF_GNSS_PARSER configuration.
+    Configuration:
+    - #FF_GNSS_TASK_PRIO
+    - #FF_GNSS_TASK_STACK
+    - #FF_GNSS_PARSER
 
     See \ref EXAMPLES_EX06 for a demonstration of \ref PROJECTS_FFCLOCK for an application.
 

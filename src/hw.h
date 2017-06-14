@@ -9,6 +9,15 @@
 
     This implements some hardware abstraction.
 
+    Configuration:
+    - #FF_HW_LOAD_PIN
+    - #FF_HW_TICK_PIN
+    - #FF_HW_RXTX_BAUDRATE
+    - #FF_HW_RX_BUFSIZE
+    - #FF_HW_TX_BUFSIZE
+    - #FF_HW_NUM_TICTOC
+    - #FF_HW_USE_WATCHDOG
+
     @{
 */
 

@@ -11,6 +11,10 @@
 
     Note that some functions may panic via hwPanic() on unexpected errors.
 
+    Configuration:
+    - #FF_OS_IDLE_STACK
+    - #FF_OS_HEAP_SIZE
+
     @{
 */
 

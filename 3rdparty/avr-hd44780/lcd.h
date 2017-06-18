@@ -1,10 +1,21 @@
-#pragma once
+//#pragma once
+#ifndef __LCD_H__
+#define __LCD_H__
+
+#define LCD_FF_MOD
+
+#ifdef LCD_FF_MOD
+#  include "config.h"        // ff: configuration
+#endif
+
+
 
 #include <avr/io.h>
 
+#ifndef LCD_FF_MOD
 // Edit these
-#define LCD_DDR  DDRF
-#define LCD_PORT PORTF
+#define LCD_DDR  DDRA
+#define LCD_PORT PORTA
 
 #define LCD_RS 0
 #define LCD_RW 1
@@ -14,8 +25,13 @@
 #define LCD_D2 5
 #define LCD_D3 6
 
-#define LCD_COL_COUNT 16
-#define LCD_ROW_COUNT 2
+#define LCD_COL_COUNT FF_HD44780_COLUMNS
+#define LCD_ROW_COUNT FF_HD44780_LINES
+
+#else
+#  define LCD_COL_COUNT 16
+#  define LCD_ROW_COUNT 2
+#endif
 
 // The rest should be left alone
 #define LCD_CLEARDISPLAY   0x01
@@ -81,5 +97,7 @@ void lcd_create_char(uint8_t location, uint8_t *charmap);
 
 void lcd_set_cursor(uint8_t col, uint8_t row);
 
-void lcd_puts(char *string);
-void lcd_printf(char *format, ...);
+//void lcd_puts(char *string);
+//void lcd_printf(char *format, ...);
+
+#endif // __LCD_H__

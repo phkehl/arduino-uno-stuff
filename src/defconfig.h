@@ -228,25 +228,51 @@
 
 /* *************************************************************************** */
 
-//! HD44780 connection (1 = I2C, 2 = direct (not implemented!))
-#if !defined(FF_HD44780_CONN) || defined(__DOXYGEN__)
-#  define FF_HD44780_CONN 1
-#endif
-
-//! PCF8574 to HD44780 connection I2C address
-#if !defined(FF_HD44780_CONN) || defined(__DOXYGEN__)
-#  define FF_HD44780_PCF8574_I2C_ADDR 0x27
-#endif
-
 //! HD44780 number of lines
 #if !defined(FF_HD44780_LINES) || defined(__DOXYGEN__)
 #  define FF_HD44780_LINES 2
 #endif
 
 //! HD44780 number of columns
-#if !defined(FF_HD44780_LINES) || defined(__DOXYGEN__)
+#if !defined(FF_HD44780_COLUMNS) || defined(__DOXYGEN__)
 #  define FF_HD44780_COLUMNS 16
 #endif
+
+//! HD44780 RS pin
+#if !defined(FF_HD44780_RS_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_RS_PIN  NONE
+#endif
+
+//! HD44780 RW pin
+#if !defined(FF_HD44780_RW_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_RW_PIN  NONE
+#endif
+
+//! HD44780 E pin
+#if !defined(FF_HD44780_E_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_E_PIN  NONE
+#endif
+
+//! HD44780 D4 pin
+#if !defined(FF_HD44780_D4_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D4_PIN  NONE
+#endif
+
+//! HD44780 D5 pin
+#if !defined(FF_HD44780_D5_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D5_PIN  NONE
+#endif
+
+//! HD44780 D6 pin
+#if !defined(FF_HD44780_D6_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D6_PIN  NONE
+#endif
+
+//! HD44780 D7 pin
+#if !defined(FF_HD44780_D7_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D7_PIN  NONE
+#endif
+
 
 
 /* *************************************************************************** */

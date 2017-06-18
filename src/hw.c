@@ -9,7 +9,6 @@
 */
 
 #include <stdio.h>         // libc: standard buffered input/output
-#include <stdarg.h>        // libc: variable argument lists
 #include <string.h>        // libc: string operations
 #include <math.h>          // libc: mathematical functions
 #include <stdlib.h>        // libc: general utilities

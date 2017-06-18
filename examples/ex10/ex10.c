@@ -36,6 +36,11 @@ void appInit(void)
     sysRegisterMonFunc(sAppStatus);
 
     hd44780Init();
+
+    hd44780Printf_P(PSTR("hoihoi :-)))"));
+
+    hd44780Cursor(5, 1);
+    hd44780Printf_P(PSTR("gugus"));
 }
 
 // starts the user application task

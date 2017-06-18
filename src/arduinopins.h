@@ -15,6 +15,8 @@
 #ifndef __ARDUINOPINS_H__
 #define __ARDUINOPINS_H__
 
+#include "stdstuff.h"      // ff: useful macros and types
+
 #define PIN_TO_PORT(pin) CONCAT(PIN_PORT_,pin)
 #define PIN_TO_DDR(pin)  CONCAT(PIN_DDR_,pin)
 #define PIN_TO_PIN(pin)  CONCAT(PIN_PIN_,pin)
@@ -74,6 +76,7 @@ PIN_HIGH(LED_PIN);
 #define PIN_BIT_NONE  9999
 
 //------------------------------------------------------------------------------
+
 
 #ifdef __AVR_ATmega328P__
 

@@ -8,6 +8,7 @@
     \ingroup EXAMPLES
 
     This is the tenth example application. It demonstrates the \ref HD44780 functionality.
+    This is for an Arduino Mega.
 
     See ex10.c source code for details.
 

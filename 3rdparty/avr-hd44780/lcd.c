@@ -8,7 +8,9 @@ void lcd_send(uint8_t value, uint8_t mode);
 void lcd_write_nibble(uint8_t nibble);
 
 static uint8_t lcd_displayparams;
+#ifndef LCD_FF_MOD
 static char lcd_buffer[LCD_COL_COUNT + 1];
+#endif
 
 void lcd_command(uint8_t command) {
   lcd_send(command, 0);
@@ -19,6 +21,17 @@ void lcd_write(uint8_t value) {
 }
 
 void lcd_send(uint8_t value, uint8_t mode) {
+#ifdef LCD_FF_MOD
+    if (mode)
+    {
+        PIN_HIGH(FF_HD44780_RS_PIN);
+    }
+    else
+    {
+        PIN_LOW(FF_HD44780_RS_PIN);
+    }
+    PIN_LOW(FF_HD44780_RW_PIN);
+#else
   if (mode) {
     LCD_PORT = LCD_PORT | (1 << LCD_RS);
   } else {
@@ -26,22 +39,42 @@ void lcd_send(uint8_t value, uint8_t mode) {
   }
 
   LCD_PORT = LCD_PORT & ~(1 << LCD_RW);
-
+#endif
   lcd_write_nibble(value >> 4);
   lcd_write_nibble(value);
 }
 
 void lcd_write_nibble(uint8_t nibble) {
+#ifdef LCD_FF_MOD
+    if (nibble & 0x01) { PIN_HIGH(FF_HD44780_D4_PIN); } else { PIN_LOW(FF_HD44780_D4_PIN); }
+    if (nibble & 0x02) { PIN_HIGH(FF_HD44780_D5_PIN); } else { PIN_LOW(FF_HD44780_D5_PIN); }
+    if (nibble & 0x04) { PIN_HIGH(FF_HD44780_D6_PIN); } else { PIN_LOW(FF_HD44780_D6_PIN); }
+    if (nibble & 0x08) { PIN_HIGH(FF_HD44780_D7_PIN); } else { PIN_LOW(FF_HD44780_D7_PIN); }
+
+    PIN_LOW( FF_HD44780_E_PIN);
+    PIN_HIGH(FF_HD44780_E_PIN);
+    PIN_LOW( FF_HD44780_E_PIN);
+#else
   LCD_PORT = (LCD_PORT & 0xff & ~(0x0f << LCD_D0)) | ((nibble & 0x0f) << LCD_D0);
 
   LCD_PORT = LCD_PORT & ~(1 << LCD_EN);
   LCD_PORT = LCD_PORT | (1 << LCD_EN);
   LCD_PORT = LCD_PORT & ~(1 << LCD_EN);
+#endif
   _delay_ms(0.04);
 }
 
 void lcd_init(void) {
   // Configure pins as output
+#ifdef LCD_FF_MOD
+  PIN_OUTPUT(FF_HD44780_RS_PIN);
+  PIN_OUTPUT(FF_HD44780_RW_PIN);
+  PIN_OUTPUT(FF_HD44780_E_PIN);
+  PIN_OUTPUT(FF_HD44780_D4_PIN);
+  PIN_OUTPUT(FF_HD44780_D5_PIN);
+  PIN_OUTPUT(FF_HD44780_D6_PIN);
+  PIN_OUTPUT(FF_HD44780_D7_PIN);
+#else
   LCD_DDR = LCD_DDR
     | (1 << LCD_RS)
     | (1 << LCD_RW)
@@ -50,14 +83,21 @@ void lcd_init(void) {
     | (1 << LCD_D1)
     | (1 << LCD_D2)
     | (1 << LCD_D3);
+#endif
 
   // Wait for LCD to become ready (docs say 15ms+)
   _delay_ms(15);
 
+#ifdef LCD_FF_MOD
+  PIN_LOW(FF_HD44780_RS_PIN);
+  PIN_LOW(FF_HD44780_RW_PIN);
+  PIN_LOW(FF_HD44780_E_PIN);
+#else
   LCD_PORT = LCD_PORT
     & ~(1 << LCD_EN)
     & ~(1 << LCD_RS)
     & ~(1 << LCD_RW);
+#endif
 
   _delay_ms(4.1);
 
@@ -163,12 +203,15 @@ void lcd_set_cursor(uint8_t col, uint8_t row) {
   lcd_command(LCD_SETDDRAMADDR | (col + offsets[row]));
 }
 
+#ifndef LCD_FF_MOD
 void lcd_puts(char *string) {
   for (char *it = string; *it; it++) {
     lcd_write(*it);
   }
 }
+#endif // !LCD_FF_MOD
 
+#ifndef LCD_FF_MOD
 void lcd_printf(char *format, ...) {
   va_list args;
 
@@ -178,3 +221,4 @@ void lcd_printf(char *format, ...) {
 
   lcd_puts(lcd_buffer);
 }
+#endif // !LCD_FF_MOD

@@ -146,6 +146,7 @@ LC_ALL      := C
 # 3rd party source code
 ATOMDIR     := $(FFDIR)/3rdparty/atomthreads
 LIGHTDIR    := $(FFDIR)/3rdparty/light_ws2812
+AVRHD44780  := $(FFDIR)/3rdparty/avr-hd44780
 
 # target platform
 ATMEGANR    ?= 328p
@@ -231,6 +232,7 @@ endif
 # source code files to compile
 SRCFILES    += $(wildcard $(ATOMDIR)/*.c) $(wildcard $(ATOMDIR)/*.s)
 SRCFILES    += $(wildcard $(LIGHTDIR)/*.c)
+SRCFILES    += $(wildcard $(AVRHD44780)/*.c)
 SRCFILES    += $(wildcard $(FFDIR)/src/*.c)
 SRCFILES    += $(PROJFILES)
 

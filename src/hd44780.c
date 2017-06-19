@@ -10,7 +10,9 @@
 
 #include <string.h>        // libc: string operations
 
-#include "lcd.h"           // Andrei's avr-hd44780 library
+#include <avr/pgmspace.h>  // avr: program space utilities
+
+#include <lcd.h>           // Andrei's avr-hd44780 library
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
@@ -30,17 +32,22 @@ void hd44780Init(void)
     hd44780Clear();
 }
 
-void hd44780Clear(void)
+__INLINE void hd44780Clear(void)
 {
     lcd_clear();
     lcd_return_home();
 }
 
-void hd44780Cursor(const uint8_t column, const uint8_t line)
+__INLINE void hd44780PutCursor(const uint8_t line, const uint8_t column)
 {
     lcd_set_cursor(column, line);
 }
 
+__INLINE void hd44780Write(const char c)
+{
+    uint8_t v = (uint8_t)c;
+    lcd_write(v);
+}
 
 static char sBuf[FF_HD44780_COLUMNS + 1];
 
@@ -53,11 +60,41 @@ void hd44780Printf_P(const char *fmt, ...)
     char *pBuf = sBuf;
     while (*pBuf != '\0')
     {
-        lcd_write(*pBuf);
+        hd44780Write(*pBuf);
         pBuf++;
     }
 }
 
+void hd44780CreateChar(const char c, const uint8_t bitmap[8])
+{
+    uint8_t location = (uint8_t)c;
+    uint8_t charmap[8];
+    for (uint8_t ix = 0; ix < sizeof(charmap); ix++)
+    {
+        charmap[ix] = pgm_read_byte(&bitmap[ix]);
+    }
+    lcd_create_char(location, charmap);
+}
+
+void hd44780CursorMode(const bool enable, const bool blink)
+{
+    if (enable)
+    {
+        lcd_enable_cursor();
+        if (blink)
+        {
+            lcd_enable_blinking();
+        }
+        else
+        {
+            lcd_disable_blinking();
+        }
+    }
+    else
+    {
+        lcd_disable_cursor();
+    }
+}
 
 /* ************************************************************************** */
 

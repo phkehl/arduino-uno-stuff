@@ -62,13 +62,11 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        PRINT("app... %"PRIu32, osTaskGetTicks());
-        uint32_t n = 555555;
-        while (n--)
-        {
+        //PRINT("app... %"PRIu32, osTaskGetTicks());
+        hd44780Cursor(0, 1);
+        hd44780Printf_P(PSTR("msss=%"PRIu32), osTaskGetTicks());
 
-        }
-        osTaskDelay(1000);
+        osTaskDelay(100);
     }
 }
 

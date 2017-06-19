@@ -4,6 +4,24 @@
 #include <stdio.h>
 #include <util/delay.h>
 
+#ifdef LCD_FF_MOD
+#  include "os.h"
+#  include "hw.h"
+static void sDelay(const uint8_t ms)
+{
+    if (osTaskIsSchedulerRunning())
+    {
+        osTaskDelay(ms);
+    }
+    else
+    {
+        const uint32_t us = (uint32_t)ms * 1000;
+        hwDelay(us);
+    }
+}
+#endif
+
+
 void lcd_send(uint8_t value, uint8_t mode);
 void lcd_write_nibble(uint8_t nibble);
 
@@ -54,14 +72,15 @@ void lcd_write_nibble(uint8_t nibble) {
     PIN_LOW( FF_HD44780_E_PIN);
     PIN_HIGH(FF_HD44780_E_PIN);
     PIN_LOW( FF_HD44780_E_PIN);
+    sDelay(1);
 #else
   LCD_PORT = (LCD_PORT & 0xff & ~(0x0f << LCD_D0)) | ((nibble & 0x0f) << LCD_D0);
 
   LCD_PORT = LCD_PORT & ~(1 << LCD_EN);
   LCD_PORT = LCD_PORT | (1 << LCD_EN);
   LCD_PORT = LCD_PORT & ~(1 << LCD_EN);
-#endif
   _delay_ms(0.04);
+#endif
 }
 
 void lcd_init(void) {
@@ -130,12 +149,20 @@ void lcd_off(void) {
 
 void lcd_clear(void) {
   lcd_command(LCD_CLEARDISPLAY);
+#ifdef LCD_FF_MOD
+  sDelay(2);
+#else
   _delay_ms(2);
+#endif
 }
 
 void lcd_return_home(void) {
   lcd_command(LCD_RETURNHOME);
+#ifdef LCD_FF_MOD
+  sDelay(2);
+#else
   _delay_ms(2);
+#endif
 }
 
 void lcd_enable_blinking(void) {

@@ -13,11 +13,12 @@
           only count up system ticks but don't run timers or schedule tasks.
 */
 
+#include <light_ws2812.h>  // Tim's low-level WS2812 driver
+
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
 #include "os.h"            // ff: operating system abstractions
 #include "ws2812.h"        // ff: WS2812 LED driver
-#include "light_ws2812.h"  // ff: low-level WS2812 driver
 
 #include "debug.h"
 

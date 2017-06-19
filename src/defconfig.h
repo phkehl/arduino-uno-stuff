@@ -228,6 +228,55 @@
 
 /* *************************************************************************** */
 
+//! HD44780 number of lines
+#if !defined(FF_HD44780_LINES) || defined(__DOXYGEN__)
+#  define FF_HD44780_LINES 2
+#endif
+
+//! HD44780 number of columns
+#if !defined(FF_HD44780_COLUMNS) || defined(__DOXYGEN__)
+#  define FF_HD44780_COLUMNS 16
+#endif
+
+//! HD44780 RS pin
+#if !defined(FF_HD44780_RS_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_RS_PIN  _D8
+#endif
+
+//! HD44780 RW pin
+#if !defined(FF_HD44780_RW_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_RW_PIN  _D7
+#endif
+
+//! HD44780 E pin
+#if !defined(FF_HD44780_E_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_E_PIN  _D6
+#endif
+
+//! HD44780 D4 pin
+#if !defined(FF_HD44780_D4_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D4_PIN  _D5
+#endif
+
+//! HD44780 D5 pin
+#if !defined(FF_HD44780_D5_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D5_PIN  _D4
+#endif
+
+//! HD44780 D6 pin
+#if !defined(FF_HD44780_D6_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D6_PIN  _D3
+#endif
+
+//! HD44780 D7 pin
+#if !defined(FF_HD44780_D7_PIN) || defined(__DOXYGEN__)
+#  define FF_HD44780_D7_PIN  _D2
+#endif
+
+
+
+/* *************************************************************************** */
+
 #endif // __DEFCONFIG_H__
 
 //@}

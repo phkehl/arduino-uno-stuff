@@ -14,6 +14,7 @@
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "arduinopins.h"   // ff: Arduino pins
+#include "config.h"        // ff: configuration
 #include "debug.h"         // ff: debugging output facility
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction
@@ -22,8 +23,6 @@
 #include "arf32.h"
 #include "lmx9830.h"
 
-
-#define RESET_PIN _PH4
 
 /* ***** low-level serial stuff ********************************************** */
 
@@ -72,9 +71,9 @@ static void sInitRxTx(void)
     UCSR1C = BIT(UCSZ10) | BIT(UCSZ11);
 
     // setup send and receive pins (FIXME: necessary?)
-    PIN_OUTPUT(_PD3);
-    PIN_INPUT(_PD2);
-    PIN_PULLUP_ON(_PD2);
+    PIN_OUTPUT(ARF32_TX_PIN);
+    PIN_INPUT(ARF32_RX_PIN);
+    PIN_PULLUP_ON(ARF32_RX_PIN);
 
     // enable transmitter & receiver
     SETBITS(UCSR1B, BIT(TXEN1) | BIT(RXEN1) );
@@ -241,14 +240,14 @@ static void sBreak(void)
     CLRBITS(UCSR1B, BIT(UDRIE1));
 
     // configure tx pin as output
-    PIN_OUTPUT(_PD3);
+    PIN_OUTPUT(ARF32_TX_PIN);
 
     // set pin low for the break period (5 characters)
-    PIN_LOW(_PD3);
+    PIN_LOW(ARF32_TX_PIN);
     osTaskDelay( 1000 / (BAUD / 10 / 5) );
 
     // and keep it high for some time, too
-    PIN_HIGH(_PD3);
+    PIN_HIGH(ARF32_TX_PIN);
     osTaskDelay( 1000 / (BAUD / 10 / 5) );
 
     // enable transmit
@@ -860,9 +859,9 @@ static void sFactoryReset(void)
 
     // wait a while and then try configuring it again
     DEBUG("arf32: hardware reset");
-    PIN_LOW(RESET_PIN);
+    PIN_LOW(ARF32_RESET_PIN);
     osTaskDelay(250);
-    PIN_HIGH(RESET_PIN);
+    PIN_HIGH(ARF32_RESET_PIN);
     osTaskDelay(250);
 
     sRequest(LMX_OPCODE_NONE, NULL, 0, false, 1000);
@@ -959,8 +958,8 @@ void arf32Init(void)
 
     sInitRxTx();
 
-    PIN_OUTPUT(RESET_PIN);
-    PIN_HIGH(RESET_PIN);
+    PIN_OUTPUT(ARF32_RESET_PIN);
+    PIN_HIGH(ARF32_RESET_PIN);
 
     sInfo.arfState = ARF32_STATE_UNKNOWN;
 }

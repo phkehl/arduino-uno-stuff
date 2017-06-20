@@ -50,6 +50,23 @@ void ag1170Init(void)
     //PIN_HIGH(AG1170_RESET_PIN);
 
     sState = AG1170_STATE_UNKNOWN;
+
+    // power-down FIXME: manual says "do not input logic 1, leave free running"
+    PIN_OUTPUT(AG1170_PD_PIN);
+    PIN_LOW(AG1170_PD_PIN); // FIXME: so this powers the module off?
+
+    // ring mode
+    PIN_OUTPUT(AG1170_RM_PIN);
+    PIN_LOW(AG1170_RM_PIN);
+
+    // forward/reverse
+    PIN_OUTPUT(AG1170_FR_PIN);
+    PIN_LOW(AG1170_FR_PIN);
+
+    // switch hook
+    PIN_INPUT(AG1170_SHK_PIN);
+    PIN_PULLUP_ON(AG1170_SHK_PIN);
+
 }
 
 

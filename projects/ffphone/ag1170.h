@@ -11,6 +11,13 @@
 
     - [AG1170 Datasheet](../../projects/ffphone/ag1170_datasheet.pdf)
 
+    Four pins are used to interface to the following AG1170 module functions:
+    - power down (PD) the module (the DCDC converter) when high
+    - ring mode (RM) enables the ringing voltage generator (output) when high
+    - forward/reverse (F/R) reverse the ringing voltage polarity when low
+    - switch hook (SHK) tells us whether the receiver is on-hook (low) of off-hook (high)
+
+
     @{
 */
 

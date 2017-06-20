@@ -10,6 +10,7 @@
 
 #include <string.h>        // libc: string operations
 
+#include <avr/io.h>        // avr: AVR device-specific IO definitions
 #include <avr/interrupt.h> // avr: interrupt things
 
 #include "stdstuff.h"      // ff: useful macros and types
@@ -874,6 +875,21 @@ static void sFactoryReset(void)
 
 /* ***** init **************************************************************** */
 
+void arf32Init(void)
+{
+    DEBUG("arf32: init");
+
+    sInitRxTx();
+
+    PIN_OUTPUT(ARF32_RESET_PIN);
+    PIN_HIGH(ARF32_RESET_PIN);
+
+    sInfo.arfState = ARF32_STATE_UNKNOWN;
+}
+
+
+/* ***** task **************************************************************** */
+
 static void sArf32Task(void *pArg)
 {
     UNUSED(pArg);
@@ -881,7 +897,7 @@ static void sArf32Task(void *pArg)
     // keep the ARF32 module going...
     while (ENDLESS)
     {
-        DEBUG("state %S", skStateStrs[sInfo.arfState]);
+        DEBUG("ARF32 %S", skStateStrs[sInfo.arfState]);
         switch (sInfo.arfState)
         {
 
@@ -952,18 +968,6 @@ static void sArf32Task(void *pArg)
     }
 }
 
-void arf32Init(void)
-{
-    DEBUG("arf32: init");
-
-    sInitRxTx();
-
-    PIN_OUTPUT(ARF32_RESET_PIN);
-    PIN_HIGH(ARF32_RESET_PIN);
-
-    sInfo.arfState = ARF32_STATE_UNKNOWN;
-}
-
 void arf32Start(void)
 {
     static uint8_t stack[350];
@@ -977,19 +981,14 @@ void arf32Start(void)
 // make application status string
 void arf32Status(char *str, const size_t size)
 {
-    UNUSED(str);
-    UNUSED(size);
-    PRINT_W("mon: arf32: rx=%"PRIu8"/%"PRIu8"/%"PRIu8"/%"PRIu8" tx=%"PRIu8"/%"PRIu8"/%"PRIu8
-        " state=%S mode=%S remote=%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8,
+    snprintf_P(str, size,
+        PSTR("rx=%"PRIu8"/%"PRIu8"/%"PRIu8"/%"PRIu8" tx=%"PRIu8"/%"PRIu8"/%"PRIu8
+            " state=%S mode=%S remote=%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8),
         svRxBufSize, svRxBufPeak, (uint8_t)sizeof(svRxBuf), svRxBufDrop,
         svTxBufSize, svTxBufPeak, (uint8_t)sizeof(svRxBuf),
         skStateStrs[sInfo.arfState], lmxGetModeString(sInfo.lmxMode),
         sInfo.remoteAddr[0], sInfo.remoteAddr[1], sInfo.remoteAddr[2],
         sInfo.remoteAddr[3], sInfo.remoteAddr[4], sInfo.remoteAddr[5]);
-    /*const int n = *//*snprintf_P(str, size,
-        PSTR("arf32: rx=%"PRIu8"/%"PRIu8"/%"PRIu8"/%"PRIu8" tx=%"PRIu8"/%"PRIu8"/%"PRIu8),
-        svRxBufSize, svRxBufPeak, (uint8_t)sizeof(svRxBuf), svRxBufDrop,
-        svTxBufSize, svTxBufPeak, (uint8_t)sizeof(svRxBuf));*/
     svRxBufPeak = 0;
     svRxBufDrop = 0;
     svTxBufPeak = 0;

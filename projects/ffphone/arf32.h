@@ -37,7 +37,6 @@ void arf32Start(void);
 void arf32Status(char *str, const size_t size);
 
 
-
 //! state of the ARF32 module
 typedef enum ARF32_STATE_e
 {
@@ -45,7 +44,7 @@ typedef enum ARF32_STATE_e
     ARF32_STATE_READY,   //!< ready, waiting for commands
     ARF32_STATE_PAIRED,  //!< ready, paired, waiting for commands or calls
     ARF32_STATE_INCALL,  //!< in call
-    ARF32_STATE_ERROR    //!< bad error occured
+    ARF32_STATE_ERROR,   //!< bad error occured
 } ARF32_STATE_t;
 
 

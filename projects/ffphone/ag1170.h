@@ -23,6 +23,21 @@
 
 /* *************************************************************************** */
 
+void ag1170Init(void);
+
+void ag1170Start(void);
+
+void ag1170Status(char *str, const size_t size);
+
+
+//! state of the AG1170 module
+typedef enum AG1170_STATE_e
+{
+    AG1170_STATE_UNKNOWN, //!< unknown/undefined stated
+    AG1170_STATE_READY,   //!< ready
+} AG1170_STATE_t;
+
+
 
 /* *************************************************************************** */
 

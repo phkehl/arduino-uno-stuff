@@ -19,6 +19,7 @@
 #include "hd44780.h"       // ff: HD44780 LCD driver
 
 #include "arf32.h"
+#include "ag1170.h"
 #include "ffphone.h"
 
 
@@ -27,6 +28,7 @@
 // forward declarations
 static void sAppStatus(char *str, const size_t size);
 static void sAppTask(void *pArg);
+static void sStatusInit(void);
 
 // initialise the user application
 void appInit(void)
@@ -36,8 +38,13 @@ void appInit(void)
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
 
-    hd44780Init();
     arf32Init();
+    ag1170Init();
+
+    arf32Start();
+    ag1170Start();
+
+    sStatusInit();
 }
 
 // starts the user application tasks
@@ -47,12 +54,19 @@ void appCreateTask(void)
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 
-    arf32Start();
+}
 
-    hd44780PutCursor(0, 0);
-    hd44780Printf_P(PSTR("flipflipPHONE"));
-    hd44780PutCursor(1, 0);
-    hd44780Printf_P(PSTR("(c) 2017 ffi"));
+/* ***** application state *************************************************** */
+
+
+
+
+/* ***** status display ****************************************************** */
+
+static void sStatusInit(void)
+{
+    hd44780Init();
+
     static const uint8_t skHeart1[8] PROGMEM  = // 5x8
     {
         0b00000, // .....
@@ -95,10 +109,27 @@ void appCreateTask(void)
         0b01111, // .####
         0b01111, // .####
     };
-    hd44780CreateChar(0x01, skHeart1);
-    hd44780CreateChar(0x02, skHeart2);
-    hd44780CreateChar(0x03, skPhone1);
-    hd44780CreateChar(0x04, skPhone2);
+    hd44780CreateChar(0x00, skHeart1);
+    hd44780CreateChar(0x01, skHeart2);
+    hd44780CreateChar(0x02, skPhone1);
+    hd44780CreateChar(0x03, skPhone2);
+
+    // temporary
+    hd44780PutCursor(0, 0);
+    hd44780Printf_P(PSTR("flipflipPHONE"));
+    hd44780PutCursor(1, 0);
+    hd44780Printf_P(PSTR("(c) 2017 ffi"));
+}
+
+static void sStatusUpdate(void)
+{
+    static uint8_t heartbeat;
+
+    heartbeat++;
+    hd44780PutCursor(0, 15);
+    hd44780Write( (heartbeat % 4) == 0 ? 0x01 : 0x00 );
+    hd44780PutCursor(1, 15);
+    hd44780Write( (heartbeat % 4) == 0 ? 0x03 : 0x02 );
 }
 
 
@@ -110,29 +141,10 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
-    hd44780PutCursor(1, 15);
-    hd44780Write(0x03);
-
-    static uint8_t heartbeat;
     while (ENDLESS)
     {
-        //DEBUG("app... %"PRIu32, osTaskGetTicks());
-#if 0
-        uint32_t n = 55555;
-        while (n--)
-        {
-        }
-        osTaskDelay(1234);
-        heartbeat++;
-        hd44780PutCursor(0, 15);
-        hd44780Write( (heartbeat % 2) == 0 ? 0x01 : 0x02 );
-#endif
-
-        heartbeat++;
-        hd44780PutCursor(0, 15);
-        hd44780Write( (heartbeat % 4) == 0 ? 0x02 : 0x01 );
+        sStatusUpdate();
         osTaskDelay(250);
-
     }
 }
 
@@ -142,9 +154,14 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
+    arf32Status(str, size);
+    PRINT_W("mon: arf32: %s", str);
+
+    ag1170Status(str, size);
+    PRINT_W("mon: ag1170: %s", str);
+
     /*const int n = */snprintf_P(str, size, PSTR("status... "));
     //arf32Status(&str[n], size - n);
-    arf32Status(NULL, 0);
 }
 
 

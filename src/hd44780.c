@@ -68,12 +68,15 @@ void hd44780Printf_P(const char *fmt, ...)
 void hd44780CreateChar(const char c, const uint8_t bitmap[8])
 {
     uint8_t location = (uint8_t)c;
-    uint8_t charmap[8];
-    for (uint8_t ix = 0; ix < sizeof(charmap); ix++)
+    if (location <= 0x07)
     {
-        charmap[ix] = pgm_read_byte(&bitmap[ix]);
+        uint8_t charmap[8];
+        for (uint8_t ix = 0; ix < sizeof(charmap); ix++)
+        {
+            charmap[ix] = pgm_read_byte(&bitmap[ix]);
+        }
+        lcd_create_char(location, charmap);
     }
-    lcd_create_char(location, charmap);
 }
 
 void hd44780CursorMode(const bool enable, const bool blink)

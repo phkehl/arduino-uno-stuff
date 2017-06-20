@@ -73,7 +73,7 @@ void hd44780Printf_P(const char *fmt, ...);
 
 //! create custom character
 /*!
-    \param[in] c       character code to program
+    \param[in] c       character code to program (0x00..0x07)
     \param[in] bitmap  the 5x8 pixels bitmap for the character (in #PROGMEM)
 
     The \c bitmap works as follows:

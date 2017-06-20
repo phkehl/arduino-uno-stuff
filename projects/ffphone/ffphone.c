@@ -63,6 +63,13 @@ void appCreateTask(void)
 
 /* ***** status display ****************************************************** */
 
+#define STATUS_CHAR_HEART_FULL    0x00
+#define STATUS_CHAR_HEART_SMALL   0x01
+#define STATUS_CHAR_MOBILE_READY  0x02
+#define STATUS_CHAR_MOBILE_PAIRED 0x03
+#define STATUS_CHAR_PHONE_READY   0x04
+#define STATUS_CHAR_PHONE_OFFHOOK 0x05
+
 static void sStatusInit(void)
 {
     hd44780Init();
@@ -87,7 +94,7 @@ static void sStatusInit(void)
         0b00000, // .....
         0b00000, // .....
     };
-    static const uint8_t skPhone1[8] PROGMEM  = // 5x8
+    static const uint8_t skMobile1[8] PROGMEM  = // 5x8
     {
         0b00010, // ...#.
         0b00010, // ...#.
@@ -97,22 +104,46 @@ static void sStatusInit(void)
         0b01001, // .#..#
         0b01001, // .#..#
         0b01111, // .####
+    };
+    static const uint8_t skMobile2[8] PROGMEM  = // 5x8
+    {
+        0b00010, // ...#.
+        0b00010, // ...#.
+        0b01111, // .####
+        0b01111, // .####
+        0b01111, // .####
+        0b01111, // .####
+        0b01111, // .####
+        0b01111, // .####
+    };
+    static const uint8_t skPhone1[8] PROGMEM  = // 5x8
+    {
+        0b00000, // .....
+        0b00000, // .....
+        0b01110, // .###.
+        0b10101, // #.#.#
+        0b00100, // ..#..
+        0b11111, // #####
+        0b10001, // #...#
+        0b11111, // #####
     };
     static const uint8_t skPhone2[8] PROGMEM  = // 5x8
     {
-        0b00010, // ...#.
-        0b00010, // ...#.
-        0b01111, // .####
-        0b01111, // .####
-        0b01111, // .####
-        0b01111, // .####
-        0b01111, // .####
-        0b01111, // .####
+        0b00000, // .....
+        0b01110, // .###.
+        0b10001, // #...#
+        0b00000, // .....
+        0b00100, // ..#..
+        0b11111, // #####
+        0b10001, // #...#
+        0b11111, // #####
     };
-    hd44780CreateChar(0x00, skHeart1);
-    hd44780CreateChar(0x01, skHeart2);
-    hd44780CreateChar(0x02, skPhone1);
-    hd44780CreateChar(0x03, skPhone2);
+    hd44780CreateChar(STATUS_CHAR_HEART_FULL,    skHeart1);
+    hd44780CreateChar(STATUS_CHAR_HEART_SMALL,   skHeart2);
+    hd44780CreateChar(STATUS_CHAR_MOBILE_READY,  skMobile1);
+    hd44780CreateChar(STATUS_CHAR_MOBILE_PAIRED, skMobile2);
+    hd44780CreateChar(STATUS_CHAR_PHONE_READY,   skPhone1);
+    hd44780CreateChar(STATUS_CHAR_PHONE_OFFHOOK, skPhone2);
 
     // temporary
     hd44780PutCursor(0, 0);
@@ -124,12 +155,48 @@ static void sStatusInit(void)
 static void sStatusUpdate(void)
 {
     static uint8_t heartbeat;
-
     heartbeat++;
+    const bool mod2 = (heartbeat % 2) == 0 ? false : true;
+    const bool mod4 = (heartbeat % 4) == 0 ? false : true;
+
+    // heartbeat at top right
     hd44780PutCursor(0, 15);
-    hd44780Write( (heartbeat % 4) == 0 ? 0x01 : 0x00 );
-    hd44780PutCursor(1, 15);
-    hd44780Write( (heartbeat % 4) == 0 ? 0x03 : 0x02 );
+    hd44780Write(mod4 ? STATUS_CHAR_HEART_FULL : STATUS_CHAR_HEART_SMALL );
+
+    // status at bottom right
+    hd44780PutCursor(1, 14);
+    switch (arf32GetState())
+    {
+        case ARF32_STATE_UNKNOWN:
+            hd44780Write(mod2 ? '?' : ' ');
+            break;
+        case ARF32_STATE_READY:
+            hd44780Write(STATUS_CHAR_MOBILE_READY);
+            break;
+        case ARF32_STATE_PAIRED:
+            hd44780Write(STATUS_CHAR_MOBILE_PAIRED);
+            break;
+        case ARF32_STATE_INCALL:
+            hd44780Write(mod2 ? STATUS_CHAR_MOBILE_PAIRED : STATUS_CHAR_MOBILE_READY);
+            break;
+        case ARF32_STATE_ERROR:
+            hd44780Write(mod2 ? '!' : ' ');
+            break;
+    }
+    switch (ag1170GetState())
+    {
+        case AG1170_STATE_UNKNOWN:
+            hd44780Write(mod2 ? '?' : ' ');
+            break;
+        case AG1170_STATE_READY:
+            hd44780Write(STATUS_CHAR_PHONE_READY);
+            break;
+        case AG1170_STATE_ERROR:
+            hd44780Write(mod2 ? '!' : ' ');
+            break;
+    }
+
+    hd44780Write((heartbeat % 2) == 0 ? STATUS_CHAR_PHONE_READY : STATUS_CHAR_PHONE_OFFHOOK);
 }
 
 

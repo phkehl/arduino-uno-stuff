@@ -28,11 +28,16 @@
 #ifndef __DOXYGEN__ // STFU
 static const char skStateStrs[][8] PROGMEM =
 {
-    { "UNKNOWN\0" }, { "READY\0" }
+    { "UNKNOWN\0" }, { "READY\0" }, { "ERROR\0" }
 };
 #endif
 
 AG1170_STATE_t sState;
+
+__INLINE AG1170_STATE_t ag1170GetState(void)
+{
+    return sState;
+}
 
 
 /* ***** init **************************************************************** */
@@ -57,7 +62,14 @@ static void sAg1170Task(void *pArg)
     // keep the AG1170 module going...
     while (ENDLESS)
     {
-        DEBUG("AG1170 %S", skStateStrs[sState]);
+        {
+            static AG1170_STATE_t sLastState;
+            if (sLastState != sState)
+            {
+                PRINT("AG1170 %S -> %S", skStateStrs[sLastState], skStateStrs[sState]);
+                sLastState = sState;
+            }
+        }
         osTaskDelay(1000);
     }
 }

@@ -29,13 +29,16 @@ void ag1170Start(void);
 
 void ag1170Status(char *str, const size_t size);
 
-
 //! state of the AG1170 module
 typedef enum AG1170_STATE_e
 {
+    // keep in sync with skStateStrs
     AG1170_STATE_UNKNOWN, //!< unknown/undefined stated
     AG1170_STATE_READY,   //!< ready
+    AG1170_STATE_ERROR,   //!< bad error occured
 } AG1170_STATE_t;
+
+AG1170_STATE_t ag1170GetState(void);
 
 
 

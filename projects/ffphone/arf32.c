@@ -497,6 +497,12 @@ typedef struct INFO_s
 
 static INFO_t sInfo;
 
+__INLINE ARF32_STATE_t arf32GetState(void)
+{
+    return sInfo.arfState;
+}
+
+
 static void sProcess(uint8_t *data)
 {
     LMX_PTYPE_t  ptype  = data[1];
@@ -897,7 +903,15 @@ static void sArf32Task(void *pArg)
     // keep the ARF32 module going...
     while (ENDLESS)
     {
-        DEBUG("ARF32 %S", skStateStrs[sInfo.arfState]);
+        {
+            static ARF32_STATE_t sLastState;
+            if (sLastState != sInfo.arfState)
+            {
+                PRINT("ARF32 %S -> %S", skStateStrs[sLastState], skStateStrs[sInfo.arfState]);
+                sLastState = sInfo.arfState;
+            }
+        }
+
         switch (sInfo.arfState)
         {
 

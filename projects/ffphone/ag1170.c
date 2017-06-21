@@ -51,9 +51,9 @@ void ag1170Init(void)
 
     sState = AG1170_STATE_UNKNOWN;
 
-    // power-down FIXME: manual says "do not input logic 1, leave free running"
+    // power-down, connected via NPN transistor, i.e. Arduino GPIO high -> AG1170 power down
     PIN_OUTPUT(AG1170_PD_PIN);
-    PIN_LOW(AG1170_PD_PIN); // FIXME: so this powers the module off?
+    PIN_HIGH(AG1170_PD_PIN);
 
     // ring mode
     PIN_OUTPUT(AG1170_RM_PIN);

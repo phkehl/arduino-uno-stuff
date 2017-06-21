@@ -13,14 +13,14 @@
 
 /* *************************************************************************** */
 
-#define ARF32_RESET_PIN       _D7  // PH4
+#define ARF32_RESET_PIN       _D10
 #define ARF32_RX_PIN          _D19 // PD2, UART1!
 #define ARF32_TX_PIN          _D18 // PD3, UART1!
 
-#define AG1170_PD_PIN         _D2
-#define AG1170_FR_PIN         _D3
-#define AG1170_RM_PIN         _D4
-#define AG1170_SHK_PIN        _D5
+#define AG1170_PD_PIN         _D9
+#define AG1170_FR_PIN         _D2
+#define AG1170_RM_PIN         _D3
+#define AG1170_SHK_PIN        _D4
 
 #define FF_HW_LOAD_PIN        _D13
 

@@ -67,7 +67,7 @@ void appCreateTask(void)
 #define STATUS_CHAR_HEART_SMALL   0x01
 #define STATUS_CHAR_MOBILE_READY  0x02
 #define STATUS_CHAR_MOBILE_PAIRED 0x03
-#define STATUS_CHAR_PHONE_READY   0x04
+#define STATUS_CHAR_PHONE_ONHOOK  0x04
 #define STATUS_CHAR_PHONE_OFFHOOK 0x05
 
 static void sStatusInit(void)
@@ -142,14 +142,14 @@ static void sStatusInit(void)
     hd44780CreateChar(STATUS_CHAR_HEART_SMALL,   skHeart2);
     hd44780CreateChar(STATUS_CHAR_MOBILE_READY,  skMobile1);
     hd44780CreateChar(STATUS_CHAR_MOBILE_PAIRED, skMobile2);
-    hd44780CreateChar(STATUS_CHAR_PHONE_READY,   skPhone1);
+    hd44780CreateChar(STATUS_CHAR_PHONE_ONHOOK,  skPhone1);
     hd44780CreateChar(STATUS_CHAR_PHONE_OFFHOOK, skPhone2);
 
     // temporary
     hd44780PutCursor(0, 0);
     hd44780Printf_P(PSTR("flipflipPHONE"));
-    hd44780PutCursor(1, 0);
-    hd44780Printf_P(PSTR("(c) 2017 ffi"));
+    //hd44780PutCursor(1, 0);
+    //hd44780Printf_P(PSTR("(c) 2017 ffi"));
 }
 
 static void sStatusUpdate(void)
@@ -163,9 +163,17 @@ static void sStatusUpdate(void)
     hd44780PutCursor(0, 15);
     hd44780Write(mod4 ? STATUS_CHAR_HEART_FULL : STATUS_CHAR_HEART_SMALL );
 
-    // status at bottom right
+    // module states
+    const ARF32_STATE_t  arfState = arf32GetState();
+    const AG1170_STATE_t agState  = ag1170GetState();
+    const char *arfStr = arf32StateStr(arfState);
+    const char *agStr  = ag1170StateStr(agState);;
+    hd44780PutCursor(1, 0);
+    hd44780Printf_P(PSTR("%S %S             "), arfStr, agStr);
+
+    // status icons at bottom right
     hd44780PutCursor(1, 14);
-    switch (arf32GetState())
+    switch (arfState)
     {
         case ARF32_STATE_UNKNOWN:
             hd44780Write(mod2 ? '?' : ' ');
@@ -183,20 +191,21 @@ static void sStatusUpdate(void)
             hd44780Write(mod2 ? '!' : ' ');
             break;
     }
-    switch (ag1170GetState())
+    switch (agState)
     {
         case AG1170_STATE_UNKNOWN:
             hd44780Write(mod2 ? '?' : ' ');
             break;
-        case AG1170_STATE_READY:
-            hd44780Write(STATUS_CHAR_PHONE_READY);
+        case AG1170_STATE_ONHOOK:
+            hd44780Write(STATUS_CHAR_PHONE_ONHOOK);
+            break;
+        case AG1170_STATE_OFFHOOK:
+            hd44780Write(STATUS_CHAR_PHONE_OFFHOOK);
             break;
         case AG1170_STATE_ERROR:
             hd44780Write(mod2 ? '!' : ' ');
             break;
     }
-
-    hd44780Write((heartbeat % 2) == 0 ? STATUS_CHAR_PHONE_READY : STATUS_CHAR_PHONE_OFFHOOK);
 }
 
 

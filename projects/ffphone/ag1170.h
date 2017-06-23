@@ -17,7 +17,6 @@
     - forward/reverse (F/R) reverse the ringing voltage polarity when low
     - switch hook (SHK) tells us whether the receiver is on-hook (low) of off-hook (high)
 
-
     @{
 */
 
@@ -41,12 +40,19 @@ typedef enum AG1170_STATE_e
 {
     // keep in sync with skStateStrs
     AG1170_STATE_UNKNOWN, //!< unknown/undefined stated
-    AG1170_STATE_READY,   //!< ready
     AG1170_STATE_ERROR,   //!< bad error occured
+    AG1170_STATE_ONHOOK,  //!< on-hook
+    AG1170_STATE_OFFHOOK, //!< off-hook
 } AG1170_STATE_t;
 
 AG1170_STATE_t ag1170GetState(void);
 
+//! stringify state
+/*!
+    \param[in] state  the state to stringify
+    \returns the string representation of the current state
+*/
+const char *ag1170StateStr(const AG1170_STATE_t state);
 
 
 /* *************************************************************************** */

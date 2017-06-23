@@ -469,13 +469,6 @@ static int16_t sParse(const uint8_t *data, const uint8_t size)
 
 //-------------------------------------------------------------------------------
 
-#ifndef __DOXYGEN__ // STFU
-static const char skStateStrs[][8] PROGMEM =
-{
-    { "UNKNOWN\0" }, { "READY\0" }, { "CHECK\0" }, { "PAIRED\0" }, { "INCALL\0" }, { "ERROR\0" }
-};
-#endif
-
 typedef struct INFO_s
 {
     ARF32_STATE_t arfState;
@@ -502,6 +495,18 @@ __INLINE ARF32_STATE_t arf32GetState(void)
     return sInfo.arfState;
 }
 
+const char *arf32StateStr(const ARF32_STATE_t state)
+{
+    switch (state)
+    {
+        case ARF32_STATE_UNKNOWN: return PSTR("UNKNOWN");
+        case ARF32_STATE_READY:   return PSTR("READY");
+        case ARF32_STATE_PAIRED:  return PSTR("PAIRED");
+        case ARF32_STATE_INCALL:  return PSTR("INCALL");
+        case ARF32_STATE_ERROR:   return PSTR("ERROR");
+    }
+    return PSTR("???");
+}
 
 static void sProcess(uint8_t *data)
 {
@@ -907,7 +912,7 @@ static void sArf32Task(void *pArg)
             static ARF32_STATE_t sLastState;
             if (sLastState != sInfo.arfState)
             {
-                PRINT("ARF32 %S -> %S", skStateStrs[sLastState], skStateStrs[sInfo.arfState]);
+                PRINT("ARF32 %S -> %S", arf32StateStr(sLastState), arf32StateStr(sInfo.arfState));
                 sLastState = sInfo.arfState;
             }
         }
@@ -1000,7 +1005,7 @@ void arf32Status(char *str, const size_t size)
             " state=%S mode=%S remote=%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8),
         svRxBufSize, svRxBufPeak, (uint8_t)sizeof(svRxBuf), svRxBufDrop,
         svTxBufSize, svTxBufPeak, (uint8_t)sizeof(svRxBuf),
-        skStateStrs[sInfo.arfState], lmxGetModeString(sInfo.lmxMode),
+        arf32StateStr(sInfo.arfState), lmxGetModeString(sInfo.lmxMode),
         sInfo.remoteAddr[0], sInfo.remoteAddr[1], sInfo.remoteAddr[2],
         sInfo.remoteAddr[3], sInfo.remoteAddr[4], sInfo.remoteAddr[5]);
     svRxBufPeak = 0;

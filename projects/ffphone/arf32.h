@@ -49,6 +49,12 @@ typedef enum ARF32_STATE_e
 
 ARF32_STATE_t arf32GetState(void);
 
+//! stringify state
+/*!
+    \param[in] state  the state to stringify
+    \returns the string representation of the current state
+*/
+const char *arf32StateStr(const ARF32_STATE_t state);
 
 /* *************************************************************************** */
 

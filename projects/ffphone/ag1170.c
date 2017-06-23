@@ -25,13 +25,6 @@
 
 /* *************************************************************************** */
 
-#ifndef __DOXYGEN__ // STFU
-static const char skStateStrs[][8] PROGMEM =
-{
-    { "UNKNOWN\0" }, { "READY\0" }, { "ERROR\0" }
-};
-#endif
-
 AG1170_STATE_t sState;
 
 __INLINE AG1170_STATE_t ag1170GetState(void)
@@ -39,6 +32,17 @@ __INLINE AG1170_STATE_t ag1170GetState(void)
     return sState;
 }
 
+const char *ag1170StateStr(const AG1170_STATE_t state)
+{
+    switch (state)
+    {
+        case AG1170_STATE_UNKNOWN : return PSTR("UNKNOWN");
+        case AG1170_STATE_ERROR   : return PSTR("ERROR");
+        case AG1170_STATE_ONHOOK  : return PSTR("ONHOOK");
+        case AG1170_STATE_OFFHOOK : return PSTR("OFFHOOK");
+    }
+    return PSTR("???");
+}
 
 /* ***** init **************************************************************** */
 
@@ -72,6 +76,10 @@ void ag1170Init(void)
 
 /* ***** task **************************************************************** */
 
+#define AG_POWER_ON()  PIN_LOW(AG1170_PD_PIN)
+#define AG_POWER_OFF() PIN_HIGH(AG1170_PD_PIN)
+#define AG_IS_ONHOOK() PIN_GET(AG1170_SHK_PIN) ? false : true
+
 static void sAg1170Task(void *pArg)
 {
     UNUSED(pArg);
@@ -83,11 +91,63 @@ static void sAg1170Task(void *pArg)
             static AG1170_STATE_t sLastState;
             if (sLastState != sState)
             {
-                PRINT("AG1170 %S -> %S", skStateStrs[sLastState], skStateStrs[sState]);
+                PRINT("AG1170 %S -> %S", ag1170StateStr(sLastState), ag1170StateStr(sState));
                 sLastState = sState;
             }
         }
-        osTaskDelay(1000);
+
+        switch (sState)
+        {
+            // unknown -> assume onhook
+            case AG1170_STATE_UNKNOWN:
+            {
+                sState = AG1170_STATE_ONHOOK;
+                break;
+            }
+
+            // error
+            case AG1170_STATE_ERROR:
+            {
+                ERROR("AG1170 WTF?!");
+                AG_POWER_OFF();
+                osTaskDelay(2500);
+                break;
+            }
+
+            // onhook: check for offhook condition
+            case AG1170_STATE_ONHOOK:
+            {
+                AG_POWER_ON();
+                osTaskDelay(100); // "the SLIC takes 50ms to power up"
+
+                // power-down again and try later
+                if (AG_IS_ONHOOK())
+                {
+                    AG_POWER_OFF();
+                    osTaskDelay(1000);
+                }
+                // go to offhook state
+                else
+                {
+                    sState = AG1170_STATE_OFFHOOK;
+                }
+                break;
+            }
+
+            // offhook: check for onhook condition
+            case AG1170_STATE_OFFHOOK:
+            {
+                if (AG_IS_ONHOOK())
+                {
+                    AG_POWER_OFF();
+                }
+                else
+                {
+                    osTaskDelay(50);
+                }
+                break;
+            }
+        }
     }
 }
 
@@ -104,7 +164,7 @@ void ag1170Start(void)
 // make application status string
 void ag1170Status(char *str, const size_t size)
 {
-    snprintf_P(str, size, PSTR("state=%S"), skStateStrs[sState]);
+    snprintf_P(str, size, PSTR("state=%S"), ag1170StateStr(sState));
 }
 
 

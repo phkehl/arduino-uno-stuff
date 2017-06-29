@@ -140,6 +140,7 @@ static void sAg1170Task(void *pArg)
                 if (AG_IS_ONHOOK())
                 {
                     AG_POWER_OFF();
+                    sState = AG1170_STATE_ONHOOK;
                 }
                 else
                 {

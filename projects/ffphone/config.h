@@ -17,10 +17,10 @@
 #define ARF32_RX_PIN          _D19 // PD2, UART1!
 #define ARF32_TX_PIN          _D18 // PD3, UART1!
 
-#define AG1170_PD_PIN         _D9
-#define AG1170_FR_PIN         _D2
-#define AG1170_RM_PIN         _D3
-#define AG1170_SHK_PIN        _D4
+#define AG1170_PD_PIN         _D9  // power-down (out)
+#define AG1170_FR_PIN         _D5  // forward/reverse (out)
+#define AG1170_RM_PIN         _D6  // ring mode (out)
+#define AG1170_SHK_PIN        _D7  // switch hook (in)
 
 #define FF_HW_LOAD_PIN        _D13
 
@@ -37,6 +37,7 @@
 #define FF_HD44780_D6_PIN     _D27
 #define FF_HD44780_D7_PIN     _D28
 
+#define FF_SYS_MON_STRLEN     128
 
 // complete configuration by including the defaults
 #include "defconfig.h"

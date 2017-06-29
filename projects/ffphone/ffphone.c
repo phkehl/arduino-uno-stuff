@@ -10,6 +10,8 @@
 
 #include <string.h>        // libc: string operations
 
+#include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
+
 #include "stdstuff.h"      // ff: useful macros and types
 #include "arduinopins.h"   // ff: Arduino pins
 #include "debug.h"         // ff: debugging output facility
@@ -29,6 +31,7 @@
 static void sAppStatus(char *str, const size_t size);
 static void sAppTask(void *pArg);
 static void sStatusInit(void);
+static void sButtonsInit(void);
 
 // initialise the user application
 void appInit(void)
@@ -45,6 +48,7 @@ void appInit(void)
     ag1170Start();
 
     sStatusInit();
+    sButtonsInit();
 }
 
 // starts the user application tasks
@@ -208,6 +212,53 @@ static void sStatusUpdate(void)
     }
 }
 
+/* ***** buttons ************************************************************* */
+
+static void sButtonsInit(void)
+{
+    // enable INT4 (on D2) and INT5 (on D3) to register button presses
+    PIN_INPUT(_D2);
+    PIN_PULLUP_ON(_D2);
+    PIN_INPUT(_D3);
+    PIN_PULLUP_ON(_D3);
+
+    //SETBITS(EICRB, BIT(ISC41) | BIT(ISC51)); // falling-edge triggers interrupt
+    CLRBITS(EICRB, BIT(ISC40) | BIT(ISC50)); // falling-edge triggers interrupt
+    SETBITS(EICRB, BIT(ISC41) | BIT(ISC51));
+    SETBITS(EIMSK, BIT(INT4)  | BIT(INT5) ); // enable INT4 and INT5 interrupts
+}
+
+static volatile uint32_t cnt;
+static volatile bool svButton1Pressed;
+
+ISR(INT4_vect) // external interrupt 4
+{
+    static volatile uint8_t msss0;
+    osIsrEnter();
+    const uint8_t msss1 = osTaskGetTicks() >> 8;
+    if ( (msss1 - msss0) > (150 >> 8) )
+    {
+        svButton1Pressed = true;
+    }
+    msss0 = msss1;
+    osIsrLeave();
+}
+
+static volatile bool svButton2Pressed;
+
+ISR(INT5_vect) // external interrupt 5
+{
+    static volatile uint8_t msss0;
+    osIsrEnter();
+    const uint8_t msss1 = osTaskGetTicks() >> 8;
+    if ( (msss1 - msss0) > (150 >> 8) )
+    {
+        svButton2Pressed = true;
+    }
+    msss0 = msss1;
+    osIsrLeave();
+}
+
 
 /* ***** application task **************************************************** */
 
@@ -219,8 +270,18 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        sStatusUpdate();
-        osTaskDelay(250);
+        sStatusUpdate();  // !!!
+        osTaskDelay(250); // !!!
+        if (svButton1Pressed)
+        {
+            svButton1Pressed = false;
+            DEBUG("BUTTON 1");
+        }
+        if (svButton2Pressed)
+        {
+            svButton2Pressed = false;
+            DEBUG("BUTTON 2");
+        }
     }
 }
 
@@ -236,7 +297,7 @@ static void sAppStatus(char *str, const size_t size)
     ag1170Status(str, size);
     PRINT_W("mon: ag1170: %s", str);
 
-    /*const int n = */snprintf_P(str, size, PSTR("status... "));
+    /*const int n = */snprintf_P(str, size, PSTR("status..."));
     //arf32Status(&str[n], size - n);
 }
 

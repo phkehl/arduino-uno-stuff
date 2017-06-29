@@ -37,7 +37,7 @@ uint16_t sysGetInitStackPointer(void);
 
 /* *************************************************************************** */
 
-//! user monitor function type
+//! user monitor function type, see sysRegisterMonFunc()
 typedef void (* SYS_MON_FUNC_t)(char *, size_t);
 
 //! register user monitor function

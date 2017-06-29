@@ -93,6 +93,11 @@
 #  define FF_SYS_TASK_PRIO 3
 #endif
 
+//! string size for #SYS_MON_FUNC_t argument (increasing this may need increasing #FF_SYS_TASK_STACK)
+#if !defined(FF_SYS_MON_STRLEN) || defined(__DOXYGEN__)
+#  define FF_SYS_MON_STRLEN 64
+#endif
+
 
 /* *************************************************************************** */
 

@@ -90,7 +90,7 @@ static void sSysTask(void *pArg)
 
             // hardware and application status
             {
-                char str[64];
+                char str[FF_SYS_MON_STRLEN];
                 hwStatus(str, sizeof(str));
                 PRINT_W("mon: hw: %s", str);
                 if (sSysMonFunc)

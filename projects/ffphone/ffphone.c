@@ -206,6 +206,9 @@ static void sStatusUpdate(void)
         case AG1170_STATE_OFFHOOK:
             hd44780Write(STATUS_CHAR_PHONE_OFFHOOK);
             break;
+        case AG1170_STATE_RINGING:
+            hd44780Write(mod2 ? STATUS_CHAR_PHONE_ONHOOK : ' ');
+            break;
         case AG1170_STATE_ERROR:
             hd44780Write(mod2 ? '!' : ' ');
             break;
@@ -276,11 +279,13 @@ static void sAppTask(void *pArg)
         {
             svButton1Pressed = false;
             DEBUG("BUTTON 1");
+            ag1170Ring(1);
         }
         if (svButton2Pressed)
         {
             svButton2Pressed = false;
             DEBUG("BUTTON 2");
+            ag1170Ring(5);
         }
     }
 }

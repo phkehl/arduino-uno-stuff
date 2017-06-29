@@ -43,6 +43,7 @@ typedef enum AG1170_STATE_e
     AG1170_STATE_ERROR,   //!< bad error occured
     AG1170_STATE_ONHOOK,  //!< on-hook
     AG1170_STATE_OFFHOOK, //!< off-hook
+    AG1170_STATE_RINGING, //!< ringing
 } AG1170_STATE_t;
 
 AG1170_STATE_t ag1170GetState(void);
@@ -53,6 +54,10 @@ AG1170_STATE_t ag1170GetState(void);
     \returns the string representation of the current state
 */
 const char *ag1170StateStr(const AG1170_STATE_t state);
+
+bool ag1170Ring(const uint8_t count);
+
+void ag1170RingCancel(void);
 
 
 /* *************************************************************************** */

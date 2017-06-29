@@ -18,6 +18,7 @@
 
 #include "arduinopins.h"
 
+
 /* *************************************************************************** */
 
 //! system load signal on pin (see \ref ARDUINOPINS, set to NONE to disable)
@@ -55,6 +56,7 @@
 #  define FF_HW_USE_WATCHDOG 1
 #endif
 
+
 /* *************************************************************************** */
 
 //! idle thread stack size
@@ -66,6 +68,7 @@
 #if !defined(FF_OS_HEAP_SIZE) || defined(__DOXYGEN__)
 #  define FF_OS_HEAP_SIZE 0
 #endif
+
 
 /* *************************************************************************** */
 
@@ -106,6 +109,7 @@
 #  define FF_DEBUG_LEVEL 1
 #endif
 
+
 /* *************************************************************************** */
 
 //! hsv2rgb() method to use (1 = classic, 2 = correctd by lookup table, which will cost some SRAM)
@@ -113,12 +117,14 @@
 #  define FF_HSV2RGB_METHOD 1
 #endif
 
+
 /* *************************************************************************** */
 
 //! SPI master speed for the \ref WS2801 in kHz (125, 250, 500, 1000, 2000, 4000, 8000)
 #if !defined (FF_WS2801_SPI_SPEED) || defined(__DOXYGEN__)
 #  define FF_WS2801_SPI_SPEED 250
 #endif
+
 
 /* *************************************************************************** */
 
@@ -146,6 +152,7 @@
 #if !defined (FF_LEDFX_XY_ARR) || defined(__DOXYGEN__)
 #  define FF_LEDFX_XY_ARR 1
 #endif
+
 
 /* *************************************************************************** */
 
@@ -277,7 +284,6 @@
 #if !defined(FF_HD44780_D7_PIN) || defined(__DOXYGEN__)
 #  define FF_HD44780_D7_PIN  _D2
 #endif
-
 
 
 /* *************************************************************************** */

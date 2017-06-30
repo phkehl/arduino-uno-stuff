@@ -288,7 +288,7 @@ static bool sRequest(const LMX_OPCODE_t reqOpcode, const uint8_t *payload, const
         const uint8_t cksum = reqPtype + reqOpcode + sizeLo + sizeHi;
 
         DEBUG("arf32: > 0x%02"PRIx8" %S 0x%02"PRIx8" %S [%"PRIu16"]",
-            reqPtype, lmxGetPtypeString(reqPtype), reqOpcode, lmxGetOpcodeString(reqOpcode), size);
+            reqPtype, lmxPtypeStr(reqPtype), reqOpcode, lmxOpcodeStr(reqOpcode), size);
 
         sTxByte(LMX_STX);
         sTxByte(reqPtype);
@@ -377,16 +377,16 @@ static bool sRequest(const LMX_OPCODE_t reqOpcode, const uint8_t *payload, const
             const LMX_OPCODE_t msgOpcode = resp[2];
             if ( (msgPtype == LMX_PTYPE_CFM) && (msgOpcode == reqOpcode) )
             {
-                const LMX_ERROR_t msgError  = parse > LMX_FRAME_SIZE ? resp[LMX_PAYLOAD_OFFSET] : LMX_ERROR_OK;
-                if (msgError == LMX_ERROR_OK)
+                const LMX_GEN_ERROR_t msgError  = parse > LMX_FRAME_SIZE ? resp[LMX_PAYLOAD_OFFSET] : LMX_GEN_ERROR_OK;
+                if (msgError == LMX_GEN_ERROR_OK)
                 {
                     return true;
                 }
                 else
                 {
                     WARNING("arf32: error %S (0x%02"PRIx8" %S 0x%02"PRIx8" %S error)",
-                        lmxGetErrorString(msgError),
-                        reqPtype, lmxGetPtypeString(reqPtype), reqOpcode, lmxGetOpcodeString(reqOpcode));
+                        lmxGenErrorStr(msgError),
+                        reqPtype, lmxPtypeStr(reqPtype), reqOpcode, lmxOpcodeStr(reqOpcode));
                     return false;
                 }
             }
@@ -406,7 +406,7 @@ static bool sRequest(const LMX_OPCODE_t reqOpcode, const uint8_t *payload, const
     else
     {
         WARNING("arf32: timeout (0x%02"PRIx8" %S 0x%02"PRIx8" %S)",
-            reqPtype, lmxGetPtypeString(reqPtype), reqOpcode, lmxGetOpcodeString(reqOpcode));
+            reqPtype, lmxPtypeStr(reqPtype), reqOpcode, lmxOpcodeStr(reqOpcode));
         return false;
     }
 }
@@ -439,7 +439,7 @@ static int16_t sParse(const uint8_t *data, const uint8_t size)
     if (cksum != ck)
     {
         WARNING("arf32: checksum mismatch %02"PRIx8" != %02"PRIx8" (0x%02"PRIx8" %S 0x%02"PRIx8" %S)",
-            cksum, ck, ptype, lmxGetPtypeString(ptype), opcode, lmxGetOpcodeString(opcode));
+            cksum, ck, ptype, lmxPtypeStr(ptype), opcode, lmxOpcodeStr(opcode));
         return -1; // nada
     }
 
@@ -459,9 +459,9 @@ static int16_t sParse(const uint8_t *data, const uint8_t size)
     }
 
     const char *errorStr = (payloadSize > 0) && (ptype == LMX_PTYPE_CFM) ?
-        lmxGetErrorString(data[LMX_PAYLOAD_OFFSET]) : PSTR("n/a");
+        lmxGenErrorStr(data[LMX_PAYLOAD_OFFSET]) : PSTR("n/a");
     DEBUG("arf32: < 0x%02"PRIx8" %S 0x%02"PRIx8" %S [%"PRIu16"] : %S",
-        ptype, lmxGetPtypeString(ptype), opcode, lmxGetOpcodeString(opcode),
+        ptype, lmxPtypeStr(ptype), opcode, lmxOpcodeStr(opcode),
         payloadSize, errorStr);
 
     return (int16_t)messageSize;
@@ -479,7 +479,7 @@ typedef struct INFO_s
     // LMX_OPCODE_SPP_TRANSPARENT_MODE, LMX_OPCODE_DEVICE_READY
     LMX_MODE_t    lmxMode;
 
-    // LMX_OPCODE_SPP_INCOMING_LINK_ESTABLISHED
+    // LMX_OPCODE_GAP_ACL_ESTABLISHED, (-LMX_OPCODE_SPP_INCOMING_LINK_ESTABLISHED-)
     uint8_t       remoteAddr[6];
     bool          linkChange;
 
@@ -507,6 +507,8 @@ const char *arf32StateStr(const ARF32_STATE_t state)
     }
     return PSTR("???");
 }
+
+#define PRI_BTADDR "%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8
 
 static void sProcess(uint8_t *data)
 {
@@ -542,34 +544,33 @@ static void sProcess(uint8_t *data)
 
         case LMX_OPCODE_ENABLE_SDP_RECORD:
         {
-            const LMX_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
-            if (error == LMX_ERROR_RECORD_ALREADY_IN_SELECTED_STATE)
+            const LMX_GEN_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
+            if (error == LMX_GEN_ERROR_RECORD_ALREADY_IN_SELECTED_STATE)
             {
-                data[LMX_PAYLOAD_OFFSET] = LMX_ERROR_OK;
+                data[LMX_PAYLOAD_OFFSET] = LMX_GEN_ERROR_OK;
             }
-            if (data[LMX_PAYLOAD_OFFSET] == LMX_ERROR_OK)
+            if (data[LMX_PAYLOAD_OFFSET] == LMX_GEN_ERROR_OK)
             {
                 DEBUG("arf32: SDP record %"PRIu8" enabled (%S)", data[LMX_PAYLOAD_OFFSET + 1 ],
-                    lmxGetErrorString(error));
+                    lmxGenErrorStr(error));
             }
             break;
         }
 
         case LMX_OPCODE_GAP_LIST_PAIRED_DEVICES:
         {
-            const LMX_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
-            if (error == LMX_ERROR_OK)
+            const LMX_GEN_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
+            if (error == LMX_GEN_ERROR_OK)
             {
                 const uint8_t count = data[LMX_PAYLOAD_OFFSET + 1];
                 for (uint8_t ix = 0; ix < count; ix++)
                 {
                     const uint8_t offs = LMX_PAYLOAD_OFFSET + 2 + (ix * 6);
-                    DEBUG("arf32: paired device #%"PRIu8": %02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8,
+                    DEBUG("arf32: paired device #%"PRIu8": "PRI_BTADDR,
                         ix + 1, data[offs], data[offs + 1], data[offs + 2], data[offs + 3], data[offs + 4], data[offs + 5]);
                 }
 
             }
-
             break;
         }
 
@@ -593,38 +594,53 @@ static void sProcess(uint8_t *data)
         case LMX_OPCODE_RESTORE_FACTORY_SETTINGS:
         case LMX_OPCODE_SET_EVENT_FILTER:
         {
-            const LMX_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
-            DEBUG("arf32: %S (%S)", lmxGetErrorString(error), lmxGetOpcodeString(opcode));
-            break;
-        }
-
-        case LMX_OPCODE_GAP_ACL_ESTABLISHED:
-        case LMX_OPCODE_GAP_ACL_TERMINATED:
-        {
-            const uint8_t *pkAddr = &data[LMX_PAYLOAD_OFFSET];
-            DEBUG("arf32: %S addr=%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8" code=%02"PRIx8,
-                lmxGetOpcodeString(opcode),
-                pkAddr[0], pkAddr[1], pkAddr[2], pkAddr[3], pkAddr[4], pkAddr[5],
-                data[LMX_PAYLOAD_OFFSET + 6]);
+            const LMX_GEN_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
+            DEBUG("arf32: %S (%S)", lmxGenErrorStr(error), lmxOpcodeStr(opcode));
             break;
         }
 
         case LMX_OPCODE_SPP_INCOMING_LINK_ESTABLISHED:
         {
-            memcpy(sInfo.remoteAddr, &data[LMX_PAYLOAD_OFFSET], 6);
+            const uint8_t *pkAddr = &data[LMX_PAYLOAD_OFFSET];
+            //memcpy(sInfo.remoteAddr, &data[LMX_PAYLOAD_OFFSET], 6);
             sInfo.localPort = data[LMX_PAYLOAD_OFFSET + 6];
-            DEBUG("arf32: %S port=%"PRIu8" addr=%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8,
-                lmxGetOpcodeString(opcode), sInfo.localPort,
+            DEBUG("arf32: %S port=%"PRIu8" addr="PRI_BTADDR,
+                lmxOpcodeStr(opcode), sInfo.localPort,
+                pkAddr[0], pkAddr[1], pkAddr[2], pkAddr[3], pkAddr[4], pkAddr[5]);
+                //sInfo.remoteAddr[0], sInfo.remoteAddr[1], sInfo.remoteAddr[2],
+                //sInfo.remoteAddr[3], sInfo.remoteAddr[4], sInfo.remoteAddr[5]);
+            //sInfo.linkChange = true;
+            break;
+        }
+
+        case LMX_OPCODE_GAP_ACL_ESTABLISHED: // LMX_PTYPE_IND
+        {
+            memcpy(sInfo.remoteAddr, &data[LMX_PAYLOAD_OFFSET], 6);
+            //sInfo.localPort = 0; // n/a
+            const LMX_ACL_ERROR_t error = data[LMX_PAYLOAD_OFFSET + 6];
+            DEBUG("arf32: %S addr="PRI_BTADDR" : %S",
+                lmxOpcodeStr(opcode),
                 sInfo.remoteAddr[0], sInfo.remoteAddr[1], sInfo.remoteAddr[2],
-                sInfo.remoteAddr[3], sInfo.remoteAddr[4], sInfo.remoteAddr[5]);
+                sInfo.remoteAddr[3], sInfo.remoteAddr[4], sInfo.remoteAddr[5],
+                lmxAclErrorStr(error));
             sInfo.linkChange = true;
-/*
-                sBtRemoteDevice.valid = TRUE;
-                sBtRemoteDevice.new = TRUE;
-                sBtState = BT_STATE_PAIRED;
-*/
-                break;
-            }
+
+            break;
+        }
+
+        case LMX_OPCODE_GAP_ACL_TERMINATED: // LMX_PTYPE_IND
+        {
+            const uint8_t *pkAddr = &data[LMX_PAYLOAD_OFFSET];
+            const LMX_ACL_ERROR_t error = data[LMX_PAYLOAD_OFFSET + 6];
+            DEBUG("arf32: %S addr="PRI_BTADDR" : %S",
+                lmxOpcodeStr(opcode),
+                pkAddr[0], pkAddr[1], pkAddr[2], pkAddr[3], pkAddr[4], pkAddr[5],
+                //sInfo.remoteAddr[0], sInfo.remoteAddr[1], sInfo.remoteAddr[2],
+                //sInfo.remoteAddr[3], sInfo.remoteAddr[4], sInfo.remoteAddr[5],
+                lmxAclErrorStr(error));
+            sInfo.linkChange = true;
+        }
+
         case LMX_OPCODE_SPP_TRANSPARENT_MODE:
         {
             if (ptype == LMX_PTYPE_IND)
@@ -632,17 +648,17 @@ static void sProcess(uint8_t *data)
                 sInfo.localPort = data[LMX_PAYLOAD_OFFSET];
                 sInfo.lmxMode   = data[LMX_PAYLOAD_OFFSET + 1];
                 DEBUG("arf32: %S port=%"PRIu8" mode=%S",
-                    lmxGetOpcodeString(opcode), sInfo.localPort, lmxGetModeString(sInfo.lmxMode));
+                    lmxOpcodeStr(opcode), sInfo.localPort, lmxModeStr(sInfo.lmxMode));
             }
             else if (ptype == LMX_PTYPE_CFM)
             {
-                const LMX_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
-                if (error == LMX_ERROR_OK)
+                const LMX_GEN_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
+                if (error == LMX_GEN_ERROR_OK)
                 {
                     sInfo.localPort = data[LMX_PAYLOAD_OFFSET + 1];
                     sInfo.lmxMode   = LMX_MODE_TRANSPARENT;
                     DEBUG("arf32: %S port=%"PRIu8" mode=%S",
-                        lmxGetOpcodeString(opcode), sInfo.localPort, lmxGetModeString(sInfo.lmxMode));
+                        lmxOpcodeStr(opcode), sInfo.localPort, lmxModeStr(sInfo.lmxMode));
                 }
             }
             else
@@ -657,9 +673,9 @@ static void sProcess(uint8_t *data)
             if ( (ptype == LMX_PTYPE_IND) && (payloadSize > 1) )
             {
                 DEBUG1("BT: = RFCOMM 0x%02x link release 0x%02x %S",
-                       pkPayload[1], pkPayload[0], lmxGetLinkreleaseString(pkPayload[0]));
+                       pkPayload[1], pkPayload[0], lmxLinkreleaseStr(pkPayload[0]));
                 res = TRUE;
-                error = LMX_ERROR_OK;
+                error = LMX_GEN_ERROR_OK;
                 sBtState = BT_STATE_READY;
             }
             break;
@@ -703,7 +719,7 @@ static void sProcess(uint8_t *data)
     if (!processed)
     {
         WARNING("arf32: unprocessed message (0x%02"PRIx8" %S 0x%02"PRIx8" %S [%"PRIu16"])",
-            ptype, lmxGetPtypeString(ptype), opcode, lmxGetOpcodeString(opcode), size);
+            ptype, lmxPtypeStr(ptype), opcode, lmxOpcodeStr(opcode), size);
     }
 }
 
@@ -959,6 +975,17 @@ static void sArf32Task(void *pArg)
             case ARF32_STATE_PAIRED:
             {
                 sRequest(LMX_OPCODE_NONE, NULL, 0, false, 1000);
+
+                if (sInfo.linkChange)
+                {
+                    sInfo.arfState = ARF32_STATE_READY;
+                }
+                else
+                {
+                    sRequest(LMX_OPCODE_GAP_REMOTE_DEVICE_NAME, sInfo.remoteAddr, 6, false, 1000);
+                    sRequest(LMX_OPCODE_READ_RSSI, sInfo.remoteAddr, 6, false, 1000);
+                }
+
                 break;
             }
 
@@ -1005,7 +1032,7 @@ void arf32Status(char *str, const size_t size)
             " state=%S mode=%S remote=%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8":%02"PRIx8),
         svRxBufSize, svRxBufPeak, (uint8_t)sizeof(svRxBuf), svRxBufDrop,
         svTxBufSize, svTxBufPeak, (uint8_t)sizeof(svRxBuf),
-        arf32StateStr(sInfo.arfState), lmxGetModeString(sInfo.lmxMode),
+        arf32StateStr(sInfo.arfState), lmxModeStr(sInfo.lmxMode),
         sInfo.remoteAddr[0], sInfo.remoteAddr[1], sInfo.remoteAddr[2],
         sInfo.remoteAddr[3], sInfo.remoteAddr[4], sInfo.remoteAddr[5]);
     svRxBufPeak = 0;

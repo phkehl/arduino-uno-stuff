@@ -179,7 +179,7 @@ typedef enum LMX_OPCODE_e
         - #LMX_PTYPE_CFM:
           - 1 byte: #LMX_GEN_ERROR_e
           - 6 bytes: bluetooth address
-          - 1 byte: size of device name
+          - 1 byte: size of device name (0 unless #LMX_GEN_ERROR_OK)
           - N (max. 40) bytes: device name (NOT null-terminated, in contradiction to [LMX9830]) */
     LMX_OPCODE_GAP_REMOTE_DEVICE_NAME = 0x02,
 
@@ -198,7 +198,7 @@ typedef enum LMX_OPCODE_e
           - 6 bytes. device address
         - #LMX_PTYPE_CFM:
           - 1 byte: #LMX_GEN_ERROR_e
-          - 1 byte: RSSI */
+          - 1 byte: #LMX_RSSI_e */
     LMX_OPCODE_READ_RSSI = 0x20,
 
     /*! set event filter
@@ -430,6 +430,14 @@ typedef enum LMX_EVENTFILTER_e
     LMX_EVENTFILTER_NADA  = 0x03, //!< no events reported, UART break not generated or detected
 } LMX_EVENTFILTER_t;
 
+//! RSSI value (#LMX_OPCODE_READ_RSSI)
+typedef enum LMX_RSSI_e
+{
+    LMX_RSSI_TOO_HIGH = 0x01,
+    LMX_RSSI_GOOD     = 0x00,
+    LMX_RSSI_TOO_LOW  = 0xff,
+} LMX_RSSI_t;
+
 //! LMX command frame size (incl. sync chars)
 #define LMX_FRAME_SIZE     (1 + 1 + 1 + 2 + 1 + 1)
 
@@ -492,6 +500,13 @@ PGM_P /* const char * */lmxRfcommStatusStr(const LMX_RFCS_t status);
 */
 PGM_P /* const char * */lmxModeStr(const LMX_MODE_t mode);
 
+//! stringify RSSI value
+/*!
+    \param[in] rssi  RSSI value
+
+    \returns the RSSI value string
+*/
+PGM_P /* const char * */lmxRssiStr(const LMX_RSSI_t rssi);
 
 #endif // __LMX9830_H__
 

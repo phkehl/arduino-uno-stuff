@@ -228,6 +228,16 @@ PGM_P /* const char * */lmxAclErrorStr(const LMX_ACL_ERROR_t error)
     return PSTR("ILL_ERROR");
 }
 
+PGM_P /* const char * */lmxRssiStr(const LMX_RSSI_t rssi)
+{
+    switch (rssi)
+    {
+        case LMX_RSSI_TOO_HIGH: return PSTR("TOO_HIGH");
+        case LMX_RSSI_GOOD:     return PSTR("GOOD");
+        case LMX_RSSI_TOO_LOW:  return PSTR("TOO_LOW");
+    }
+    return PSTR("ILL_RSSI");
+}
 
 
 //@}

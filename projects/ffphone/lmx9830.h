@@ -110,6 +110,35 @@ typedef enum LMX_OPCODE_e
           - 1 byte: local RFCOMM port number [1..30] */
     LMX_OPCODE_SPP_LINK_RELEASED = 0x0e,
 
+    //! establish DLC link to remote device
+    /*!
+        - #LMX_PTYPE_REQ:
+          - 1 byte: local port number
+          - 6 bytes: remote address
+          - 1 byte: remote port number (found using #LMX_OPCODE_SDAP_SERVICE_BROWSE)
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_GEN_ERROR_OK, #LMX_GEN_ERROR_SPP_PORT_BUSY, #LMX_GEN_ERROR_SPP_PORT_NOT_OPEN, #LMX_GEN_ERROR_SPP_INVALID_PORT, #LMX_GEN_ERROR_SPP_AUTOMATIC_CONNECTIONS_PROGRESSING
+          - 1 byte: local port number */
+    LMX_OPCODE_SPP_ESTABLISH_LINK = 0x0a,
+
+    //! indicate a locally established DLC link
+    /*!
+        - #LMX_PTYPE_IND:
+          - 1 byte: status #LMX_RFCS_e
+          - 6 bytes: remote address
+          - 1 byte: local port number
+          - 1 byte: remote port number */
+    LMX_OPCODE_SPP_LINK_ESTABLISHED = 0x0b,
+
+    //! release DLC link to remote device
+    /*!
+        - #LMX_PTYPE_REQ:
+          - 1 byte: local port number
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_GEN_ERROR_OK, #LMX_GEN_ERROR_NO_CONNECTION, #LMX_GEN_ERROR_INVALID_PORT, #LMX_GEN_ERROR_PORT_NOT_OPEN
+          - 1 byte: local port number */
+    LMX_OPCODE_SPP_RELEASE_LINK = 0x0d,
+
     /*! switch to / announce transparent mode [LMX9830, p.135]
         - #LMX_PTYPE_REQ:
           - 1 byte: local RFCOMM port number [1..30]
@@ -183,6 +212,13 @@ typedef enum LMX_OPCODE_e
           - N (max. 40) bytes: device name (NOT null-terminated, in contradiction to [LMX9830]) */
     LMX_OPCODE_GAP_REMOTE_DEVICE_NAME = 0x02,
 
+    /*! power save mode on link occured [LMX9830, p. 155]
+        - #LMX_PTYPE_IND:
+          - 1 byte: #LMX_GEN_ERROR_e
+          - 6 bytes: bluetooth address of remote device
+          - 1 byte: #LMX_PSM_e */
+    LMX_OPCODE_GAP_POWER_SAVE_MODE_CHANGED = 0x3d,
+
     /*! send data on SPP link to remote bluetooth device [LMX9830, p.130]
         - #LMX_PTYPE_REQ:
           - 1 byte: local RFCOMM port [1..30]
@@ -219,6 +255,52 @@ typedef enum LMX_OPCODE_e
           - 6 bytes: address of remote device
           - 1 byte: #LMX_ACL_ERROR_e */
     LMX_OPCODE_GAP_ACL_TERMINATED = 0x51,
+
+    /*! SDAP connection to remote device (only one at a time!)
+        - #LMX_PTYPE_REQ:
+          - 6 bytes: address of remote device
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_GEN_ERROR_e */
+    LMX_OPCODE_SDAP_CONNECT = 0x32,
+
+    /*! disconnect active SDAP connection
+        - #LMX_PTYPE_REQ:
+          - (empty)
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_GEN_ERROR_e */
+    LMX_OPCODE_SDAP_DISCONNECT = 0x33,
+
+    /*! SDP connection lost indicator
+        - #LMX_PTYPE_IND:
+          - (empty) */
+    LMX_OPCODE_SDAP_CONNECTION_LOST = 0x34,
+
+    /*! SDAP service browse
+        - #LMX_PTYPE_REQ:
+          - 2 bytes: group UUID (little endian!)
+            - 0x1002 return list of all registered services
+            - 0x1101 serial port profile
+            - 0x1103 dial-up networking profile
+            - 0x1108 headset in headset profile (HSP)
+            - 0x1112 headset audio gateway (AG) in headset profile (HSP)
+        - #LMX_PTYPE_CFM:
+          - 1 byte: #LMX_GEN_ERROR_e
+          - 1 byte: number of services <n>
+          - <n> times:
+            - 2 bytes: group UUID
+            - 2 bytes: service ID
+            - 1 byte: remote RFCOMM port number
+            - 1 byte: name length
+            - n bytes: name of the service */
+    LMX_OPCODE_SDAP_SERVICE_BROWSE = 0x35,
+
+    //! SDAP service search
+    LMX_OPCODE_SDAP_SERVICE_SEARCH = 0x36,
+    //! SDAP service request
+    LMX_OPCODE_SDAP_SERVICE_REQUEST = 0x1e,
+    //! SDAP service attribute request
+    LMX_OPCODE_SDAP_ATTRIBUTE_REQUEST = 0x3f,
+
 
 } LMX_OPCODE_t;
 
@@ -348,10 +430,10 @@ typedef enum LMX_GEN_ERROR_e
 typedef enum LMX_RFCS_e
 {
     LMX_RFCS_NO_ERROR             = 0x00, //!< No error
-    LMX_RFCS_INVALID_DLC          = 0x01, //!< The DLC does not exist
-    LMX_RFCS_INVALID_PORT         = 0x02, //!< The port does not exist
-    LMX_RFCS_DLC_ESTABLISH_FAILED = 0x03, //!< The DLC establishment failed
-    LMX_RFCS_ACCESS_REJECTED_SECM = 0x04, //!< did not authorize access to the requested service (DLC)
+    LMX_RFCS_INVALID_DLC          = 0x01, //!< DLC does not exist
+    LMX_RFCS_INVALID_PORT         = 0x02, //!< port does not exist
+    LMX_RFCS_DLC_ESTABLISH_FAILED = 0x03, //!< DLC establishment failed
+    LMX_RFCS_ACCESS_REJECTED_SECM = 0x04, //!< SECM did not authorize access to the requested service (DLC)
     LMX_RFCS_INVALID_CONNECTION   = 0x05, //!< There does not exist a DLC/L2CAP connection to the device
 } LMX_RFCS_t;
 
@@ -438,6 +520,15 @@ typedef enum LMX_RSSI_e
     LMX_RSSI_TOO_LOW  = 0xff,
 } LMX_RSSI_t;
 
+//! power save mode state (#LMX_OPCODE_GAP_POWER_SAVE_MODE_CHANGED) [LMX9830 p. 156]
+typedef enum LMX_PSM_e
+{
+    LMX_PSM_ACTIVE = 0x00, //!< active mode (no power save mode)
+    LMX_PSM_HOLD   = 0x01, //!< hold mode
+    LMX_PSM_SNIFF  = 0x02, //!< sniff mode
+    LMX_PSM_PARK   = 0x03, //!< park mode
+} LMX_PSM_t;
+
 //! LMX command frame size (incl. sync chars)
 #define LMX_FRAME_SIZE     (1 + 1 + 1 + 2 + 1 + 1)
 
@@ -507,6 +598,14 @@ PGM_P /* const char * */lmxModeStr(const LMX_MODE_t mode);
     \returns the RSSI value string
 */
 PGM_P /* const char * */lmxRssiStr(const LMX_RSSI_t rssi);
+
+//! stringify power save mode value
+/*!
+    \param[in] psm  power save mode value
+
+    \returns the power save mode value string
+*/
+PGM_P /* const char * */lmxPsmStr(const LMX_PSM_t psm);
 
 #endif // __LMX9830_H__
 

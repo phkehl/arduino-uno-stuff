@@ -59,6 +59,17 @@ PGM_P /* const char * */lmxOpcodeStr(const LMX_OPCODE_t opcode)
         case LMX_OPCODE_SET_EVENT_FILTER:                return PSTR("SET_EVENT_FILTER");
         case LMX_OPCODE_GAP_ACL_ESTABLISHED:             return PSTR("GAP_ACL_ESTABLISHED");
         case LMX_OPCODE_GAP_ACL_TERMINATED:              return PSTR("GAP_ACL_TERMINATED");
+        case LMX_OPCODE_GAP_POWER_SAVE_MODE_CHANGED:     return PSTR("GAP_POWER_SAVE_MODE_CHANGED");
+        case LMX_OPCODE_SPP_ESTABLISH_LINK:              return PSTR("SPP_ESTABLISH_LINK");
+        case LMX_OPCODE_SPP_LINK_ESTABLISHED:            return PSTR("SPP_LINK_ESTABLISHED");
+        case LMX_OPCODE_SPP_RELEASE_LINK:                return PSTR("SPP_RELEASE_LINK");
+        case LMX_OPCODE_SDAP_CONNECT:                    return PSTR("SDAP_CONNECT");
+        case LMX_OPCODE_SDAP_DISCONNECT:                 return PSTR("SDAP_DISCONNECT");
+        case LMX_OPCODE_SDAP_CONNECTION_LOST:            return PSTR("SDAP_CONNECTION_LOST");
+        case LMX_OPCODE_SDAP_SERVICE_BROWSE:             return PSTR("SDAP_SERVICE_BROWSE");
+        case LMX_OPCODE_SDAP_SERVICE_SEARCH:             return PSTR("SDAP_SERVICE_SEARCH");
+        case LMX_OPCODE_SDAP_SERVICE_REQUEST:            return PSTR("SDAP_SERVICE_REQUEST");
+        case LMX_OPCODE_SDAP_ATTRIBUTE_REQUEST:          return PSTR("SDAP_ATTRIBUTE_REQUEST");
     }
     return PSTR("UNKN_OPCODE");
 }
@@ -239,6 +250,17 @@ PGM_P /* const char * */lmxRssiStr(const LMX_RSSI_t rssi)
     return PSTR("ILL_RSSI");
 }
 
+PGM_P /* const char * */lmxPsmStr(const LMX_PSM_t psm)
+{
+    switch (psm)
+    {
+        case LMX_PSM_ACTIVE: return PSTR("ACTIVE");
+        case LMX_PSM_HOLD:   return PSTR("HOLD");
+        case LMX_PSM_SNIFF:  return PSTR("SNIFF");
+        case LMX_PSM_PARK:   return PSTR("PARK");
+    }
+    return PSTR("ILL_PSM");
+}
 
 //@}
 // eof

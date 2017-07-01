@@ -296,6 +296,8 @@ static bool sRequest(const LMX_OPCODE_t reqOpcode, const uint8_t *payload, const
         sTxByte(sizeLo);
         sTxByte(sizeHi);
         sTxByte(cksum);
+        //DEBUG("tx 0x%"PRIx8" 0x%"PRIx8" 0x%"PRIx8" 0x%"PRIx8" 0x%"PRIx8" 0x%"PRIx8,
+        //    LMX_STX, reqPtype, reqOpcode, sizeLo, sizeHi, cksum);
 
         uint16_t payloadSize = size;
         const uint8_t *pkPayload = payload;
@@ -303,8 +305,9 @@ static bool sRequest(const LMX_OPCODE_t reqOpcode, const uint8_t *payload, const
         {
             while (payloadSize-- != 0)
             {
-                //sBtTxByte(*pkPayload++);
-                sTxByte(pgm_read_byte(pkPayload));
+                const uint8_t byte = pgm_read_byte(pkPayload);
+                //DEBUG("tx 0x%"PRIx8, byte);
+                sTxByte(byte);
                 pkPayload++;
             }
         }
@@ -317,6 +320,7 @@ static bool sRequest(const LMX_OPCODE_t reqOpcode, const uint8_t *payload, const
             }
         }
         sTxByte(LMX_ETX);
+        //DEBUG("tx 0x%"PRIx8, LMX_ETX);
     }
 
 
@@ -632,6 +636,16 @@ static void sProcess(uint8_t *data)
             sInfo.gapLinkIsUp = false;
         }
 
+        case LMX_OPCODE_GAP_POWER_SAVE_MODE_CHANGED: // LMX_PTYPE_INT
+        {
+            const LMX_ACL_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
+            const uint8_t *pkAddr = &data[LMX_PAYLOAD_OFFSET + 1];
+            const LMX_PSM_t psm = data[LMX_PAYLOAD_OFFSET + 1 + 6];
+            PRINT("arf32: %S %S "PRI_BTADDR" %S",
+                lmxOpcodeStr(opcode), lmxGenErrorStr(error), pkAddr, lmxPsmStr(psm));
+            break;
+        }
+
         case LMX_OPCODE_SPP_INCOMING_LINK_ESTABLISHED:
         {
             memcpy(sInfo.sppRemoteAddr, &data[LMX_PAYLOAD_OFFSET], 6);
@@ -676,7 +690,7 @@ static void sProcess(uint8_t *data)
                    sInfo.lmxMode = LMX_MODE_COMMAND;
                 }
             }
-            DEBUG("arf32: %S %S port=%"PRIu8" mode=%S",
+            PRINT("arf32: %S %S port=%"PRIu8" mode=%S",
                 lmxOpcodeStr(opcode), lmxPtypeStr(ptype), sInfo.lmxLocalPort, lmxModeStr(sInfo.lmxMode));
             break;
         }
@@ -692,7 +706,7 @@ static void sProcess(uint8_t *data)
                 const char *name = (const char *)&data[LMX_PAYLOAD_OFFSET + 1 + 6 + 1];
                 char str[40];
                 strcpy(str, name); // workaround because printf()ing name directly crashes avr-gcc 4.9.2
-                DEBUG("arf32: addr="PRI_BTADDR" name=%s",
+                PRINT("arf32: addr="PRI_BTADDR" name=%s",
                     pkAddr[0], pkAddr[1], pkAddr[2], pkAddr[3], pkAddr[4], pkAddr[5], str);
             }
             //else
@@ -709,7 +723,7 @@ static void sProcess(uint8_t *data)
             if (err == LMX_GEN_ERROR_OK)
             {
                 const LMX_RSSI_t rssi = data[LMX_PAYLOAD_OFFSET + 1];
-                DEBUG("arf32: RSSI=%S", lmxRssiStr(rssi));
+                PRINT("arf32: RSSI=%S", lmxRssiStr(rssi));
             }
             //else if (err == LMX_GEN_ERROR_NO_CONNECTION)
             //{
@@ -719,7 +733,7 @@ static void sProcess(uint8_t *data)
         }
 
 /*
-            // not sure why we see this message sometimes
+            // not sure why we don't see this message sometimes
         case LMX_OPCODE_SPP_SEND_DATA:
             if ( (ptype == LMX_PTYPE_CFM) && (payloadSize > 1) )
             {
@@ -976,29 +990,46 @@ static void sArf32Task(void *pArg)
             // wait for connection
             case ARF32_STATE_READY:
             {
+                if (sInfo.lmxMode != LMX_MODE_COMMAND)
+                {
+                    sBreak();
+                }
+
                 sRequest(LMX_OPCODE_NONE, NULL, 0, false, 1000);
 
-                // check connection
+                // we're "paired" once both links are up
                 if (sInfo.gapLinkIsUp && sInfo.sppLinkIsUp)
                 {
-                    // FIXME: these don't work...
-                    //sRequest(LMX_OPCODE_GAP_REMOTE_DEVICE_NAME, sInfo.remoteAddr, 6, false, 1000);
-                    //sRequest(LMX_OPCODE_READ_RSSI, sInfo.remoteAddr, 6, false, 1000);
-
                     sInfo.arfState = ARF32_STATE_PAIRED;
                 }
+
+                // FIXME: sometimes the audio gateway (the mobile phone) initiates the SPP link, sometimes not
+                // but we can establish the link ourselves [LMX9830 p. 199]:
+                // 1. > LMX_PTYPE_REQ LMX_OPCODE_SDAP_CONNECT to sInfo.gapRemoteAddr
+                //    < LMX_PTYPE_IND LMX_OPCODE_GAP_ACL_ESTABLISHED LMX_ACL_ERROR_OK
+                //    < LMX_PTYPE_CFM LMX_OPCODE_SDAP_CONNECT LMX_GEN_ERROR_OK
+                // 2. > LMX_PTYPE_REQ LMX_OPCODE_SDAP_SERVICE_BROWSE 0x1108 or 0x1112
+                //    < LMX_PTYPE_CFM LMX_OPCODE_SDAP_SERVICE_BROWSE id 0x1211 and port number
+                // 3. > LMX_PTYPE_REQ LMX_OPCODE_SDAP_DISCONNECT
+                //    < LMX_PTYPE_CFM LMX_OPCODE_SDAP_DISCONNECT
+                //    < LMX_PTYPE_IND LMX_OPCODE_GAP_ACL_TERMINATED LMX_ACL_ERROR_CONN_USR_END (?)
+                // 4. > LMX_OPCODE_SPP_ESTABLISH_LINK ...
+                //    ...
+
                 break;
             }
 
             case ARF32_STATE_PAIRED:
             {
+                // FIXME: detect links going down...
                 if (!sInfo.gapLinkIsUp || !sInfo.sppLinkIsUp)
                 {
                     sInfo.arfState = ARF32_STATE_READY;
                 }
                 else
                 {
-                    // request switch to transparent mode
+                    // request switch to transparent mode so that we see the "\r\nRING\r\n"
+                    // FIXME: make parser not ignore that!
                     if (sInfo.sppLinkIsUp && (sInfo.lmxMode != LMX_MODE_TRANSPARENT))
                     {
                         sRequest(LMX_OPCODE_SPP_TRANSPARENT_MODE, &sInfo.sppLocalPort,
@@ -1008,9 +1039,6 @@ static void sArf32Task(void *pArg)
                     {
                         sRequest(LMX_OPCODE_NONE, NULL, 0, false, 1000);
                     }
-
-                    //sRequest(LMX_OPCODE_GAP_REMOTE_DEVICE_NAME, sInfo.remoteAddr, 6, false, 1000);
-                    //sRequest(LMX_OPCODE_READ_RSSI, sInfo.remoteAddr, 6, false, 1000);
                 }
 
                 break;

@@ -277,7 +277,7 @@ typedef enum LMX_OPCODE_e
 
     /*! SDAP service browse
         - #LMX_PTYPE_REQ:
-          - 2 bytes: group UUID (little endian!)
+          - 2 bytes: group UUID (little endian!, see https://www.bluetooth.com/specifications/assigned-numbers)
             - 0x1002 return list of all registered services
             - 0x1101 serial port profile
             - 0x1103 dial-up networking profile

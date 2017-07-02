@@ -70,6 +70,7 @@ PGM_P /* const char * */lmxOpcodeStr(const LMX_OPCODE_t opcode)
         case LMX_OPCODE_SDAP_SERVICE_SEARCH:             return PSTR("SDAP_SERVICE_SEARCH");
         case LMX_OPCODE_SDAP_SERVICE_REQUEST:            return PSTR("SDAP_SERVICE_REQUEST");
         case LMX_OPCODE_SDAP_ATTRIBUTE_REQUEST:          return PSTR("SDAP_ATTRIBUTE_REQUEST");
+        case LMX_OPCODE_GAP_SET_AUDIO_CONFIG:            return PSTR("GAP_SET_AUDIO_CONFIG");
     }
     return PSTR("UNKN_OPCODE");
 }

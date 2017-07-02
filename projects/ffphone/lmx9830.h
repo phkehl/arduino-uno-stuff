@@ -156,7 +156,12 @@ typedef enum LMX_OPCODE_e
           - 1 byte: #LMX_AUDIOCODEC_e
           - 1 byte: #LMX_AIRFORMAT_e */
     LMX_OPCODE_SET_DEFAULT_AUDIO_CONFIG = 0x5b,
-    //LMX_OPCODE_GAP_SET_AUDIO_CONFIG = 0x59,
+
+    /*! set audio settings [LMX9830, p.142]
+        - #LMX_PTYPE_REQ:
+          - 1 byte: #LMX_AUDIOCODEC_e
+          - 1 byte: #LMX_AIRFORMAT_e */
+    LMX_OPCODE_GAP_SET_AUDIO_CONFIG = 0x59,
 
     /*! delete all stored SDP records [LMX9830, p.170]
         - #LMX_PTYPE_REQ:
@@ -454,7 +459,7 @@ typedef enum LMX_MODE_e
     LMX_MODE_UNKNOWN     = 0xff  //!< unknown mode (dummy)
 } LMX_MODE_t;
 
-//! LMX9830 audio codec type (#LMX_OPCODE_SET_DEFAULT_AUDIO_CONFIG)
+//! LMX9830 audio codec type (#LMX_OPCODE_SET_DEFAULT_AUDIO_CONFIG, #LMX_OPCODE_GAP_SET_AUDIO_CONFIG)
 typedef enum LMX_AUDIOCODEC_e
 {
     LMX_AUDIOCODEC_NONE     = 0x00, //!< no codec available (default)
@@ -463,7 +468,7 @@ typedef enum LMX_AUDIOCODEC_e
     LMX_AUDIOCODEC_PCMSLAVE = 0x03  //!< PCM slave (req. additional config)
 } LMX_AUDIOCODEC_t;
 
-//! LMX9830 audio air format (#LMX_OPCODE_SET_DEFAULT_AUDIO_CONFIG)
+//! LMX9830 audio air format (#LMX_OPCODE_SET_DEFAULT_AUDIO_CONFIG, #LMX_OPCODE_GAP_SET_AUDIO_CONFIG)
 typedef enum LMX_AIRFORMAT_e
 {
     LMX_AIRFORMAT_CVSD = 0x00, //!< CVSD (default)

@@ -536,7 +536,7 @@ static void sProcess(uint8_t *data)
             char str[40];
             strcpy(str, swVerStr); // workaround...
             //DEBUG("arf32: device ready, sw version %s", swVerStr); // ...because this crashes avr-gcc 4.9.2
-            DEBUG("arf32: device ready, sw version %s", str);
+            PRINT("arf32: device ready, sw version %s", str);
             sInfo.lmxMode = LMX_MODE_COMMAND;
             break;
         }
@@ -544,7 +544,7 @@ static void sProcess(uint8_t *data)
         case LMX_OPCODE_STORE_SDP_RECORD:
         {
             const uint8_t id = data[LMX_PAYLOAD_OFFSET + 1];
-            DEBUG("arf32: SDP record stored, id=%"PRIu8, id);
+            PRINT("arf32: SDP record stored, id=%"PRIu8, id);
             sInfo.sdpRecordId = id;
             break;
         }
@@ -558,7 +558,7 @@ static void sProcess(uint8_t *data)
             }
             if (data[LMX_PAYLOAD_OFFSET] == LMX_GEN_ERROR_OK)
             {
-                DEBUG("arf32: SDP record %"PRIu8" enabled (%S)", data[LMX_PAYLOAD_OFFSET + 1 ],
+                PRINT("arf32: SDP record %"PRIu8" enabled (%S)", data[LMX_PAYLOAD_OFFSET + 1 ],
                     lmxGenErrorStr(error));
             }
             break;
@@ -573,7 +573,7 @@ static void sProcess(uint8_t *data)
                 for (uint8_t ix = 0; ix < count; ix++)
                 {
                     const uint8_t offs = LMX_PAYLOAD_OFFSET + 2 + (ix * 6);
-                    DEBUG("arf32: paired device #%"PRIu8": "PRI_BTADDR,
+                    PRINT("arf32: paired device #%"PRIu8": "PRI_BTADDR,
                         ix + 1, data[offs], data[offs + 1], data[offs + 2], data[offs + 3], data[offs + 4], data[offs + 5]);
                 }
             }
@@ -588,11 +588,12 @@ static void sProcess(uint8_t *data)
             char str[40];
             strcpy(str, deviceName); // workaround...
             //DEBUG("arf32: deviceName=%s", deviceName); // ...because this crashes avr-gcc 4.9.2
-            DEBUG("arf32: deviceName=%s", str);
+            PRINT("arf32: deviceName=%s", str);
             break;
         }
         case LMX_OPCODE_DELETE_SDP_RECORDS:
         case LMX_OPCODE_SET_DEFAULT_AUDIO_CONFIG:
+        case LMX_OPCODE_GAP_SET_AUDIO_CONFIG:
         case LMX_OPCODE_GAP_WRITE_LOCAL_NAME:
         case LMX_OPCODE_GAP_SET_FIXED_PIN:
         case LMX_OPCODE_SET_PORTS_TO_OPEN:
@@ -601,7 +602,7 @@ static void sProcess(uint8_t *data)
         case LMX_OPCODE_SET_EVENT_FILTER:
         {
             const LMX_GEN_ERROR_t error = data[LMX_PAYLOAD_OFFSET];
-            DEBUG("arf32: %S (%S)", lmxGenErrorStr(error), lmxOpcodeStr(opcode));
+            PRINT("arf32: %S (%S)", lmxGenErrorStr(error), lmxOpcodeStr(opcode));
             break;
         }
 
@@ -684,6 +685,14 @@ static void sProcess(uint8_t *data)
                 {
                     sInfo.lmxLocalPort = data[LMX_PAYLOAD_OFFSET + 1];
                     sInfo.lmxMode      = LMX_MODE_TRANSPARENT;
+                }
+                else if (error == LMX_GEN_ERROR_NO_CONNECTION)
+                {
+                    memset(sInfo.gapRemoteAddr, 0, sizeof(sInfo.gapRemoteAddr));
+                    sInfo.gapLinkIsUp = false;
+                    memset(sInfo.sppRemoteAddr, 0, sizeof(sInfo.sppRemoteAddr));
+                    sInfo.sppLocalPort = 0;
+                    sInfo.sppLinkIsUp = false;
                 }
                 else
                 {
@@ -851,6 +860,10 @@ static bool sResetAndReconfigure(void)
 
     // store default audio config
     if (!sRequest(LMX_OPCODE_SET_DEFAULT_AUDIO_CONFIG, skAudioConfig, sizeof(skAudioConfig), true, 250))
+    {
+        return false;
+    }
+    if (!sRequest(LMX_OPCODE_GAP_SET_AUDIO_CONFIG, skAudioConfig, sizeof(skAudioConfig), true, 250))
     {
         return false;
     }
@@ -1032,8 +1045,13 @@ static void sArf32Task(void *pArg)
                     // FIXME: make parser not ignore that!
                     if (sInfo.sppLinkIsUp && (sInfo.lmxMode != LMX_MODE_TRANSPARENT))
                     {
+#if 0
                         sRequest(LMX_OPCODE_SPP_TRANSPARENT_MODE, &sInfo.sppLocalPort,
-                            sizeof(sInfo.sppLocalPort), false, 1000);
+                            sizeof(sInfo.sppLocalPort), false, -1);
+                        sInfo.lmxMode = LMX_MODE_TRANSPARENT;
+#else
+                        sRequest(LMX_OPCODE_NONE, NULL, 0, false, 1000);
+#endif
                     }
                     else
                     {

@@ -12,7 +12,7 @@
 
 #include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
 #include <avr/pgmspace.h>  // avr-libc: program Space Utilities
-#include <avr/eeprom.h>    // avr-libc. EEPROM handling
+#include <avr/eeprom.h>    // avr-libc: EEPROM handling
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "arduinopins.h"   // ff: Arduino pins
@@ -77,7 +77,7 @@ static inline bool sButtonAPressed(void)
     return res;
 }
 
-ISR(INT0_vect) // external interrupt 1
+ISR(INT0_vect) // external interrupt 0
 {
     osIsrEnter();
     static volatile uint32_t msss0;
@@ -99,7 +99,7 @@ static inline bool sButtonBPressed(void)
     return res;
 }
 
-ISR(INT1_vect) // external interrupt 0
+ISR(INT1_vect) // external interrupt 1
 {
     osIsrEnter();
     static volatile uint32_t msss0;

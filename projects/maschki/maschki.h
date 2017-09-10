@@ -7,6 +7,10 @@
     \defgroup PROJECTS_MASCHKI Maschki
     \ingroup PROJECTS
 
+    - [PIR Sensor #555-28027](../../projects/maschki/555-28027_PIR_Sensor.pdf)
+    - [PIR Sensor RE 200B](../../projects/maschki/RE200B.pdf)
+    - [Ultrasonic Ranging Module HC-SR04](../../projects/maschki/HCSR04.pdf)
+
     <img src="../../projects/maschki/maschki.jpg"/>
 
     See maschki.c source code for details.

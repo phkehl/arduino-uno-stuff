@@ -135,7 +135,7 @@ typedef enum LMX_OPCODE_e
         - #LMX_PTYPE_REQ:
           - 1 byte: local port number
         - #LMX_PTYPE_CFM:
-          - 1 byte: #LMX_GEN_ERROR_OK, #LMX_GEN_ERROR_NO_CONNECTION, #LMX_GEN_ERROR_INVALID_PORT, #LMX_GEN_ERROR_PORT_NOT_OPEN
+         - 1 byte: #LMX_GEN_ERROR_OK, #LMX_GEN_ERROR_NO_CONNECTION, #LMX_GEN_ERROR_INVALID_PORT, #LMX_GEN_ERROR_SPP_PORT_NOT_OPEN
           - 1 byte: local port number */
     LMX_OPCODE_SPP_RELEASE_LINK = 0x0d,
 
@@ -290,8 +290,8 @@ typedef enum LMX_OPCODE_e
             - 0x1112 headset audio gateway (AG) in headset profile (HSP)
         - #LMX_PTYPE_CFM:
           - 1 byte: #LMX_GEN_ERROR_e
-          - 1 byte: number of services <n>
-          - <n> times:
+          - 1 byte: number of services, n
+          - n times:
             - 2 bytes: group UUID
             - 2 bytes: service ID
             - 1 byte: remote RFCOMM port number

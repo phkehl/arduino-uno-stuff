@@ -41,23 +41,22 @@ void appInit(void)
     // RGB LEDs
     ws2801Init();
 
-    // PIR sensor
-    PIN_INPUT(_D3);
-    PIN_PULLUP_OFF(_PD3);
-    osSemaphoreCreate(&sIsrActivitySem, 0);
-    EICRA |= BIT(ISC11) | BIT(ISC10);   // raising edge triggers INT1
-    EIMSK |= BIT(INT1);                 // enable INT1 interrupt
-    EIFR  |= BIT(INTF1);                // clear interrupt
+    // PIR (passive infrared) sensor
+    PIN_INPUT(_D3);                          // sensor out to pin D3 (= INT1)
+    PIN_PULLUP_OFF(_PD3);                    // sensor will drive signal high on activity
+    EICRA |= BIT(ISC11) | BIT(ISC10);        // raising edge triggers INT1
+    EIMSK |= BIT(INT1);                      // enable INT1 interrupt
+    EIFR  |= BIT(INTF1);                     // clear interrupt
+    osSemaphoreCreate(&sIsrActivitySem, 0);  // ISR will give this semaphore to signal activity
 
-    // range sensor
-    PIN_OUTPUT(_D4);
+    // ultrasonic range sensor
+    PIN_OUTPUT(_D4);                         // D4 pin signal to trigger range measurement
     PIN_LOW(_D4);
-    PIN_INPUT(_D2);
-    PIN_PULLUP_OFF(_D2);
-    osSemaphoreCreate(&sIsrRangeSem, 0);
-    EICRA |= BIT(ISC00);   // any logical change triggers INT0
-    //EIMSK |= BIT(INT0);    // enable INT0
-    EIFR  |= BIT(INTF0);   // clear interrupt
+    PIN_INPUT(_D2);                          // echo response from sensor
+    PIN_PULLUP_OFF(_D2);                     // sensor will drive high
+    EICRA |= BIT(ISC00);                     // any logical change triggers INT0
+    EIFR  |= BIT(INTF0);                     // clear interrupt
+    osSemaphoreCreate(&sIsrRangeSem, 0);     // ISR will give this semaphore to signal measurement done
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
@@ -78,13 +77,49 @@ void appCreateTask(void)
 ISR(INT1_vect)
 {
     osIsrEnter();
+    // signal waiting task (binary semaphore, i.e. don't increment beyond 1)
     osSemaphoreGive(&sIsrActivitySem, true);
     osIsrLeave();
 }
 
+// latest range measurement
 static volatile uint16_t svRangeRaw;
 
-// range measurement
+// start a range measurement
+static void sTriggerRangeMeas(void)
+{
+    CLRBITS(EIMSK, BIT(INT0)); // disable interrupt
+
+    // trigger sensor to send the pulse
+    PIN_LOW(_D4);
+    PIN_HIGH(_D4);
+    hwDelay(10);
+    PIN_LOW(_D4);
+
+    // arm interrupt to measure time of flight
+    svRangeRaw = 0;
+    EIFR  |= BIT(INTF0);       // clear interrupt
+    SETBITS(EIMSK, BIT(INT0)); // enable interrupt
+}
+
+// return range in [cm], clipped at 2.55m
+static uint8_t sGetRange(void)
+{
+    const uint32_t c = (uint16_t)340 /* m/s */ * 100 /* cm/m */ / 1000 /* ms/s */; // = 34 cm/ms
+    //const uint16_t dt = (svRangeRaw + 500) / 1000; // ms
+    //const uint16_t d = c * dt / 2; // distance = 1/2 * dt * c
+    const uint32_t d = c * svRangeRaw / 2 / 1000; // distance = 1/2 * dt * c
+    if (d > 255)
+    {
+        return 255;
+    }
+    else
+    {
+        return d;
+    }
+}
+
+// time of flight measurement
 ISR(INT0_vect)
 {
     osIsrEnter();
@@ -104,6 +139,26 @@ ISR(INT0_vect)
     }
 
     osIsrLeave();
+}
+
+static uint8_t sDoRangeMeas(void)
+{
+    sTriggerRangeMeas();
+
+    int32_t timeout = 16; // 7.5ms = 2.55m (one way)
+
+    // wait for result
+    if (osSemaphoreTake(&sIsrRangeSem, timeout))
+    {
+        //DEBUG("range=%"PRIu16"=%"PRIu8, svRangeRaw, sGetRange());
+        return sGetRange();
+    }
+    // timeout
+    else
+    {
+        CLRBITS(EIMSK, BIT(INT0)); // disable interrupt
+        return 0;
+    }
 }
 
 
@@ -138,36 +193,7 @@ static void sAppTask(void *pArg)
         if (rangeCnt > 10)
         {
             rangeCnt = 0;
-            //DEBUG("range");
-
-            // trigger range measurement
-            PIN_LOW(_D4);
-            PIN_HIGH(_D4);
-            hwDelay(10);
-            PIN_LOW(_D4);
-
-            // arm interrupt to measure time
-            svRangeRaw = 0;
-            EIFR  |= BIT(INTF0);       // clear
-            SETBITS(EIMSK, BIT(INT0)); // enable
-
-            // wait for result
-            if (osSemaphoreTake(&sIsrRangeSem, 50))
-            {
-                DEBUG("range=%"PRIu16, svRangeRaw);
-            }
-            // timeout
-            else
-            {
-                WARNING("range to %"PRIu16, svRangeRaw);
-                CLRBITS(EIMSK, BIT(INT0));
-            }
-
-
-            //osTaskDelay(1);
-            //hwTic(0);
-            //osTaskDelay(2);
-            //DEBUG("delay=%"PRIu16, hwToc(0));
+            DEBUG("range %"PRIu8, sDoRangeMeas());
         }
 
         // sweep hue value

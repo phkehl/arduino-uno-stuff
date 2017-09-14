@@ -148,7 +148,8 @@ static void sAppTask(void *pArg)
 
             // arm interrupt to measure time
             svRangeRaw = 0;
-            SETBITS(EIMSK, BIT(INT0));
+            EIFR  |= BIT(INTF0);       // clear
+            SETBITS(EIMSK, BIT(INT0)); // enable
 
             // wait for result
             if (osSemaphoreTake(&sIsrRangeSem, 50))

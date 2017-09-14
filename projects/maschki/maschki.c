@@ -179,22 +179,19 @@ static void sAppTask(void *pArg)
     static uint8_t sHue = 0;
     ledfxSetBrightness(50);
 
-    static uint8_t rangeCnt;
+
+    const uint32_t period = 101; // 101 199 331 499
+    uint32_t msss = (osTaskGetTicks() / period + 1) * period;
     while (ENDLESS)
     {
-        //osTaskDelay(50);
-
-        if (osSemaphoreTake(&sIsrActivitySem, 50))
+        if (!osTaskDelayUntil(&msss, period))
         {
-            DEBUG("PIR");
+            const uint32_t now = osTaskGetTicks();
+            WARNING("late!");
+            msss = (now / period) * period;
         }
 
-        rangeCnt++;
-        if (rangeCnt > 10)
-        {
-            rangeCnt = 0;
-            DEBUG("range %"PRIu8, sDoRangeMeas());
-        }
+        DEBUG("range %"PRIu8, sDoRangeMeas());
 
         // sweep hue value
         ledfxSetIxHSV(0, sHue,       255, 255);

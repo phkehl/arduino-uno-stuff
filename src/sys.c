@@ -64,7 +64,7 @@ static void sSysTask(void *pArg)
 
     while (ENDLESS)
     {
-        osTaskDelayUntil(&msss, 1000);
+        osTaskDelayUntil(&msss, 997 /*1000*/);
 
         /* ***** stuff to be done every second ***** */
 

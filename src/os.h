@@ -93,10 +93,11 @@ void osTaskDelay(const uint32_t timeout);
 
 //! delay task until specific time
 /*!
-    \param[in,out] pPrevTick  time reference on input, set to actual wake time on output
+    \param[in,out] pPrevTick  time reference on input, set to target wake time on output
     \param[in]     incrTicks  number of ticks to wait relative to \c pPrevTick
+    \returns true if the task was delayed, false if it was too late for that
 */
-void osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks);
+bool osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks);
 
 //! interrupt enter routine, call first in all ISRs
 void osIsrEnter(void);

@@ -350,15 +350,20 @@ void osTaskDelay(const uint32_t timeout)
 }
 
 
-inline void osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks)
+inline bool osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks)
 {
     const uint32_t targetTick = *pPrevTick + incrTicks;
     const uint32_t tickNow = osTaskGetTicks();
+    *pPrevTick = targetTick;
     if (tickNow < targetTick)
     {
         osTaskDelay(targetTick - tickNow);
+        return true;
     }
-    *pPrevTick = targetTick;
+    else
+    {
+        return false;
+    }
 }
 
 

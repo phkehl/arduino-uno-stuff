@@ -86,6 +86,7 @@ my %colours =
 
 my $t0 = time();
 my $rxbuf = '';
+my $datfiles = {};
 while (!$ABORT)
 {
     # get more input (rx)
@@ -139,6 +140,25 @@ while (!$ABORT)
         else
         {
             printf("%s[%i]\n", $msg->{_name}, $msg->{_size});
+        }
+
+        # store to file?
+        if ( ($msg->{_name} eq 'DEBUG') && ($msg->{_str} =~ m{>(.+\.dat)(.*)[\r\n]*}) )
+        {
+            my $filename = $1;
+            my $data = $2;
+            if (!$datfiles->{$filename})
+            {
+                my $h;
+                if (open($h, '>', $filename))
+                {
+                    $datfiles->{$filename} = $h;
+                }
+            }
+            if ($datfiles->{$filename})
+            {
+                printf({$datfiles->{$filename}} "$data\n");
+            }
         }
     }
 }

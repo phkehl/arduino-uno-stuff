@@ -83,6 +83,8 @@ ISR(INT1_vect)
     osIsrLeave();
 }
 
+// ------------------------------------------------------------------------------
+
 // latest range measurement
 static volatile uint16_t svRangeRaw;
 
@@ -129,6 +131,14 @@ static float   sRanges[10];
 static uint8_t sRangesIx;
 static float   sLastFiltered;
 
+static struct
+{
+    float mean;
+    float filt;
+    float std;
+    float delta;
+} sRange;
+
 static void sUpdateStats(const float range)
 {
     sRanges[sRangesIx] = range;
@@ -155,19 +165,24 @@ static void sUpdateStats(const float range)
         dsum += delta;
     }
     float std = sqrtf( sum2 / (n - 1.0) );
-    float meandelta = dsum / n;
+
+    float delta = dsum / n;
 
     // exponential filter
-    const float weight = 0.2;
-    const float filtered = (weight * range) + ((1.0 - weight) * sLastFiltered);
-    sLastFiltered = filtered;
+    const float weight = 0.3;
+    const float filt = (weight * range) + ((1.0 - weight) * sLastFiltered);
+    sLastFiltered = filt;
 
     DEBUG(">range.dat %6.1f %6.1f %6.1f %6.1f %6.1f",
-        range, mean, std, filtered, meandelta);
+        range, mean, std, filt, delta);
+
+    sRange.mean  = mean;
+    sRange.std   = std;
+    sRange.filt  = filt;
+    sRange.delta = delta;
 }
 
-
-static float sDoRangeMeas(void)
+static void sDoRangeMeas(void)
 {
     sTriggerRangeMeas();
 
@@ -178,21 +193,19 @@ static float sDoRangeMeas(void)
     {
         const float c = 340.0 * 100 / 1000 / 1000; // [cm/us]
         const float d = c * (float)svRangeRaw / 2; // [cm]
-
         sUpdateStats(d);
-        return d;
     }
     // timeout
     else
     {
         CLRBITS(EIMSK, BIT(INT0)); // disable interrupt
-        return 0;
     }
 }
 
 
 /* ***** application task **************************************************** */
 
+static uint16_t sAliveTimeout;
 
 // application task
 static void sAppTask(void *pArg)
@@ -206,30 +219,57 @@ static void sAppTask(void *pArg)
     //CS_ENTER; while (1) {}; CS_LEAVE;
 
     static uint8_t sHue = 0;
+    static uint8_t sTick = 0;
     ledfxSetBrightness(50);
-
 
     const uint32_t period = 101; // 101 199 251 293 307 331 499
     static uint32_t msss;
     msss = (osTaskGetTicks() / period + 1) * period;
     while (ENDLESS)
     {
+        // wait for next tick
         if (!osTaskDelayUntil(&msss, period))
         {
             const uint32_t now = osTaskGetTicks();
             WARNING("late!");
             msss = (now / period) * period;
         }
+        sTick++;
 
-        sDoRangeMeas();
+        // detect movement from PIR sensor
+        if (osSemaphoreTake(&sIsrActivitySem, -1))
+        {
+            NOTICE("I see you!");
+            sAliveTimeout += 60000 / period;
+        }
 
-        // sweep hue value
-        ledfxSetIxHSV(0, sHue,       255, 255);
-        ledfxSetIxHSV(1, sHue + 128, 255, 255);
-        sHue++;
+        // no one there...
+        if (sAliveTimeout == 0)
+        {
+            const uint32_t rnd = hwMathGetRandom();
+            const uint8_t val1 = ( rnd       & 0x0f) + 1;
+            const uint8_t val2 = ((rnd >> 4) & 0x0f) + 1;
+            ledfxSetIxHSV(0, sHue, 255, val1);
+            ledfxSetIxHSV(1, sHue, 255, val2);
+            ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+            if ((sTick % 10) == 0)
+            {
+                sHue++;
+            }
+        }
 
-        // write data to the LEDs
-        ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+        // someone's there..
+        else
+        {
+            sDoRangeMeas();
+
+            float val = 255.0 - ( 4 * MIN(sRange.mean, 50.0) );
+            ledfxSetIxHSV(0, 0, 255, val);
+            ledfxSetIxHSV(1, 0, 255, val);
+            ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+
+            sAliveTimeout--;
+        }
     }
 }
 
@@ -239,7 +279,8 @@ static void sAppTask(void *pArg)
 // make application status string
 static void sAppStatus(char *str, const size_t size)
 {
-    /*const int n = */snprintf_P(str, size, PSTR("maschki status"));
+    /*const int n = */snprintf_P(str, size,
+        PSTR("alive=%"PRIu16), sAliveTimeout);
 }
 
 

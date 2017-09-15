@@ -9,6 +9,7 @@
 */
 
 #include <string.h>        // libc: string operations
+#include <math.h>          // libc: mathematical functions
 
 #include <avr/interrupt.h> // avr: global manipulation of the interrupt flag
 
@@ -102,23 +103,6 @@ static void sTriggerRangeMeas(void)
     SETBITS(EIMSK, BIT(INT0)); // enable interrupt
 }
 
-// return range in [cm], clipped at 2.55m
-static uint8_t sGetRange(void)
-{
-    const uint32_t c = (uint16_t)340 /* m/s */ * 100 /* cm/m */ / 1000 /* ms/s */; // = 34 cm/ms
-    //const uint16_t dt = (svRangeRaw + 500) / 1000; // ms
-    //const uint16_t d = c * dt / 2; // distance = 1/2 * dt * c
-    const uint32_t d = c * svRangeRaw / 2 / 1000; // distance = 1/2 * dt * c
-    if (d > 255)
-    {
-        return 255;
-    }
-    else
-    {
-        return d;
-    }
-}
-
 // time of flight measurement
 ISR(INT0_vect)
 {
@@ -141,7 +125,49 @@ ISR(INT0_vect)
     osIsrLeave();
 }
 
-static uint8_t sDoRangeMeas(void)
+static float   sRanges[10];
+static uint8_t sRangesIx;
+static float   sLastFiltered;
+
+static void sUpdateStats(const float range)
+{
+    sRanges[sRangesIx] = range;
+    sRangesIx++;
+    sRangesIx %= NUMOF(sRanges);
+
+    const float n = (float)NUMOF(sRanges);
+
+    // running average
+    float sum = 0.0;
+    for (uint8_t ix = 0; ix < NUMOF(sRanges); ix++)
+    {
+        sum += sRanges[ix];
+    }
+    const float mean = sum / n;
+
+    // standard deviation
+    float sum2 = 0.0;
+    float dsum = 0.0;
+    for (uint8_t ix = 0; ix < NUMOF(sRanges); ix++)
+    {
+        const float delta = (range - mean);
+        sum2 += delta * delta;
+        dsum += delta;
+    }
+    float std = sqrtf( sum2 / (n - 1.0) );
+    float meandelta = dsum / n;
+
+    // exponential filter
+    const float weight = 0.2;
+    const float filtered = (weight * range) + ((1.0 - weight) * sLastFiltered);
+    sLastFiltered = filtered;
+
+    DEBUG(">range.dat %6.1f %6.1f %6.1f %6.1f %6.1f",
+        range, mean, std, filtered, meandelta);
+}
+
+
+static float sDoRangeMeas(void)
 {
     sTriggerRangeMeas();
 
@@ -150,8 +176,11 @@ static uint8_t sDoRangeMeas(void)
     // wait for result
     if (osSemaphoreTake(&sIsrRangeSem, timeout))
     {
-        //DEBUG("range=%"PRIu16"=%"PRIu8, svRangeRaw, sGetRange());
-        return sGetRange();
+        const float c = 340.0 * 100 / 1000 / 1000; // [cm/us]
+        const float d = c * (float)svRangeRaw / 2; // [cm]
+
+        sUpdateStats(d);
+        return d;
     }
     // timeout
     else
@@ -180,8 +209,9 @@ static void sAppTask(void *pArg)
     ledfxSetBrightness(50);
 
 
-    const uint32_t period = 101; // 101 199 331 499
-    uint32_t msss = (osTaskGetTicks() / period + 1) * period;
+    const uint32_t period = 101; // 101 199 251 293 307 331 499
+    static uint32_t msss;
+    msss = (osTaskGetTicks() / period + 1) * period;
     while (ENDLESS)
     {
         if (!osTaskDelayUntil(&msss, period))
@@ -191,7 +221,7 @@ static void sAppTask(void *pArg)
             msss = (now / period) * period;
         }
 
-        DEBUG("range %"PRIu8, sDoRangeMeas());
+        sDoRangeMeas();
 
         // sweep hue value
         ledfxSetIxHSV(0, sHue,       255, 255);

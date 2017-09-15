@@ -13,6 +13,8 @@
 
     <img src="../../projects/maschki/maschki.jpg"/>
 
+    <img src="../../projects/maschki/data.png"/>
+
     See maschki.c source code for details.
 
     @{

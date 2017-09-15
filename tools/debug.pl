@@ -153,6 +153,7 @@ while (!$ABORT)
                 if (open($h, '>', $filename))
                 {
                     $datfiles->{$filename} = $h;
+                    $h->autoflush(1);
                 }
             }
             if ($datfiles->{$filename})

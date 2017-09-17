@@ -237,7 +237,7 @@ static void sAppTask(void *pArg)
         if (osSemaphoreTake(&sIsrActivitySem, -1))
         {
             NOTICE("I see you!");
-            sAliveTimeout += 10000 / period;
+            sAliveTimeout += 20000 / period;
         }
 
         // no one there...

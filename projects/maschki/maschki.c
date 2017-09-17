@@ -218,8 +218,6 @@ static void sAppTask(void *pArg)
 
     //CS_ENTER; while (1) {}; CS_LEAVE;
 
-    static uint8_t sHue = 0;
-    static uint8_t sTick = 0;
     ledfxSetBrightness(50);
 
     const uint32_t period = 101; // 101 199 251 293 307 331 499
@@ -234,28 +232,27 @@ static void sAppTask(void *pArg)
             WARNING("late!");
             msss = (now / period) * period;
         }
-        sTick++;
 
         // detect movement from PIR sensor
         if (osSemaphoreTake(&sIsrActivitySem, -1))
         {
             NOTICE("I see you!");
-            sAliveTimeout += 60000 / period;
+            sAliveTimeout += 10000 / period;
         }
 
         // no one there...
         if (sAliveTimeout == 0)
         {
+            static uint8_t hue;
             const uint32_t rnd = hwMathGetRandom();
-            const uint8_t val1 = ( rnd       & 0x0f) + 1;
-            const uint8_t val2 = ((rnd >> 4) & 0x0f) + 1;
-            ledfxSetIxHSV(0, sHue, 255, val1);
-            ledfxSetIxHSV(1, sHue, 255, val2);
+            const uint8_t val1 = 20; // ( rnd        & 0x0f) + 1;
+            const uint8_t val2 = 20; // ((rnd >>  4) & 0x0f) + 1;
+            const uint8_t hue1 = ((rnd >>  8) & 0x0f) + hue;
+            const uint8_t hue2 = ((rnd >> 12) & 0x0f) + hue;
+            ledfxSetIxHSV(0, hue1, 255, val1);
+            ledfxSetIxHSV(1, hue2, 255, val2);
             ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
-            if ((sTick % 10) == 0)
-            {
-                sHue++;
-            }
+            hue++;
         }
 
         // someone's there..
@@ -263,9 +260,20 @@ static void sAppTask(void *pArg)
         {
             sDoRangeMeas();
 
-            float val = 255.0 - ( 4 * MIN(sRange.mean, 50.0) );
-            ledfxSetIxHSV(0, 0, 255, val);
-            ledfxSetIxHSV(1, 0, 255, val);
+            if (fabsf(sRange.delta) > 20.0)
+            {
+                const uint32_t rnd = hwMathGetRandom();
+                const uint8_t hue1 = ((rnd >>  0) & 0xff);
+                const uint8_t hue2 = ((rnd >>  8) & 0xff);
+                ledfxSetIxHSV(0, hue1, 150, 255);
+                ledfxSetIxHSV(1, hue2, 150, 255);
+            }
+            else
+            {
+                float val = 255.0 - ( 2 * MIN(sRange.mean, 100.0) );
+                ledfxSetIxHSV(0, 0, 255, val);
+                ledfxSetIxHSV(1, 0, 255, val);
+            }
             ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
 
             sAliveTimeout--;

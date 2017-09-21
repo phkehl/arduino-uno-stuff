@@ -44,34 +44,6 @@ void debugUnlock(void)
     }
 }
 
-void debugConsts(const DEBUG_LEVEL_t k)
-{
-    switch (k)
-    {
-        case DEBUG_LEVEL_ERROR:
-            printf_P(PSTR("E: "));
-            break;
-
-        case DEBUG_LEVEL_WARNING:
-            printf_P(PSTR("W: "));
-            break;
-
-        case DEBUG_LEVEL_NOTICE:
-            printf_P(PSTR("N: "));
-            break;
-
-        case DEBUG_LEVEL_PRINT:
-            printf_P(PSTR("P: "));
-            break;
-
-        case DEBUG_LEVEL_DEBUG:
-#if (FF_DEBUG_LEVEL > 0)
-            printf_P(PSTR("D: "));
-#endif
-            break;
-    }
-}
-
 
 //@}
 // eof

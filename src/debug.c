@@ -21,11 +21,28 @@
 #include "hw.h"            // ff: hardware
 
 
+OS_MUTEX_t sDebugLockMutex;
+
 void debugInit(void)
 {
-
+    osMutexCreate(&sDebugLockMutex);
 }
 
+void debugLock(void)
+{
+    if (osTaskIsSchedulerRunning())
+    {
+        osMutexClaim(&sDebugLockMutex, 0);
+    }
+}
+
+void debugUnlock(void)
+{
+    if (osTaskIsSchedulerRunning())
+    {
+        osMutexRelease(&sDebugLockMutex);
+    }
+}
 
 void debugConsts(const DEBUG_LEVEL_t k)
 {

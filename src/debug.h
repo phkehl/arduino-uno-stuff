@@ -47,6 +47,16 @@ typedef enum DEBUG_LEVEL_e
 // prints some frequently used string constants
 void debugConsts(const DEBUG_LEVEL_t k);
 
+// locking of PRINT() (et al.)
+//#define DEBUG_LOCK   /* nothing */
+//#define DEBUG_UNLOCK /* nothing */
+//#define DEBUG_LOCK   CS_ENTER
+//#define DEBUG_UNLOCK CS_LEAVE
+void debugLock(void);
+void debugUnlock(void);
+#define DEBUG_LOCK   debugLock()
+#define DEBUG_UNLOCK debugUnlock()
+
 
 //! prints a notice
 /*!
@@ -59,7 +69,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define NOTICE(fmt, args...) \
-    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_NOTICE); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
+    DEBUG_LOCK; debugConsts(DEBUG_LEVEL_NOTICE); printf_P(PSTR(fmt "\n"), ## args); DEBUG_UNLOCK
 
 
 //! prints a print
@@ -73,7 +83,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define PRINT(fmt, args...) \
-    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_PRINT); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
+    DEBUG_LOCK; debugConsts(DEBUG_LEVEL_PRINT); printf_P(PSTR(fmt "\n"), ## args); DEBUG_UNLOCK
 
 
 //! prints a warning
@@ -87,7 +97,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define WARNING(fmt, args...) \
-    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_WARNING); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
+    DEBUG_LOCK; debugConsts(DEBUG_LEVEL_WARNING); printf_P(PSTR(fmt "\n"), ## args); DEBUG_UNLOCK
 
 
 //! prints an error
@@ -101,7 +111,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
     \hideinitializer
 */
 #define ERROR(fmt, args...) \
-    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_ERROR); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
+    DEBUG_LOCK; debugConsts(DEBUG_LEVEL_ERROR); printf_P(PSTR(fmt "\n"), ## args); DEBUG_UNLOCK
 
 
 //! prints a debug message
@@ -116,7 +126,7 @@ void debugConsts(const DEBUG_LEVEL_t k);
 */
 #if ( (FF_DEBUG_LEVEL > 0) || defined(__DOXYGEN__) )
 #  define DEBUG(fmt, args...) \
-    /*CS_ENTER; */debugConsts(DEBUG_LEVEL_DEBUG); printf_P(PSTR(fmt "\n"), ## args)/*; CS_LEAVE*/
+    DEBUG_LOCK; debugConsts(DEBUG_LEVEL_DEBUG); printf_P(PSTR(fmt "\n"), ## args); DEBUG_UNLOCK
 #else
 #  define DEBUG(...) /* nothing */
 #endif

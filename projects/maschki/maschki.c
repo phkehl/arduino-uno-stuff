@@ -220,7 +220,7 @@ static void sAppTask(void *pArg)
 
     ledfxSetBrightness(50);
 
-    const uint32_t period = 101; // 101 199 251 293 307 331 499
+    const uint32_t period = 100; // 101 199 251 293 307 331 499
     static uint32_t msss;
     msss = (osTaskGetTicks() / period + 1) * period;
     while (ENDLESS)

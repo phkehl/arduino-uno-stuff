@@ -127,9 +127,10 @@ ISR(INT0_vect)
     osIsrLeave();
 }
 
-static float   sRanges[10];
+static float   sRanges[5];
 static uint8_t sRangesIx;
 static float   sLastFiltered;
+static float   sLastDfilt;
 
 static struct
 {
@@ -137,6 +138,7 @@ static struct
     float filt;
     float std;
     float delta;
+    float dfilt;
 } sRange;
 
 static void sUpdateStats(const float range)
@@ -172,14 +174,17 @@ static void sUpdateStats(const float range)
     const float weight = 0.3;
     const float filt = (weight * range) + ((1.0 - weight) * sLastFiltered);
     sLastFiltered = filt;
+    const float dweight = 0.2;
+    const float dfilt = (dweight * delta) + ((1.0 - weight) * sLastDfilt);
 
-    DEBUG(">range.dat %6.1f %6.1f %6.1f %6.1f %6.1f",
-        range, mean, std, filt, delta);
+    DEBUG(">range.dat %6.1f %6.1f %6.1f %6.1f %6.1f %6.1f",
+        range, mean, std, filt, delta, dfilt);
 
     sRange.mean  = mean;
     sRange.std   = std;
     sRange.filt  = filt;
     sRange.delta = delta;
+    sRange.dfilt = dfilt;
 }
 
 static void sDoRangeMeas(void)
@@ -260,7 +265,8 @@ static void sAppTask(void *pArg)
         {
             sDoRangeMeas();
 
-            if (fabsf(sRange.delta) > 20.0)
+            //if (fabsf(sRange.dfilt) > 20.0)
+            if (fabsf(sRange.filt) < 40.0)
             {
                 const uint32_t rnd = hwMathGetRandom();
                 const uint8_t hue1 = ((rnd >>  0) & 0xff);

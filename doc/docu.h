@@ -294,6 +294,17 @@ Get chip info: avrdude -p m328p -v -P /dev/ttyUSB0 -b 19200 -c avrisp
   - black: GND (out)
   - [ftdi_cable.pdf](../ftdi_cable.pdf)
 
+\subsection P_UNBRICK Unbricking
+
+To unbrick (reprogram) the atmega16u2 on the Arduino UNO R3 (from
+http://bartruffle.blogspot.ch/2013/09/dfu-programming-atmega16u2-on-arduino.html):
+
+- sudo dfu-programmer atmega16u2 reset
+- sudo dfu-programmer atmega16u2 erase --debug 3
+- sudo dfu-programmer atmega16u2 flash /path/to//arduino/hardware/arduino/avr/firmwares/atmegaxxu2/Genuino-COMBINED-dfu-usbserial-atmega16u2-Uno-R3.hex --debug 3 --suppress-bootloader-mem
+- sudo dfu-programmer atmega16u2 erase --debug 3
+- unplug, plug in again
+
 
 \page P_DOXYGEN Doxygen
 

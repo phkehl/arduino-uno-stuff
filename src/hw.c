@@ -236,7 +236,7 @@ static volatile uint16_t  svHwRxBufDrop;               // number of dropped byte
 static OS_SEMAPHORE_t sHwRxReadySem;
 
 // reads a character from the rx buffer
-static char sHwInputGetChar(FILE *pFile)
+static int16_t sHwInputGetChar(FILE *pFile)
 {
     UNUSED(pFile);
 

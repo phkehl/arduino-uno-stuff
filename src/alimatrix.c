@@ -32,7 +32,14 @@ static volatile uint8_t svFb[8][3];
 
 void alimatrixClear(void)
 {
-    memset(svFb, 0, sizeof(svFb));
+    //memset(svFb, 0, sizeof(svFb));
+    uint16_t ix = sizeof(svFb);
+    uint8_t *pFb = (uint8_t *)svFb;
+    while (ix-- > 0)
+    {
+        *pFb = 0;
+        pFb++;
+    }
 }
 
 void alimatrixSetXY(const uint8_t x, const uint8_t y, const bool red, const bool green, const bool blue)

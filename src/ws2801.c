@@ -51,7 +51,7 @@ void ws2801Init(void)
     DEBUG("ws2801: %"PRIu16"kHz", (uint16_t)FF_WS2801_SPI_SPEED);
 }
 
-void ws2801Send(const uint8_t *data, const uint8_t size)
+void ws2801Send(const uint8_t *data, const uint16_t size)
 {
     CS_ENTER;
     PIN_LOW(_D10);

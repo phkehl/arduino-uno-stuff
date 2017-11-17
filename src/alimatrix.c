@@ -33,13 +33,16 @@ static volatile uint8_t svFb[8][3];
 void alimatrixClear(void)
 {
     //memset(svFb, 0, sizeof(svFb));
-    uint16_t ix = sizeof(svFb);
-    uint8_t *pFb = (uint8_t *)svFb;
-    while (ix-- > 0)
-    {
-        *pFb = 0;
-        pFb++;
-    }
+    CS_ENTER;
+    memset((uint8_t *)svFb, 0, sizeof(svFb));
+    CS_LEAVE;
+    //uint16_t ix = sizeof(svFb);
+    //uint8_t *pFb = (uint8_t *)svFb;
+    //while (ix-- > 0)
+    //{
+    //    *pFb = 0;
+    //    pFb++;
+    //}
 }
 
 void alimatrixSetXY(const uint8_t x, const uint8_t y, const bool red, const bool green, const bool blue)
@@ -291,7 +294,17 @@ void alimatrixUpdate(const uint8_t *data)
 
     // copy temporary data to live data while stopping the ISR(s) only briefly
     CS_ENTER;
-    memcpy(svRows, sRowsTmp, sizeof(svRows));
+    //memcpy(svRows, sRowsTmp, sizeof(svRows));
+    memcpy((uint8_t *)svRows, sRowsTmp, sizeof(svRows));
+    //uint16_t s = sizeof(svRows);
+    //uint8_t *pRows = (uint8_t *)svRows;
+    //const uint8_t *pkTmp = (const uint8_t *)sRowsTmp;
+    //while (s-- > 0)
+    //{
+    //    *pRows = *pkTmp;
+    //    pRows++;
+    //    pkTmp++;
+    //}
     CS_LEAVE;
 }
 

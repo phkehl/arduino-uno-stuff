@@ -26,13 +26,15 @@
 #  include "ws2801.h"      // ff: WS2801 LED driver
 #elif  (FFMATRIX_DRIVER == 2)
 #  include "alimatrix.h"   // ff: Aliexpress LED matrix driver
+#elif  (FFMATRIX_DRIVER == 3)
+#  include "ws2812.h"      // ff: WS2812 LED driver
 #else
 #  error Illegal value for FFMATRIX_DRIVER
 #endif
 
 #include "ffmatrix.h"
 
-#if (!defined FFMATRIX_MODEL) || (!defined FFMATRIX_FLUSH_LED)
+#if (!defined FFMATRIX_FLUSH_LED)
 #  error missing configuration
 #endif
 
@@ -62,6 +64,10 @@ void appInit(void)
 #endif
 #if (FFMATRIX_DRIVER == 2)
     alimatrixInit();
+#endif
+#if (FFMATRIX_DRIVER == 3)
+    PIN_OUTPUT(FFMATRIX_WS2812_PIN);
+    PIN_LOW(FFMATRIX_WS2812_PIN);
 #endif
     ledfxClear(0, 0);
     sLedFlush();
@@ -126,6 +132,10 @@ static /*inline*/ void sLedFlush(void)
 #endif
 #if (FFMATRIX_DRIVER == 2)
     alimatrixUpdate(ledfxGetFrameBuffer());
+#endif
+#if (FFMATRIX_DRIVER == 3)
+    ledfxLimitCurrent(FFMATRIX_MA_PER_LED, FFMATRIX_PSU_MAX_MA, &sCurrent);
+    ws2812Send(FFMATRIX_WS2812_PIN, ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
 #endif
 
     PIN_LOW(FFMATRIX_FLUSH_LED);
@@ -249,7 +259,7 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 #define TRANSTIME 750
 
 #if (!defined FFMATRIX_BRIGHT_POT)
-static uint8_t sBrightness = 0; // no brightness adjustments, i.e. full brightness
+static uint8_t sBrightness = FFMATRIX_BRIGHT_VAL; // no brightness adjustments, i.e. full brightness
 #else
 static uint8_t sBrightness = 50;
 #endif

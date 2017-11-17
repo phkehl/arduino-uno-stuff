@@ -14,11 +14,11 @@
 /* *************************************************************************** */
 
 // ../common/ffmatrix.c configuration
-#define FFMATRIX_MODEL      58
-#define FFMATRIX_DRIVER     1           // LED driver (1 = WS2801, 2 = Alimatrix)
+#define FFMATRIX_DRIVER     1           // LED driver (1 = WS2801, 2 = Alimatrix, 3 = WS2812)
 #define FFMATRIX_FLUSH_LED  _PC5        // LED lit while data is written to the LED strip
 #define FFMATRIX_SPEED_POT  HW_ADC_PC2  // potentiometer to change speed
 #define FFMATRIX_BRIGHT_POT HW_ADC_PC3  // potentiometer to change brightness
+//#define FFMATRIX_BRIGHT_VAL 0           // brightness value if no pot (1..254, 0 or 255 = no adjustment)
 #define FFMATRIX_MA_PER_LED 60          // [mA] per LED if fully lit
 #define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
 

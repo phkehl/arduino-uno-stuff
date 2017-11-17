@@ -17,6 +17,8 @@
     - https://github.com/cpldcpu/light_ws2812
     - https://wp.josh.com/2014/05/13/ws2812-neopixels-are-not-so-finicky-once-you-get-to-know-them/
 
+    See \ref EXAMPLES_EX03 for a demonstration.
+
     @{
 */
 

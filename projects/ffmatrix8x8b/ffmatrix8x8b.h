@@ -8,6 +8,8 @@
     \ingroup PROJECTS
 
 
+    <img src="../../projects/ffmatrix8x8b/ffmatrix8x8b.jpg"/>
+
     Made from some cheap WS2812 pixel RGB LED matrix from aliexpress.com using \ref WS2812.
 
     See \ref PROJECTS_FFMATRIX_COMMON and https://oinkzwurgl.org/projaeggd/flipflipmatrix for details.

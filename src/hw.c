@@ -801,6 +801,62 @@ int32_t hwAdcGetScaled(const HW_ADC_t pin, const int32_t min, const int32_t max)
     }
 }
 
+uint16_t hwReadVcc(void)
+{
+    uint16_t res = 0;
+
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168P__)
+    // save previous ADC peripheral state
+    const uint8_t admux  = ADMUX & (BIT(REFS0) | BIT(REFS1) | BIT(ADLAR));
+    const uint8_t adcsra = ADCSRA;
+
+    ADMUX = BIT(REFS0) | BIT(MUX3) | BIT(MUX2) | BIT(MUX1);
+    osTaskDelay(1);
+    osSemaphoreCreate(&sHwAdcReadySem, 0);
+    ADCSRA = BIT(ADPS2) | BIT(ADPS0);
+    ADCSRA |= BIT(ADSC) | BIT(ADEN) | BIT(ADIE) | BIT(ADIF); // start conversion
+
+    if (osSemaphoreTake(&sHwAdcReadySem, 2))
+    {
+        // ADC / 1.1V = 1024 / Vcc --> Vcc = 1.1V * 1024 / ADC
+        const uint32_t adc = ADC;
+        res = (uint16_t)( (uint32_t)1100 * (uint32_t)1024 / adc );
+    }
+
+    ADMUX  = admux;
+    ADCSRA = adcsra;
+#endif
+
+    return res;
+}
+
+int8_t hwReadTemp(void)
+{
+    int8_t res = 0;
+
+#if defined(__AVR_ATmega328P__)
+    // save previous ADC peripheral state
+    const uint8_t admux  = ADMUX & (BIT(REFS0) | BIT(REFS1) | BIT(ADLAR));
+    const uint8_t adcsra = ADCSRA;
+
+    ADMUX = BIT(REFS1) | BIT(REFS0) | BIT(MUX3);
+    osTaskDelay(1);
+    osSemaphoreCreate(&sHwAdcReadySem, 0);
+    ADCSRA = BIT(ADPS2) | BIT(ADPS0);
+    ADCSRA |= BIT(ADSC) | BIT(ADEN) | BIT(ADIE) | BIT(ADIF); // start conversion
+
+    if (osSemaphoreTake(&sHwAdcReadySem, 2))
+    {
+        res = ADC - FF_HW_TEMP_OFFS;
+    }
+
+    ADMUX  = admux;
+    ADCSRA = adcsra;
+#endif
+
+    return res;
+}
+
 
 /* **** fast (or not) math functions **************************************** */
 
@@ -862,8 +918,9 @@ void hwInit(void)
 
 void hwStatus(char *str, const uint16_t size)
 {
+    int n = 0;
 #if ( (FF_HW_RX_BUFSIZE > 0) && (FF_HW_TX_BUFSIZE > 0) )
-    snprintf_P(str, size,
+    n = snprintf_P(str, size,
         PSTR("rxbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16") txbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         svHwRxBufSize, svHwRxBufPeak, sizeof(svHwRxBuf), svHwRxBufDrop,
         svHwTxBufSize, svHwTxBufPeak, sizeof(svHwTxBuf), svHwTxBufDrop);
@@ -872,18 +929,33 @@ void hwStatus(char *str, const uint16_t size)
     svHwTxBufPeak = 0;
     svHwTxBufDrop = 0;
 #elif (FF_HW_RX_BUFSIZE > 0)
-    snprintf_P(str, size,
+    n = snprintf_P(str, size,
         PSTR("rxbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         svHwRxBufSize, svHwRxBufPeak, sizeof(svHwRxBuf), svHwRxBufDrop);
     svHwRxBufPeak = 0;
     svHwRxBufDrop = 0;
 #elif (FF_HW_TX_BUFSIZE > 0)
-    snprintf_P(str, size,
+    n = snprintf_P(str, size,
         PSTR("txbuf=%"PRIu8"/%"PRIu8"/%"PRIu8" (%"PRIu16")"),
         svHwTxBufSize, svHwTxBufPeak, sizeof(svHwTxBuf), svHwTxBufDrop);
     svHwTxBufPeak = 0;
     svHwTxBufDrop = 0;
 #endif
+
+#if (FF_HW_MEAS_VCC > 0)
+    const uint32_t vcc = hwReadVcc();
+    n += snprintf_P(&str[n], size - n, PSTR(" vcc=%"PRIu16), vcc);
+#endif
+
+#if (FF_HW_MEAS_TEMP > 0)
+    const uint32_t temp = hwReadTemp();
+    n += snprintf_P(&str[n], size - n, PSTR(" temp=%"PRIi8), temp);
+#endif
+
+#if (FF_HW_MEAS_VCC == 0) && (FF_HW_MEAS_TEMP == 0)
+    UNUSED(n);
+#endif
+
     str[size-1] = '\0';
 }
 

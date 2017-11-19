@@ -56,6 +56,29 @@
 #  define FF_HW_USE_WATCHDOG 1
 #endif
 
+//! measure Vcc and print in hw monitor? (only on ATmega 168 / 328P, i.e. Arduino Uno)
+#if !defined(FF_HW_MEAS_VCC) || defined(__DOXYGEN__)
+#  if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168P__)
+#    define FF_HW_MEAS_VCC 1
+#  else
+#    define FF_HW_MEAS_VCC 0
+#  endif
+#endif
+
+//! measure temperature and print in hw monitor? (only on 328P, i.e. newer Arduino Uno)
+#if !defined(FF_HW_MEAS_TEMP) || defined(__DOXYGEN__)
+#  if defined(__AVR_ATmega328P__)
+#    define FF_HW_MEAS_TEMP 1
+#  else
+#    define FF_HW_MEAS_TEMP 0
+#  endif
+#endif
+
+//! temperature sensor calibration value (offset) (for hwReadTemp() and #FF_HW_MEAS_TEMP)
+#if !defined(FF_HW_TEMP_OFFS) || defined(__DOXYGEN__)
+#  define FF_HW_TEMP_OFFS 100
+#endif
+
 
 /* *************************************************************************** */
 

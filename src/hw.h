@@ -297,6 +297,33 @@ uint32_t hwMathGetRandom(void);
 //@}
 
 
+/* ***** allencheibs ******************************************************** */
+/*!
+    \name Allencheibs
+    @{
+*/
+
+//! read internal voltage sensor
+/*!
+    \note Only for ATmega168 and ATmega328P (i.e. Arduino Uno).
+
+    \returns the voltage [mV]
+*/
+uint16_t hwReadVcc(void);
+
+//! read internal temperature sensor
+/*!
+    \note Only for ATmega328P (i.e. newer Arduino Uno).
+
+    \note The #FF_HW_TEMP_OFFS varies from one chip to another. See [AVR8271, "Temperature Measurement"].
+
+    \returns the temperature [C]
+*/
+int8_t hwReadTemp(void);
+
+//@}
+
+
 /* ************************************************************************** */
 
 #endif // __HW_H__

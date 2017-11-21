@@ -21,6 +21,7 @@
 //#define FFMATRIX_BRIGHT_VAL 0           // brightness value if no pot (1..254, 0 or 255 = no adjustment)
 #define FFMATRIX_MA_PER_LED 60          // [mA] per LED if fully lit
 #define FFMATRIX_PSU_MAX_MA 2500        // maximum [mA] the power supply can deliver
+#define FFMATRIX_TRANS_DIGIT 1          // transition digit display mode
 
 // idle thread stack size
 #define FF_OS_IDLE_STACK 85

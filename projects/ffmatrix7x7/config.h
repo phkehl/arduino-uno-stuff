@@ -25,6 +25,7 @@
 #define FFMATRIX_MODE_PIN_1 _PD6        // mode display 2nd pin (LED)
 #define FFMATRIX_MODE_PIN_2 _PD7        // mode display 3rd pin (LED)
 #define FFMATRIX_MODE_PIN_3 _PB0        // mode display 4th pin (LED), MSB
+#define FFMATRIX_TRANS_DIGIT 1          // transition digit display mode
 
 
 // idle thread stack size

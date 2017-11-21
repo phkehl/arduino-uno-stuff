@@ -825,6 +825,94 @@ void ledfxDigit(const uint8_t digit, const uint16_t x0, const uint16_t y0,
     }
 }
 
+
+void ledfxRandFill(const bool init, LEDFX_RANDFILL_t *pState)
+{
+    if (init)
+    {
+        memset(pState, 0, sizeof(*pState));
+        ledfxClear(0, 0);
+    }
+
+    // fill next pixel
+    ledfxSetMatrixHSV(pState->x, pState->y, /*pState->hue*/ pState->mode * 60, 255, 255);
+
+    // calculate next pixel
+    bool newHue = false;
+    switch (pState->mode)
+    {
+        case 0:
+            pState->x++;
+            if ( (pState->x >= FF_LEDFX_NUM_X) && (pState->y >= FF_LEDFX_NUM_Y) )
+            {
+                pState->mode = 1;
+                pState->x = FF_LEDFX_NUM_X - 1;
+                pState->y = 0;
+            }
+            else if (pState->x >= FF_LEDFX_NUM_X)
+            {
+                pState->x = 0;
+                pState->y++;
+                newHue = true;
+            }
+            break;
+        case 1:
+            pState->y++;
+            if ( (pState->x == 0) && (pState->y >= FF_LEDFX_NUM_Y) )
+            {
+                pState->mode = 2;
+                pState->x = FF_LEDFX_NUM_X - 1;
+                pState->y = FF_LEDFX_NUM_X - 1;
+            }
+            else if (pState->y >= FF_LEDFX_NUM_Y)
+            {
+                pState->x--;
+                pState->y = 0;
+                newHue = true;
+            }
+            break;
+        case 2:
+            pState->x--;
+            if ( (pState->x == 0) && (pState->y < 0) )
+            {
+                pState->mode = 3;
+                pState->x = 0;
+                pState->y = FF_LEDFX_NUM_Y - 1;
+            }
+            else if (pState->x == 0)
+            {
+                pState->x = FF_LEDFX_NUM_X;
+                pState->y--;
+                newHue = true;
+            }
+            break;
+        case 3:
+            pState->y--;
+            if ( (pState->x >= FF_LEDFX_NUM_X) && (pState->y < 0) )
+            {
+                pState->mode = 0;
+                pState->x = 0;
+                pState->y = 0;
+            }
+            else if (pState->y == 0)
+            {
+                pState->x++;
+                pState->y = FF_LEDFX_NUM_Y;
+                newHue = true;
+            }
+            break;
+        default:
+            break;
+    }
+
+
+    if (newHue)
+    {
+        pState->hue += (uint8_t)(70 * 255.0 / 360.0 + 0.5);
+    }
+
+}
+
 /* ************************************************************************** */
 
 

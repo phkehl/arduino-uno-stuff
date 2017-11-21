@@ -20,6 +20,7 @@
 #define FFMATRIX_SPEED_POT  HW_ADC_A0   // potentiometer to change speed
 //#define FFMATRIX_MA_PER_LED 15          // [mA] per LED if fully lit
 //#define FFMATRIX_PSU_MAX_MA 500         // maximum [mA] the power supply can deliver
+#define FFMATRIX_TRANS_DIGIT 2            // transition digit display mode
 
 #if (FFMATRIX_DRIVER == 3)
 #  define FFMATRIX_BRIGHT_VAL 50          // brightness value if no pot (1..254, 0 or 255 = no adjustment)
@@ -50,7 +51,7 @@
 #define FF_LEDFX_XY_ARR 4
 
 // BRG colour ordering
-#define FF_LEDFX_ORDER 213
+#define FF_LEDFX_ORDER 132
 
 // system monitor period
 #define FF_SYS_MON_PERIOD 1

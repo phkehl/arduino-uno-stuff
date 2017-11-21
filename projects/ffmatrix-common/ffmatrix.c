@@ -153,6 +153,7 @@ static union
     float f[3];
     LEDFX_RAIN_t rain;
     LEDFX_STAR_t stars[FF_LEDFX_NUM_LED / 5];
+    LEDFX_RANDFILL_t randfill;
 } sFxState;
 
 //static inline uint16_t sFxNoise1(const uint16_t frame)
@@ -233,6 +234,12 @@ static uint16_t sFxDiagonal(const uint16_t frame)
     return FLUSH_MATRIX;
 }
 
+static uint16_t sFxRandFill(const uint16_t frame)
+{
+    ledfxRandFill(frame == 0 ? true : false, &sFxState.randfill);
+    return FLUSH_MATRIX;
+}
+
 
 /* ***** application task **************************************************** */
 
@@ -242,6 +249,7 @@ static uint16_t sFxDiagonal(const uint16_t frame)
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
   //FXLOOP_INFO("noise 1",    sFxNoise1,    10, 100, FXDURATION),
+    FXLOOP_INFO("randfill",   sFxRandFill,  10, 250, FXDURATION),
     FXLOOP_INFO("diagonal",   sFxDiagonal,  10, 250, FXDURATION),
     FXLOOP_INFO("noise 2",    sFxNoise2,    10, 100, FXDURATION),
     FXLOOP_INFO("rotor",      sFxRotor,     10, 250, FXDURATION), // frame 7-10ms
@@ -332,12 +340,20 @@ static void sAppTask(void *pArg)
             const uint8_t fxNum = fxloopCurrentlyPlaying();
             const uint8_t brightness = sBrightness < 100 ? 50 + sBrightness : sBrightness;
             ledfxSetBrightness(brightness);
+
+#if (FFMATRIX_TRANS_DIGIT == 1)
             const uint8_t hue = (fxNum % 10) * (255/10);
+            const uint8_t sat = 255;
             ledfxFillHSV(0, 0, hue + 128, 255, 50);
-            ledfxDigit(fxNum, (FF_LEDFX_NUM_X - 4 + 1) / 2, (FF_LEDFX_NUM_X - 7 + 1) / 2, hue, 255, 255);
+#elif (FFMATRIX_TRANS_DIGIT == 2)
+            const uint8_t hue = 0;
+            const uint8_t sat = 0;
+            ledfxClear(0, 0);
+#endif
+            ledfxDigit(fxNum, (FF_LEDFX_NUM_X - 4 + 1) / 2, (FF_LEDFX_NUM_X - 7 + 1) / 2, hue, sat, 255);
             if (fxNum >= 10)
             {
-                ledfxSetMatrixHSV(0, 0, hue, 255, 255);
+                ledfxSetMatrixHSV(0, 0, hue, sat, 255);
             }
             sLedFlush();
 

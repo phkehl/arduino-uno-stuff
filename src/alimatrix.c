@@ -18,7 +18,7 @@
 #include "debug.h"         // ff: debugging
 #include "alimatrix.h"     // ff: Aliexpress LED matrix driver
 
-#if (FF_ALIMATRIX_MODE != 1) && (FF_ALIMATRIX_MODE != 2) && (FF_ALIMATRIX_MODE != 3)
+#if (FF_ALIMATRIX_MODE != 1) && (FF_ALIMATRIX_MODE != 2)
 #  error illegal value for FF_ALIMATRIX_MODE
 #endif
 
@@ -197,7 +197,7 @@ typedef struct MATRIX_s
 // Something with this cheap matrix is wrong: if one enables different colours in the same row at
 // the same time some of the colours disappear. E.g. when you enable red(s) the blue(s) will
 // disappear (or get very dim). Probably something to do with the different voltage drops for the
-// different colours. Bad design?
+// different colours. Bad design? By design?
 // To work around this we never display different colours in the same row but instead display one
 // after the other. Additionally we artificially generate four shades of brightness by enabling
 // the LEDs more or less often.

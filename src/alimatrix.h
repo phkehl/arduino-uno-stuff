@@ -96,7 +96,7 @@ void alimatrixSetRow(const uint8_t row, const uint8_t red, const uint8_t green, 
 /*!
     \name extended operation mode functions
 
-    Set #FF_ALIMATRIX_MODE to 2 or 3 to use this.
+    \note Only available if #FF_ALIMATRIX_MODE is 2.
 
     @{
 */

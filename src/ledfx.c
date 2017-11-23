@@ -825,6 +825,116 @@ void ledfxDigit(const uint8_t digit, const uint16_t x0, const uint16_t y0,
     }
 }
 
+
+void ledfxRandFill(const bool init, LEDFX_RANDFILL_t *pState)
+{
+    if (init)
+    {
+        ledfxClear(0, 0);
+        pState->mode = 0;
+        pState->step = 0;
+    }
+
+    // set pixel
+    ledfxSetMatrixHSV(pState->x, pState->y, pState->hue, 255, 255);
+
+    // find new colour
+    if (pState->step == 0)
+    {
+        pState->hue += 50 * ( (hwMathGetRandom() & 0x01) + 1 );
+        //const uint8_t hue = pState->hue;
+        //while ( ABS((int16_t)hue - (int16_t)pState->hue) < 90 )
+        //{
+        //    pState->hue = hwMathGetRandom() & 0xff;
+        //}
+    }
+
+    // calculate next pixel
+    switch (pState->mode)
+    {
+        // bottom left -> top right
+        case 0:
+            if (pState->step == 0)
+            {
+                pState->x = 0;
+                pState->y = 0;
+            }
+            else
+            {
+                pState->x++;
+                if (pState->x >= FF_LEDFX_NUM_X)
+                {
+                    pState->x = 0;
+                    pState->y++;
+                }
+            }
+            break;
+        // bottom right -> top left
+        case 1:
+            if (pState->step == 0)
+            {
+                pState->x = FF_LEDFX_NUM_X - 1;
+                pState->y = 0;
+            }
+            else
+            {
+                pState->y++;
+                if (pState->y >= FF_LEDFX_NUM_Y)
+                {
+                    pState->x--;
+                    pState->y = 0;
+                }
+            }
+            break;
+        // top right -> bottom left
+        case 2:
+            if (pState->step == 0)
+            {
+                pState->x = FF_LEDFX_NUM_X - 1;
+                pState->y = FF_LEDFX_NUM_Y - 1;
+            }
+            else
+            {
+                pState->x--;
+                if (pState->x < 0)
+                {
+                    pState->x = FF_LEDFX_NUM_X - 1;
+                    pState->y--;
+                }
+            }
+            break;
+        // top left -> bottom right
+        case 3:
+            if (pState->step == 0)
+            {
+                pState->x = 0;
+                pState->y = FF_LEDFX_NUM_Y - 1;
+            }
+            else
+            {
+                pState->y--;
+                if (pState->y < 0)
+                {
+                    pState->x++;
+                    pState->y = FF_LEDFX_NUM_Y - 1;;
+                }
+            }
+            break;
+    }
+
+    // set pixel
+    ledfxSetMatrixHSV(pState->x, pState->y, 0, 0, 255);
+
+    pState->step++;
+    if (pState->step >= FF_LEDFX_NUM_LED)
+    {
+        pState->mode++;
+        pState->mode %= 4;
+        pState->step = 0;
+    }
+
+}
+
 /* ************************************************************************** */
 
 

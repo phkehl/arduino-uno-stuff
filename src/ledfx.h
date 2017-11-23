@@ -349,6 +349,25 @@ void ledfxStars(const bool init, LEDFX_STAR_t *pStars, const uint16_t nStars);
 void ledfxDigit(const uint8_t digit, const uint16_t x0, const uint16_t y0,
     const uint8_t hue, const uint8_t sat, const uint8_t val);
 
+
+//! random fill effect state
+typedef struct LEDFX_RANDFILL_s
+{
+    int16_t  x;
+    int16_t  y;
+    uint8_t  hue;
+    uint8_t  mode;
+    uint16_t step;
+} LEDFX_RANDFILL_t;
+
+//! random fill effect
+/*!
+    \param[in]     init    set to \c true on first call to initialise things
+    \param[in,out] pState  raindrop state memory (effect state storage)
+*/
+void ledfxRandFill(const bool init, LEDFX_RANDFILL_t *pState);
+
+
 //@}
 
 

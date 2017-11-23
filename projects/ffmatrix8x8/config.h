@@ -18,6 +18,7 @@
 #define FFMATRIX_FLUSH_LED  _D4         // LED lit while data is written to the LED strip
 #define FFMATRIX_SPEED_POT  HW_ADC_A5   // potentiometer to change speed
 #define FFMATRIX_BRIGHT_VAL 0           // brightness value if no pot (1..254, 0 or 255 = no adjustment)
+#define FFMATRIX_TRANS_DIGIT 1          // transition digit display mode
 
 // system load LED
 #define FF_HW_LOAD_PIN _D3

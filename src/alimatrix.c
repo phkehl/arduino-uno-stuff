@@ -269,6 +269,12 @@ void alimatrixUpdate(const uint8_t *data)
 #  if (N_SHADES == 4)
                 const uint8_t thrsLut[] = { 1, 75, 150, 225 };
                 const uint8_t thrs = thrsLut[shade];
+#  elif (N_SHADES == 5)
+                const uint8_t thrsLut[] = { 1, 51, 102, 153, 204 };
+                const uint8_t thrs = thrsLut[shade];
+#  elif (N_SHADES == 6)
+                const uint8_t thrsLut[] = { 1, 43, 85, 128, 170, 213 };
+                const uint8_t thrs = thrsLut[shade];
 #  elif (N_SHADES == 8)
                 const uint8_t thrsLut[] = { 1, 32, 64, 96, 128, 160, 192, 224 };
                 const uint8_t thrs = thrsLut[shade];
@@ -324,11 +330,8 @@ void alimatrixInit(void)
     SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
     SPSR = 0;
 
-    // enable, master mode, f/32 (500kHz)
-    //SPCR = BIT(SPE) | BIT(MSTR) | BIT(SPR1);
-    //SPSR = 0;
-
-
+    // anything else is too fast and calls the ISR too often so that
+    // there's no CPU left for the application
 
     DEBUG("alimatrix: init (%"PRIu8"+%"PRIu8")",
         (uint8_t)sizeof(sRowsTmp), (uint8_t)sizeof(svRows));

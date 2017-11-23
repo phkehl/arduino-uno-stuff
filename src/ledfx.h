@@ -357,6 +357,7 @@ typedef struct LEDFX_RANDFILL_s
     int16_t  y;
     uint8_t  hue;
     uint8_t  mode;
+    uint16_t step;
 } LEDFX_RANDFILL_t;
 
 //! random fill effect

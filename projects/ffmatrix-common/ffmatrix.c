@@ -249,7 +249,6 @@ static uint16_t sFxRandFill(const uint16_t frame)
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
 {
   //FXLOOP_INFO("noise 1",    sFxNoise1,    10, 100, FXDURATION),
-    FXLOOP_INFO("randfill",   sFxRandFill,  10, 250, FXDURATION),
     FXLOOP_INFO("diagonal",   sFxDiagonal,  10, 250, FXDURATION),
     FXLOOP_INFO("noise 2",    sFxNoise2,    10, 100, FXDURATION),
     FXLOOP_INFO("rotor",      sFxRotor,     10, 250, FXDURATION), // frame 7-10ms
@@ -260,6 +259,7 @@ static const FXLOOP_INFO_t skFxloops[] PROGMEM =
     FXLOOP_INFO("stars",      sFxStars,      5, 250, FXDURATION),
     FXLOOP_INFO("hue noise",  sFxHueNoise,  30, 250, FXDURATION),
     FXLOOP_INFO("waves",      sFxWaves,     50, 250, FXDURATION),
+    FXLOOP_INFO("randfill",   sFxRandFill,  10, 250, FXDURATION),
   //FXLOOP_INFO("strobo",     sFxStrobo,    FXPERIOD, FXDURATION),
   //FXLOOP_INFO("huesweep",   sFxHueSweep,  FXPERIOD, FXDURATION),
 };

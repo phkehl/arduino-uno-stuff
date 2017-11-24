@@ -38,6 +38,9 @@ ATOM_TCB *tcbDequeueHead (ATOM_TCB **tcb_queue_ptr);
 ATOM_TCB *tcbDequeueEntry (ATOM_TCB **tcb_queue_ptr, ATOM_TCB *tcb_ptr);
 ATOM_TCB *tcbDequeuePriority (ATOM_TCB **tcb_queue_ptr, uint8_t priority);
 ATOM_TCB *atomGetIdleTCB(void);
+#ifdef ATOM_FLIPFLIP
+uint16_t atomGetIntRuntime(void);
+#endif
 
 /* ***** atomtimer.c ******************************************************** */
 

@@ -242,6 +242,8 @@ void osPrintTaskList(void)
 
     CS_LEAVE;
 
+    num++;
+
     ATOM_TCB *tasks[num];
     uint16_t rtTot = 0;
     uint16_t rtAll[num];
@@ -250,8 +252,11 @@ void osPrintTaskList(void)
     // sum up total runtime and create list of TCBs
     CS_ENTER;
 
+    rtAll[0] = atomGetIntRuntime() / 10;
+    rtTot += rtAll[0];
+
     ATOM_TCB *pTask = atomGetIdleTCB();
-    for (uint8_t ix = 0; ix < num; ix++)
+    for (uint8_t ix = 1; ix < num; ix++)
     {
         rtTot += pTask->runtime;
         rtAll[ix] = pTask->runtime;
@@ -275,9 +280,17 @@ void osPrintTaskList(void)
         const uint16_t load = (uint16_t)(((float)rtAll[ix] * 100.0f / (float)rtTot * 10.0f) + 0.5);
         const uint8_t loadInt = load / 10;
         const uint8_t loadFrac = load - (10 * loadInt);
-        PRINT_W("mon: tsk: %"PRIu8" %-3s %c %"PRIu8" %2"PRIu16" %2"PRIu8".%"PRIu8,// " PC %p",
-            ix, pkTask->name,
-            pkTask->suspended ? 'S' : 'R', pkTask->priority, free, loadInt, loadFrac);//, pc[ix]);
+
+        if (ix > 0)
+        {
+            PRINT_W("mon: tsk: %"PRIu8" %-3s %c %"PRIu8" %2"PRIu16" %2"PRIu8".%"PRIu8,// " PC %p",
+                ix, pkTask->name, pkTask->suspended ? 'S' : 'R',
+                pkTask->priority, free, loadInt, loadFrac);//, pc[ix]);
+        }
+        else
+        {
+            PRINT_W("mon: tsk: - isr - -  - %2"PRIu8".%"PRIu8, loadInt, loadFrac);
+        }
     }
 }
 

@@ -623,6 +623,17 @@ uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint16_t *used_bytes, uin
 #endif /* ATOM_STACK_CHECKING */
 
 
+#ifdef ATOM_FLIPFLIP
+static uint16_t sIntRuntime; // runtime statistics
+uint16_t atomGetIntRuntime(void)
+{
+    const uint16_t rt = sIntRuntime;
+    sIntRuntime = 0;
+    return rt;
+}
+#endif
+
+
 /**
  * \b atomIntEnter
  *
@@ -635,7 +646,13 @@ uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint16_t *used_bytes, uin
  */
 void atomIntEnter (void)
 {
-    /* Increment the interrupt count */
+#ifdef ATOM_FLIPFLIP
+    //hwLedLoadOn();
+    sIntRuntime++;
+#endif
+
+
+/* Increment the interrupt count */
     atomIntCnt++;
 }
 
@@ -660,6 +677,10 @@ void atomIntExit (uint8_t timer_tick)
 {
     /* Decrement the interrupt count */
     atomIntCnt--;
+
+#ifdef ATOM_FLIPFLIP
+    //hwLedLoadOff();
+#endif
 
     /* Call the scheduler */
     atomSched (timer_tick);

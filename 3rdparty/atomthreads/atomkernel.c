@@ -624,12 +624,12 @@ uint8_t atomThreadStackCheck (const ATOM_TCB *tcb_ptr, uint16_t *used_bytes, uin
 
 
 #ifdef ATOM_FLIPFLIP
-static uint16_t sIntRuntime; // runtime statistics
-uint16_t atomGetIntRuntime(void)
+static uint32_t sIntCount;
+uint32_t atomGetIntCount(void)
 {
-    const uint16_t rt = sIntRuntime;
-    sIntRuntime = 0;
-    return rt;
+    const uint32_t ic = sIntCount;
+    sIntCount = 0;
+    return ic;
 }
 #endif
 
@@ -648,7 +648,7 @@ void atomIntEnter (void)
 {
 #ifdef ATOM_FLIPFLIP
     //hwLedLoadOn();
-    sIntRuntime++;
+    sIntCount++;
 #endif
 
 

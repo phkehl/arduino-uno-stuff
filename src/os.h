@@ -32,7 +32,7 @@ void osInit(void);
 
 // operation system status for the system monitor
 void osStatus(char *str, const size_t size);
-void osPrintTaskList(void);
+void osPrintTaskList(const uint16_t dt);
 
 
 

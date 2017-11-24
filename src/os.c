@@ -125,7 +125,6 @@ ISR(TIMER0_COMPA_vect)
     // note that the load LED is toggled in atomThreadSwitch()
 
     // add runtime to task
-    // FIXME: other stuff is happening, too (timers, interrupts)
     ATOM_TCB *pTCB = atomCurrentContext();
     if (pTCB != NULL)
     {
@@ -226,12 +225,15 @@ void osStatus(char *str, const size_t size)
 #endif // (FF_OS_HEAP_SIZE > 0)
 
 
-void osPrintTaskList(void)
+void osPrintTaskList(const uint16_t dt)
 {
     uint8_t num = 0;
+    uint32_t intCount;
 
     // count number of tasks
     CS_ENTER;
+
+    intCount = atomGetIntCount();
 
     ATOM_TCB *pTask = atomGetIdleTCB();
     while (pTask)
@@ -242,8 +244,6 @@ void osPrintTaskList(void)
 
     CS_LEAVE;
 
-    num++;
-
     ATOM_TCB *tasks[num];
     uint16_t rtTot = 0;
     uint16_t rtAll[num];
@@ -252,11 +252,8 @@ void osPrintTaskList(void)
     // sum up total runtime and create list of TCBs
     CS_ENTER;
 
-    rtAll[0] = atomGetIntRuntime() / 10;
-    rtTot += rtAll[0];
-
     ATOM_TCB *pTask = atomGetIdleTCB();
-    for (uint8_t ix = 1; ix < num; ix++)
+    for (uint8_t ix = 0; ix < num; ix++)
     {
         rtTot += pTask->runtime;
         rtAll[ix] = pTask->runtime;
@@ -267,6 +264,12 @@ void osPrintTaskList(void)
     }
 
     CS_LEAVE;
+
+    {
+        const uint16_t rate = (uint16_t)(intCount / (dt / 10));
+        const uint8_t rateF = rate % 10;
+        PRINT("mon: irq: %"PRIu32" (%"PRIu16".%"PRIu8"kHz)", intCount, rate / 10, rateF);
+    }
 
     for (uint8_t ix = 0; ix < num; ix++)
     {
@@ -281,16 +284,9 @@ void osPrintTaskList(void)
         const uint8_t loadInt = load / 10;
         const uint8_t loadFrac = load - (10 * loadInt);
 
-        if (ix > 0)
-        {
-            PRINT_W("mon: tsk: %"PRIu8" %-3s %c %"PRIu8" %2"PRIu16" %2"PRIu8".%"PRIu8,// " PC %p",
-                ix, pkTask->name, pkTask->suspended ? 'S' : 'R',
-                pkTask->priority, free, loadInt, loadFrac);//, pc[ix]);
-        }
-        else
-        {
-            PRINT_W("mon: tsk: - isr - -  - %2"PRIu8".%"PRIu8, loadInt, loadFrac);
-        }
+        PRINT_W("mon: tsk: %"PRIu8" %-3s %c %"PRIu8" %2"PRIu16" %2"PRIu8".%"PRIu8,// " PC %p",
+            ix, pkTask->name, pkTask->suspended ? 'S' : 'R',
+            pkTask->priority, free, loadInt, loadFrac);//, pc[ix]);
     }
 }
 

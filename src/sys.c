@@ -54,6 +54,7 @@ void sysRegisterMonFunc(SYS_MON_FUNC_t func)
 void sysRegisterMonFunc(SYS_MON_FUNC_t func) { UNUSED(func); }
 #endif
 
+#define SYS_TASK_PERIOD 1000
 
 static void sSysTask(void *pArg)
 {
@@ -64,7 +65,7 @@ static void sSysTask(void *pArg)
 
     while (ENDLESS)
     {
-        osTaskDelayUntil(&msss, 1000);
+        osTaskDelayUntil(&msss, SYS_TASK_PERIOD);
 
         /* ***** stuff to be done every second ***** */
 
@@ -86,7 +87,10 @@ static void sSysTask(void *pArg)
             }
 
             // task list
-            osPrintTaskList();
+            {
+                const uint16_t dt = (SYS_TASK_PERIOD * FF_SYS_MON_PERIOD) + (msss % SYS_TASK_PERIOD);
+                osPrintTaskList(dt);
+            }
 
             // hardware and application status
             {

@@ -928,8 +928,9 @@ void ledfxRandFill(const bool init, LEDFX_RANDFILL_t *pState)
     pState->step++;
     if (pState->step >= FF_LEDFX_NUM_LED)
     {
-        pState->mode++;
-        pState->mode %= 4;
+        pState->mode = hwMathGetRandom() % 4;
+        //pState->mode++;
+        //pState->mode %= 4;
         pState->step = 0;
     }
 

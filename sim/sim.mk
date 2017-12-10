@@ -1,8 +1,8 @@
 ###############################################################################
 #
-# flipflip's Arduino Uno stuff: LED Matrix Simulator
+# flipflip's Arduino Uno stuff: offline (Linux) simulator
 #
-# Copyright (c) 2014-2017 Philippe Kehl <flipflip at oinkzwurgl dot org>
+# Copyright (c) 2017 Philippe Kehl <flipflip at oinkzwurgl dot org>
 #
 ###############################################################################
 
@@ -112,69 +112,5 @@ FFDIR      := ../../..
 
 # linker flags
 LDLIBS      += -lm
-
-# files to compile and link
-SRCFILES    += $(wildcard *.c) $(wildcard $(FFDIR)/src/*_sim.c)
-SRCFILES    += $(FFDIR)/src/ledfx.c
-SRCFILES    += $(FFDIR)/src/hsv2rgb.c
-
-# include directories and flags
-SRCDIRS     += $(sort $(dir $(SRCFILES))) $(OBJDIR)
-INCFLAGS    += $(strip $(foreach dir, $(SRCDIRS), -I$(dir))) -I$(FFDIR)/3rdparty/atomthreads
-
-# object directory
-OBJDIR     := obj
-
-# object files
-OFILES     :=
-
-# target executable
-EXECUTABLE := $(OBJDIR)/ffmatrix-sim
-
-# default target
-.PHONY: all
-all: $(EXECUTABLE)
-
-# makes compile rule for .c files
-define simMakeCompileRuleC
-#$ (info simMakeCompileRuleC $(1) --> $(OBJDIR)/$(subst /,__,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1)))))
-OFILES += $(OBJDIR)/$(subst /,__,$(subst ..,,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1)))))
-$(OBJDIR)/$(subst /,__,$(subst ../,__,$(subst $(FFDIR)/,,$(patsubst %.c,%.o,$(1))))): $(1) $(MAKEFILE_LIST) | $(OBJDIR)
-	@echo "$(HLY)C $$< $(HLR)$$@$(HLO)"
-	$(V)$(CC) -c -o $$@ $$(CFLAGS) $(DEFS) $(INCFLAGS) $$< -MD -MF $$(@:%.o=%.d) -MT $$@
-endef
-
-# create compile rules and populate $(OFILES) list
-$(foreach cfile, $(filter %.c,$(SRCFILES)), $(eval $(call simMakeCompileRuleC,$(cfile)))) # watch the spaces!
-
-# dependency files
-DFILES := $(patsubst %.o,$(OBJDIR)/%.d,$(notdir $(OFILES)))
-
-###############################################################################
-
-# include dependency rules
--include $(DFILES)
-
-$(OBJDIR):
-	$(V)$(MKDIR) -p $@
-
-$(EXECUTABLE): $(OFILES)
-	@echo "$(HLM)L $@$(HLO)"
-	$(V)$(CC) -o $@ $(LDFLAGS) $(OFILES) $(LDLIBS)
-
-# cleanup
-.PHONY: clean
-clean:
-	@if [ -d "$(OBJDIR)" ]; then echo "$(HLM)* removing $(OBJDIR) dir$(HLO)"; fi
-ifneq ($(OBJDIR),)
-	$(V)if [ -d "$(OBJDIR)" ]; then $(RM) -rf $(OBJDIR); fi
-else
-	@echo "$(HLR)ERROR: no OBJDIR!!!$(HLO)"
-endif
-
-.PHONY: debugmf
-debugmf:
-	@echo "SRCFILES=$(SRCFILES)"
-	@echo "OFILES=$(OFILES)"
 
 # eof

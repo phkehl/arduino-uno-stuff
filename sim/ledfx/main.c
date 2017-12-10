@@ -1,6 +1,6 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: LED Matrix Simulator
+    \brief flipflip's Arduino Uno stuff: LED FX Simulator
 
     - Copyright (c) 2014-2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 */
@@ -19,8 +19,7 @@
 #include <SDL/SDL.h>
 
 #include "stdstuff.h"      // ff: useful macros and types
-#include "debug.h"         // ff: debugging
-
+#include "sim.h"
 
 int main(int argc, char **argv)
 {

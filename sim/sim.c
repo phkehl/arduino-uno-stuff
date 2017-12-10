@@ -1,17 +1,19 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: hardware abstraction (for simulator)
+    \brief flipflip's Arduino Uno stuff: simulator mocks
 
-    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
+    - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
 */
 
 #include <stdio.h>         // libc: standard buffered input/output
+#include <stdarg.h>        // libc: variable argument lists
 #include <string.h>        // libc: string operations
 #include <math.h>          // libc: mathematical functions
 #include <stdlib.h>        // libc: general utilities
 
-#include "hw.h"            // ff: hardware
+#include "stdstuff.h"      // ff: useful macros and types
+#include "sim.h"           // ff: simulator mocks
 
 uint32_t hwMathGetRandom(void)
 {

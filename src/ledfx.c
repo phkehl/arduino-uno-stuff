@@ -22,8 +22,12 @@
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
-#include "hw.h"            // ff: hardware
-#include "debug.h"         // ff: debugging
+#ifdef __AVR__
+#  include "hw.h"            // ff: hardware
+#  include "debug.h"         // ff: debugging
+#else
+#  include "sim.h"
+#endif
 #include "hsv2rgb.h"       // ff: HSV to RGV conversion
 #include "ledfx.h"         // ff: LED effects
 

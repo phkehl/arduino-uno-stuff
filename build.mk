@@ -233,7 +233,7 @@ endif
 SRCFILES    += $(wildcard $(ATOMDIR)/*.c) $(wildcard $(ATOMDIR)/*.s)
 SRCFILES    += $(wildcard $(LIGHTDIR)/*.c)
 SRCFILES    += $(wildcard $(AVRHD44780)/*.c)
-SRCFILES    += $(filter-out $(wildcard $(FFDIR)/src/*_sim.c),$(wildcard $(FFDIR)/src/*.c))
+SRCFILES    += $(wildcard $(FFDIR)/src/*.c)
 SRCFILES    += $(PROJFILES)
 
 # include directories and flags

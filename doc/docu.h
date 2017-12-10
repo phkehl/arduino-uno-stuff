@@ -95,6 +95,10 @@ See \ref PROJECTS.
   8-bit Microcontroller with 4/8/16/32K Bytes In-System Programmable Flash ATmega48A / ATmega48PA / ATmega88A /
   ATmega88PA / ATmega168A / ATmega168PA / ATmega328 / ATmega328P -- Datasheet / Manual, Rev. 8271C–AVR–08/10
 
+- [[AVR2549Q](../avr_doc2549Q_atmega_640_1280_1281_2560_2561.pdf)]
+  8-bit Atmel Microcontroller with 16/32/64KB In-System Programmable Flash
+  Atmel ATmega640/V-1280/V-1281/V-2560/V-2561/V -- Datasheet / Manual
+
 - [[AVR0856](../avr_doc0856_avr_instruction_set_manual.pdf)]
   AVR Instruction Set Manual
 

@@ -44,6 +44,11 @@ the bottom left, values for #FF_LEDFX_XY_ARR):
 
 #include "stdstuff.h"      // ff: useful macros and types
 
+#ifndef __AVR__
+#  define PROGMEM
+#  define pgm_read_byte(foo) *(foo)
+#endif
+
 
 /* *************************************************************************** */
 /*!

@@ -14,7 +14,7 @@
 /* *************************************************************************** */
 
 // debug.h
-#define NOTICE(fmt, args...)    fprintf(stderr, "\e[1N: "   fmt "\e[m\n", ## args)
+#define NOTICE(fmt, args...)    fprintf(stderr, "\e[1mN: "  fmt "\e[m\n", ## args)
 #define PRINT(fmt, args...)     fprintf(stderr, "\e[mP: "   fmt "\e[m\n", ## args)
 #define WARNING(fmt, args...)   fprintf(stderr, "\e[33mW: " fmt "\e[m\n", ## args)
 #define ERROR(fmt, args...)     fprintf(stderr, "\e[31mE: " fmt "\e[m\n", ## args)

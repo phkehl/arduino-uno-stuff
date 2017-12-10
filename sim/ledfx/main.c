@@ -26,9 +26,9 @@ int main(int argc, char **argv)
     UNUSED(argc);
     UNUSED(argv);
 
-    fprintf(stderr, "hoihoi\n");
+    NOTICE("Hoihoi!");
 
-    ERROR("foo!");
+
 
     return(EXIT_SUCCESS);
 }

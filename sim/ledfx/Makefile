@@ -8,9 +8,10 @@
 
 include ../sim.mk
 
+.PHONY: main
 main: main.c ../sim.c ../sim.h ../../src/ledfx.c ../../src/hsv2rgb.c
 	$(CC) -o $@ -I. -I.. -I../../src $(CFLAGS) $(DEFS) $(INCFLAGS) $^ $(LDLIBS)
+	./$@
 
-main.c: Makefile ../sim.h ../sim.mk
 
 # eof

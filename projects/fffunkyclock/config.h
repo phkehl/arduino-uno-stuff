@@ -32,7 +32,7 @@
 #define FF_UBX_INF_DEBUG_USE     0
 
 // we have this many LEDs
-#define FF_LEDFX_NUM_LED 88
+#define FF_LEDFX_NUM_LED (2*7*4)
 
 // GRB colour ordering
 #define FF_LEDFX_ORDER 123

@@ -51,18 +51,25 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
+
+#if 0
+        ledfxSetIxRGB(0, 255, 255, 255);
+        ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+        osTaskDelay(500);
+
+#endif
 #if 1
-        DEBUG("hoihoi.. %"PRIu8" %"PRIu16"/%"PRIu16" %"PRIu16,
-            hue0, FF_LEDFX_NUM_LED, ledfxNumLeds(), ledfxGetFrameBufferSize());
+        //DEBUG("hoihoi.. %"PRIu8" %"PRIu16"/%"PRIu16" %"PRIu16,
+        //    hue0, FF_LEDFX_NUM_LED, ledfxNumLeds(), ledfxGetFrameBufferSize());
         uint8_t hue = hue0;
         for (uint16_t ix = 0; ix < FF_LEDFX_NUM_LED; ix++)
         {
             ledfxSetIxHSV(ix, hue, 255, 255);
         }
-        hue0 += 16;
+        hue0 += 1;
 
         ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
-        osTaskDelay(500);
+        osTaskDelay(20);
 
 #endif
 #if 0

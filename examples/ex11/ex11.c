@@ -55,6 +55,7 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+
     static uint16_t melody1[] =
     {
         TONE_NOTE_C4, 200,  TONE_NOTE_C5, 200,  TONE_NOTE_C6, 200,  TONE_NOTE_C7, 200,
@@ -64,6 +65,7 @@ static void sAppTask(void *pArg)
     toneMelody(melody1, false);
     osTaskDelay(2000);
 
+
     static const uint16_t melody2[] PROGMEM =
     {
         TONE_NOTE_C4, 200,  TONE_NOTE_C5, 200,  TONE_NOTE_C6, 200,  TONE_NOTE_C7, 200,
@@ -72,6 +74,21 @@ static void sAppTask(void *pArg)
     };
     toneMelody(melody2, true);
     osTaskDelay(2000);
+
+
+    // IndianaShort melody, converted using ../../tools/rtttl2melody.pl
+    static const uint16_t skMelodyIndianashort[] PROGMEM =
+    {
+        TONE_NOTE_E5, 240, TONE_PAUSE, 120, TONE_NOTE_F5, 120, TONE_NOTE_G5, 120, TONE_PAUSE, 120,
+        TONE_NOTE_C6, 960, TONE_PAUSE, 180, TONE_NOTE_D5, 240, TONE_PAUSE, 120, TONE_NOTE_E5, 120,
+        TONE_NOTE_F5, 960, TONE_PAUSE, 360, TONE_END,
+    };
+    const uint32_t duration = toneMelody(skMelodyIndianashort, true);
+    PRINT("playing melody, %"PRIu32"ms", duration);
+    osTaskDelay(duration);
+    PRINT("done playing");
+    osTaskDelay(1000);
+
 
     static const uint16_t notes[] PROGMEM =
     {

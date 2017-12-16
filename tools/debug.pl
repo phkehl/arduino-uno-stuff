@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 ################################################################################
 #
-# flipflip's Arduino Uno with avr-gcc and threads: debugging output dumper
+# flipflip's Arduino Uno stuff: debugging output dumper
 #
 # Copyright (c) 2016 Philippe Kehl <flipflip at oinkzwurgl dot org>
 #

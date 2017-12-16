@@ -34,7 +34,7 @@ void toneInit(void)
 #endif
 
 static volatile uint32_t svToneCount;
-static const volatile uint16_t *psvToneMelody;
+static const volatile uint16_t *pskvToneMelody;
 static volatile bool svToneIsProgmem;
 static volatile bool svToneIsSilent;
 
@@ -60,7 +60,7 @@ static void sToneArm(const uint16_t freq, const uint16_t dur)
     if (freq == TONE_PAUSE)
     {
         const uint8_t ocr = (F_CPU / 2 / 128) / 1000 - 1 / 1000;
-        const uint32_t count = 1000 * (uint32_t)dur / 1000;
+        const uint32_t count = 2 * 1000 * (uint32_t)dur / 1000;
         OCR2A = ocr;
         svToneCount = count;
         svToneIsSilent = true;
@@ -74,51 +74,46 @@ static void sToneArm(const uint16_t freq, const uint16_t dur)
     else if (freq > 4000) // N=8
     {
         const uint8_t ocr = (F_CPU / 2 / 8) / freq - 1;
-        const uint32_t count = (uint32_t)freq * (uint32_t)dur / 1000;
+        const uint32_t count = 2 * (uint32_t)freq * (uint32_t)dur / 1000;
         OCR2A = ocr;
         svToneCount = count;
         svToneIsSilent = false;
-        //DEBUG("freq: %"PRIu16 " N=8 ocr=%"PRIu8" dur=%"PRIu16" count=%"PRIu32, freq, ocr, dur, count);
         TCCR2B = BIT(CS21);
     }
     else if (freq > 3000) // N=32
     {
         const uint8_t ocr = (F_CPU / 2 / 32) / freq - 1;
-        const uint32_t count = (uint32_t)freq * (uint32_t)dur / 1000;
+        const uint32_t count = 2 * (uint32_t)freq * (uint32_t)dur / 1000;
         OCR2A = ocr;
         svToneCount = count;
         svToneIsSilent = false;
-        //DEBUG("freq: %"PRIu16 " N=32 ocr=%"PRIu8" dur=%"PRIu16" count=%"PRIu32, freq, ocr, dur, count);
         TCCR2B = BIT(CS21) | BIT(CS20);
     }
     else if (freq > 2000) // N=64
     {
         const uint8_t ocr = (F_CPU / 2 / 64) / freq - 1;
-        const uint32_t count = (uint32_t)freq * (uint32_t)dur / 1000;
+        const uint32_t count = 2 * (uint32_t)freq * (uint32_t)dur / 1000;
         OCR2A = ocr;
         svToneCount = count;
         svToneIsSilent = false;
-        //DEBUG("freq: %"PRIu16 " N=64 ocr=%"PRIu8" dur=%"PRIu16" count=%"PRIu32, freq, ocr, dur, count);
         TCCR2B = BIT(CS22);
     }
     else if (freq > 500) // N=128
     {
         const uint8_t ocr = (F_CPU / 2 / 128) / freq - 1 / 1000;
-        const uint32_t count = (uint32_t)freq * (uint32_t)dur / 1000;
+        const uint32_t count = 2 * (uint32_t)freq * (uint32_t)dur / 1000;
         OCR2A = ocr;
         svToneCount = count;
         svToneIsSilent = false;
-        //DEBUG("freq: %"PRIu16 " N=128 ocr=%"PRIu8" dur=%"PRIu16" count=%"PRIu32, freq, ocr, dur, count);
         TCCR2B = BIT(CS22) | BIT(CS20);
     }
     else // if (freq > 35) // N=1024
     {
         const uint8_t ocr = (F_CPU / 2 / 1024) / freq - 1 / 1000;
-        const uint32_t count = (uint32_t)freq * (uint32_t)dur / 1000;
+        const uint32_t count = 2 * (uint32_t)freq * (uint32_t)dur / 1000;
         OCR2A = ocr;
         svToneCount = count;
         svToneIsSilent = false;
-        //DEBUG("freq: %"PRIu16 " N=1024 ocr=%"PRIu8" dur=%"PRIu16" count=%"PRIu32, freq, ocr, dur, count);
         TCCR2B = BIT(CS22) | BIT(CS21) | BIT(CS20);
     }
 
@@ -142,8 +137,8 @@ ISR(TIMER2_COMPA_vect)
     else
     {
         // single tone or melody done
-        if ( (psvToneMelody == NULL) ||
-            ((svToneIsProgmem ? (uint16_t)pgm_read_word(psvToneMelody) : *psvToneMelody) == TONE_END) )
+        if ( (pskvToneMelody == NULL) ||
+            ((svToneIsProgmem ? (uint16_t)pgm_read_word(pskvToneMelody) : *pskvToneMelody) == TONE_END) )
         {
             PIN_LOW(FF_TONE_PIN);
             CLRBITS(TIMSK2, BIT(OCIE2A));
@@ -153,10 +148,10 @@ ISR(TIMER2_COMPA_vect)
         // next note in melody
         else
         {
-            const uint16_t freq = svToneIsProgmem ? (uint16_t)pgm_read_word(psvToneMelody) : *psvToneMelody;
-            psvToneMelody++;
-            const uint16_t dur  = svToneIsProgmem ? (uint16_t)pgm_read_word(psvToneMelody) : *psvToneMelody;
-            psvToneMelody++;
+            const uint16_t freq = svToneIsProgmem ? (uint16_t)pgm_read_word(pskvToneMelody) : *pskvToneMelody;
+            pskvToneMelody++;
+            const uint16_t dur  = svToneIsProgmem ? (uint16_t)pgm_read_word(pskvToneMelody) : *pskvToneMelody;
+            pskvToneMelody++;
             sToneArm(freq, dur);
         }
     }
@@ -166,23 +161,35 @@ ISR(TIMER2_COMPA_vect)
 
 void toneGenerate(const uint16_t freq, const uint16_t dur)
 {
-    psvToneMelody = NULL;
+    pskvToneMelody = NULL;
     svToneIsProgmem = false;
     sToneArm(freq, dur);
 }
 
-void toneMelody(const uint16_t *pkFreqDur, const bool progmem)
+uint32_t toneMelody(const uint16_t *pkMelody, const bool progmem)
 {
-    psvToneMelody = pkFreqDur;
+    uint32_t totalDuration = 0;
+
+    const uint16_t *pkM = pkMelody;
+    while ((progmem ? (uint16_t)pgm_read_word(pkM) : *pkM) != TONE_END)
+    {
+        pkM++;
+        totalDuration += progmem ? (uint16_t)pgm_read_word(pkM) : *pkM;
+        pkM++;
+    }
+
+    pskvToneMelody = pkMelody;
     svToneIsProgmem = progmem;
 
     svToneCount = 1;
     TIMSK2 = BIT(OCIE2A);
-    //SETBITS(TIFR2, BIT(OCF2A)); // FIXME: should trigger interrupt, but doesn't it seems, WTF?!
+    //SETBITS(TIFR2, BIT(OCF2A)); // FIXME: should trigger interrupt, but doesn't, it seems, WTF?!
 
     // so we do this instead:
     TCCR2B = BIT(CS21);
     OCR2A = 1;
+
+    return totalDuration;
 }
 
 

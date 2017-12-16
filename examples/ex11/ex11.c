@@ -55,6 +55,18 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+    //toneGenerate(440, 2000);
+    //while (ENDLESS)
+    //{
+    //    osTaskDelay(1000);
+    //}
+
+    for (uint16_t freq = 0; freq < 4000; freq += 50)
+    {
+        toneGenerate(freq, 200);
+        osTaskDelay(1000);
+    }
+
     while (ENDLESS)
     {
         PRINT("app..");

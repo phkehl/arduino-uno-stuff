@@ -55,7 +55,7 @@ void toneGenerate(const uint16_t freq, const uint16_t dur)
     //   ocr = 16e6 / f / 2 / N - 1;
     // see tone.ods spreadsheet
 
-    if ( (freq < 35) || (freq > 8000) )
+    if ( (freq < 33) || (freq > 8000) )
     {
         WARNING("tone freq %"PRIu16" out of range", freq);
         return;

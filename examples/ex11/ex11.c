@@ -55,6 +55,24 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+    static uint16_t melody1[] =
+    {
+        TONE_NOTE_C4, 200,  TONE_NOTE_C5, 200,  TONE_NOTE_C6, 200,  TONE_NOTE_C7, 200,
+        TONE_PAUSE, 100,  TONE_NOTE_C6, 200,  TONE_PAUSE, 100,  TONE_NOTE_C5, 200,  TONE_PAUSE, 100,  TONE_NOTE_C4, 200,
+        TONE_END
+    };
+    toneMelody(melody1, false);
+    osTaskDelay(2000);
+
+    static const uint16_t melody2[] PROGMEM =
+    {
+        TONE_NOTE_C4, 200,  TONE_NOTE_C5, 200,  TONE_NOTE_C6, 200,  TONE_NOTE_C7, 200,
+        TONE_PAUSE, 100,  TONE_NOTE_C6, 200,  TONE_PAUSE, 100,  TONE_NOTE_C5, 200,  TONE_PAUSE, 100,  TONE_NOTE_C4, 200,
+        TONE_END
+    };
+    toneMelody(melody2, true);
+    osTaskDelay(2000);
+
     static const uint16_t notes[] PROGMEM =
     {
         //TONE_NOTE_C1, TONE_NOTE_CS1, TONE_NOTE_D1, TONE_NOTE_DS1, TONE_NOTE_E1, TONE_NOTE_F1, TONE_NOTE_FS1, TONE_NOTE_G1, TONE_NOTE_GS1, TONE_NOTE_A1, TONE_NOTE_AS1, TONE_NOTE_B1,

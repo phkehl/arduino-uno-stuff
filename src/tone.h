@@ -40,8 +40,20 @@ void toneInit(void);
 */
 void toneGenerate(const uint16_t freq, const uint16_t dur);
 
+//! play melody (from RAM or PROGMEM)
+/*!
+    Plays a melody. A melody is a list of tone frequencies (#TONE_NOTE_t) and durations (in [ms] and
+    an end marker (#TONE_END). The special "frequency" #TONE_PAUSE can be used for a pause
+    (silence).
 
-void toneMelody(const uint16_t *freqDur);
+    \param[in] pkFreqDur  list of frequencies and durations, terminated with #TONE_END
+    \param[in] progmem    set to true if \c pkFreqDur is a #PROGMEM pointer
+
+    \note Note that \c pkFreqDur must be available during the execution (i.e. static const, or
+          malloc()'ed) or a #PROGMEM pointer.
+*/
+void toneMelody(const uint16_t *pkFreqDur, const bool progmem);
+
 
 //! notes and their frequencies (rounded, from Wikipedia:Piano_key_frequencies)
 typedef enum TONE_NOTES_e
@@ -136,6 +148,9 @@ typedef enum TONE_NOTES_e
     TONE_NOTE_A7  = 3520, //!< note A7
     TONE_NOTE_AS7 = 3729, //!< note AS7
     TONE_NOTE_B7  = 3951, //!< note B7
+
+    TONE_PAUSE    = 1,  //!< pause (silence) for melodies
+    TONE_END      = 0,  //!< end of melody
 
 } TONE_NOTE_t;
 

@@ -311,6 +311,19 @@
 
 /* *************************************************************************** */
 
+//! tone generator enabled
+#if !defined(FF_TONE_ENABLE) || defined(__DOXYGEN__)
+#  define FF_TONE_ENABLE  0
+#endif
+
+//! tone generator output pin
+#if !defined(FF_TONE_PIN) || defined(__DOXYGEN__)
+#  define FF_TONE_PIN  _D8
+#endif
+
+
+/* *************************************************************************** */
+
 #endif // __DEFCONFIG_H__
 
 //@}

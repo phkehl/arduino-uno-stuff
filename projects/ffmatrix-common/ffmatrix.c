@@ -31,6 +31,7 @@
 #else
 #  error Illegal value for FFMATRIX_DRIVER
 #endif
+#include "tone.h"          // ff: tone and melody generator
 
 #include "ffmatrix.h"
 
@@ -104,6 +105,10 @@ void matrixInit(void)
     hwAdcInit(FFMATRIX_SPEED_POT, false);
 #elif (defined FFMATRIX_BRIGHT_POT)
     hwAdcInit(FFMATRIX_BRIGHT_POT, false);
+#endif
+
+#if (FF_TONE_ENABLE > 0)
+    toneInit();
 #endif
 }
 
@@ -243,7 +248,8 @@ static uint16_t sFxRandFill(const uint16_t frame)
 
 /* ***** application task **************************************************** */
 
-#define FXDURATION (uint32_t)120000
+//#define FXDURATION (uint32_t)120000
+#define FXDURATION (uint32_t)10000
 
 // the effects
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =
@@ -319,12 +325,28 @@ static void sAppTask(void *pArg)
     alimatrixStart();
 #endif
 
+#if (FF_TONE_ENABLE > 0)
+    static const uint16_t skMelody1[] PROGMEM =
+    {
+        TONE_NOTE_A5, 30, TONE_PAUSE, 20, TONE_NOTE_G5, 60, TONE_END
+    };
+    toneMelody(skMelody1, true);
+#endif
+
     ledfxSetMatrixRGB(0, 0, 255, 0, 0);
     ledfxSetMatrixRGB(1, 1, 0, 255, 0);
     ledfxSetMatrixRGB(2, 2, 0, 0, 255);
     sLedFlush();
     //while (ENDLESS) { osTaskDelay(10); }
     osTaskDelay(1500);
+
+#if (FF_TONE_ENABLE > 0)
+    static const uint16_t skMelody2[] PROGMEM =
+    {
+        TONE_NOTE_D6, 30, TONE_PAUSE, 20, TONE_NOTE_E6, 60, TONE_END
+    };
+    toneMelody(skMelody2, true);
+#endif
 
     // initialise effects loop
     fxloopInit(skFxloops, NUMOF(skFxloops), true);
@@ -336,6 +358,10 @@ static void sAppTask(void *pArg)
         // button pressed? again?
         while (svButtonPressed)
         {
+#if (FF_TONE_ENABLE > 0)
+            toneGenerate(TONE_NOTE_C6, 50);
+#endif
+
             // display effect number
             const uint8_t fxNum = fxloopCurrentlyPlaying();
             const uint8_t brightness = sBrightness < 100 ? 50 + sBrightness : sBrightness;

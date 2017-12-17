@@ -57,6 +57,11 @@
 #define FF_SYS_MON_PERIOD 1
 
 
+// sound
+#define FF_TONE_ENABLE 1
+#define FF_TONE_PIN    _D8
+
+
 // complete configuration by including the defaults
 #include "defconfig.h"
 

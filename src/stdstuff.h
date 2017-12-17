@@ -19,7 +19,13 @@
 #include <stdbool.h>       // libc: boolean types and values
 
 #ifdef __DOXYGEN__
+//! \name Dummy Docu for Doxygen
+//@{
 #define NULL 0 //!< the null pointer (from stddef.h) \hideinitializer
+#define bool    _Bool //!< boolean type (from stdbool.h) \hideinitializer
+#define true    1 //!< boolean true (from stdbool.h)
+#define false   0 //!< boolean false (from stdbool.h)
+//@}
 #endif
 
 //! \name Handy Macros

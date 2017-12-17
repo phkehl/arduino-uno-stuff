@@ -166,20 +166,20 @@ void toneGenerate(const uint16_t freq, const uint16_t dur)
     sToneArm(freq, dur);
 }
 
-uint32_t toneMelody(const uint16_t *pkMelody, const bool progmem)
+uint32_t toneMelody(const uint16_t *pkMelody, const bool isProgmem)
 {
     uint32_t totalDuration = 0;
 
     const uint16_t *pkM = pkMelody;
-    while ((progmem ? (uint16_t)pgm_read_word(pkM) : *pkM) != TONE_END)
+    while ((isProgmem ? (uint16_t)pgm_read_word(pkM) : *pkM) != TONE_END)
     {
         pkM++;
-        totalDuration += progmem ? (uint16_t)pgm_read_word(pkM) : *pkM;
+        totalDuration += isProgmem ? (uint16_t)pgm_read_word(pkM) : *pkM;
         pkM++;
     }
 
     pskvToneMelody = pkMelody;
-    svToneIsProgmem = progmem;
+    svToneIsProgmem = isProgmem;
 
     svToneCount = 1;
     TIMSK2 = BIT(OCIE2A);

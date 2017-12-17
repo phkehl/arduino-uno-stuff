@@ -49,14 +49,14 @@ void toneGenerate(const uint16_t freq, const uint16_t dur);
     See \ref TONE for more info.
 
     \param[in] pkMelody   list of frequencies and durations pairs, terminated with #TONE_END
-    \param[in] progmem    set to true if \c pkFreqDur is a #PROGMEM pointer
+    \param[in] isProgmem  set to true if \c pkFreqDur is a #PROGMEM pointer
 
     \returns the total duration of the melody [ms]
 
     \note Note that \c pkFreqDur must be available during the execution (i.e. static const, or
           malloc()'ed) or a #PROGMEM pointer.
 */
-uint32_t toneMelody(const uint16_t *pkMelody, const bool progmem);
+uint32_t toneMelody(const uint16_t *pkMelody, const bool isProgmem);
 
 
 //! notes and their frequencies (rounded, from Wikipedia:Piano_key_frequencies)

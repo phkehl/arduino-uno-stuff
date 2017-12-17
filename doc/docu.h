@@ -51,6 +51,7 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 - \ref GNSS
 - \ref ALIMATRIX
 - \ref HD44780
+- \ref TONE
 - See also the [source code](files.html), the \ref P_REFERENCES below, the \ref EXAMPLES, the \ref PROJECTS
   and the [AVR libc docu](../avr-libc/html/index.html).
 

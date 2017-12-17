@@ -248,8 +248,7 @@ static uint16_t sFxRandFill(const uint16_t frame)
 
 /* ***** application task **************************************************** */
 
-//#define FXDURATION (uint32_t)120000
-#define FXDURATION (uint32_t)10000
+#define FXDURATION (uint32_t)120000
 
 // the effects
 static const FXLOOP_INFO_t skFxloops[] PROGMEM =

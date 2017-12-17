@@ -47,7 +47,7 @@ static void sAppTask(void *pArg);
 static void sLedFlush(void);
 
 // initialise the user application
-void appInit(void)
+void matrixInit(void)
 {
     DEBUG("ffmatrix: init");
 
@@ -108,7 +108,7 @@ void appInit(void)
 }
 
 // starts the user application task
-void appCreateTask(void)
+void matrixCreateTask(void)
 {
     static uint8_t stack[350];
     static OS_TASK_t task;

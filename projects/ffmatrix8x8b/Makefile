@@ -6,8 +6,8 @@ FFDIR       := ../..
 PROJFILES   := $(wildcard *.c) ../ffmatrix-common/ffmatrix.c
 
 # Arduino Nano clone
-PROGPORT    := /dev/ttyUSB0
-PROGSPEED   := 57600
+#PROGPORT    := /dev/ttyUSB0
+#PROGSPEED   := 57600
 
 
 # see build.mk for more options that can be set here

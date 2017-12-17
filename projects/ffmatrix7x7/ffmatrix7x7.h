@@ -19,22 +19,22 @@
     @{
 */
 
-//#ifndef __FFMATRIX7X7_H__
-//#define __FFMATRIX7X7_H__
+#ifndef __FFMATRIX7X7_H__
+#define __FFMATRIX7X7_H__
 
-//#include "stdstuff.h"      // ff: useful macros and types
-
-
-/* *************************************************************************** */
-
-
-//void appInit(void);
-
-//void appCreateTask(void);
+#include "stdstuff.h"      // ff: useful macros and types
 
 
 /* *************************************************************************** */
 
-//#endif // __FFMATRIX7X7_H__
-// @}
+
+void appInit(void);
+
+void appCreateTask(void);
+
+
+/* *************************************************************************** */
+
+#endif // __FFMATRIX7X7_H__
+//@}
 // eof

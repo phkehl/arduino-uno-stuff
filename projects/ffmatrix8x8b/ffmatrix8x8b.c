@@ -8,8 +8,18 @@
     @{
 */
 
+#include "ffmatrix.h"
+#include "ffmatrix8x8b.h"
 
-// dummy file, see ../ffmatrix-common/ffmatrix.c for the actual code
+void appInit(void)
+{
+    matrixInit();
+}
+
+void appCreateTask(void)
+{
+    matrixCreateTask();
+}
 
 
 //@}

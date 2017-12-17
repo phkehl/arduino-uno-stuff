@@ -21,22 +21,22 @@
     @{
 */
 
-//#ifndef __FFMATRIX5X8_H__
-//#define __FFMATRIX5X8_H__
+#ifndef __FFMATRIX5X8_H__
+#define __FFMATRIX5X8_H__
 
-//#include "stdstuff.h"      // ff: useful macros and types
-
-
-/* *************************************************************************** */
-
-
-//void appInit(void);
-
-//void appCreateTask(void);
+#include "stdstuff.h"      // ff: useful macros and types
 
 
 /* *************************************************************************** */
 
-//#endif // __FFMATRIX5X8_H__
-// @}
+
+void appInit(void);
+
+void appCreateTask(void);
+
+
+/* *************************************************************************** */
+
+#endif // __FFMATRIX5X8_H__
+//@}
 // eof

@@ -19,11 +19,6 @@
     - #FF_LEDFX_XY_ARR
     - (#FF_HSV2RGB_METHOD)
 
-    Initialise the hwMathGetRandom() random number generator before using these functions:
-\code{.c}
-hwMathSeedRandom(hwGetRandomSeed());
-\endcode
-
 Supported LED matrix arrangements for LED electrically connected as 0-1-2-3-4-5-6-7-8 (x/y 0/0 is at
 the bottom left, values for #FF_LEDFX_XY_ARR):
 

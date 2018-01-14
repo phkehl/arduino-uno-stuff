@@ -79,6 +79,11 @@
 #  define FF_HW_TEMP_OFFS 100
 #endif
 
+//! random number generator initialisation (0 = none, 1 = using watchdog jitter, 99 = combine all)
+#if !defined(FF_HW_RANDSEED) || defined(__DOXYGEN__)
+#  define FF_HW_RANDSEED 99
+#endif
+
 
 /* *************************************************************************** */
 

@@ -694,9 +694,6 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
-    // initialise random number generator
-    hwMathSeedRandom(hwGetRandomSeed());
-
 
 #if 0
     while (ENDLESS)

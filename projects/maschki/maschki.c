@@ -218,9 +218,6 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
-    // initialise random number generator
-    hwMathSeedRandom(hwGetRandomSeed());
-
     //CS_ENTER; while (1) {}; CS_LEAVE;
 
     ledfxSetBrightness(50);

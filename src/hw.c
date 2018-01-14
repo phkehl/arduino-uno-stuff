@@ -588,39 +588,6 @@ void hwDelay(const uint32_t usDelay)
     CS_LEAVE;
 }
 
-static volatile uint32_t sHwRandomSeed = 0;
-
-ISR(WDT_vect)
-{
-    sHwRandomSeed <<= 8;
-    sHwRandomSeed ^= (uint32_t)TCNT1;
-}
-
-uint32_t hwGetRandomSeed(void)
-{
-    // temporarily disable the watchdog reset and use the
-    // watchdog timer jitter to generate a better seed
-    WDTCSR |= BIT(WDCE);    // allow changes
-    WDTCSR = BIT(WDIE);     // set 16ms timer and enable interrupt (but not the reset)
-    if (osTaskIsSchedulerRunning())
-    {
-        osTaskDelay(100);   // wait some time until the interrup has fired a few times
-    }
-    else
-    {
-        hwDelay(100000);
-    }
-    WDTCSR |= BIT(WDCE);    // disable the..
-    WDTCSR = 0;             // ..watchdog
-#if (FF_HW_USE_WATCHDOG > 0)
-    wdt_enable(WDTO_8S);    // and enable the default watchdog again
-#endif
-    const uint32_t seed = sHwRandomSeed; // this should now be fairly random
-    DEBUG("hw: seed 0x%08"PRIx32, seed);
-    return seed;
-}
-
-
 #if (FF_HW_NUM_TICTOC > 0)
 
 //#define HW_TICTOC_FREQ (F_CPU/1024)
@@ -677,6 +644,75 @@ static void sHwTicTocInit(void) { }
 void hwTic(const uint8_t reg) { UNUSED(reg); }
 uint16_t hwToc(const uint8_t reg) { UNUSED(reg); return 0; }
 #endif // (FF_HW_NUM_TICTOC > 0)
+
+
+
+/* ***** random number seeding ********************************************** */
+
+#  if (FF_HW_RANDSEED == 1) || (FF_HW_RANDSEED == 99)
+static volatile uint32_t sHwRandomSeed = 0;
+
+ISR(WDT_vect)
+{
+    sHwRandomSeed <<= 8;
+    sHwRandomSeed ^= (uint32_t)TCNT1;
+}
+#  endif // (FF_HW_RANDSEED == 1) || (FF_HW_RANDSEED == 99)
+
+static void sHwRandomInit(void)
+{
+    uint32_t seed = 0;
+#if (FF_HW_RANDSEED > 0)
+
+    // get random seed using watchdog jitter
+#  if (FF_HW_RANDSEED == 1) || (FF_HW_RANDSEED == 99)
+    const uint8_t sreg = SREG;
+    sei();
+
+    // setup timer/counter 1
+    TCCR1A = 0;
+    TCCR1C = 0;
+    TCCR1B = BIT(CS11);
+
+    // temporarily disable the watchdog reset and use the
+    // watchdog timer jitter to generate a better seed
+    WDTCSR |= BIT(WDCE);    // allow changes
+    WDTCSR = BIT(WDIE);     // set 16ms timer and enable interrupt (but not the reset)
+
+    // wait a bit to fire the watchdog a few times
+    _delay_us(100000);
+
+    WDTCSR |= BIT(WDCE);    // disable the..
+    WDTCSR = 0;             // ..watchdog
+#if (FF_HW_USE_WATCHDOG > 0)
+    wdt_enable(WDTO_8S);    // and enable the default watchdog again
+#endif
+
+    SREG = sreg;
+
+    seed ^= sHwRandomSeed;
+    DEBUG("hw: seed 0x%08"PRIx32" (wd jitter)", sHwRandomSeed);
+#  endif // (FF_HW_RANDSEED == 1) || (FF_HW_RANDSEED == 99)
+
+    // get random seed from RAM contents
+#  if (FF_HW_RANDSEED == 2) || (FF_HW_RANDSEED == 99)
+    uint32_t mSeed = 0;
+    const uint8_t *pkAddr = (void *)RAMEND;
+    while (pkAddr > (uint8_t *)0x0100)
+    {
+        mSeed += ((uint16_t)*pkAddr) << 6;
+        pkAddr--;
+    }
+    seed ^= mSeed;
+    DEBUG("hw: seed 0x%08"PRIx32" (RAM)", mSeed);
+#  endif // (FF_HW_RANDSEED == 2) || (FF_HW_RANDSEED == 99)
+
+
+
+#endif // (FF_HW_RANDSEED > 0)
+    DEBUG("hw: seed 0x%08"PRIx32" ("STRINGIFY(FF_HW_RANDSEED)")", seed);
+    srandom(seed);
+}
 
 
 /* **** analog to digital conversion (ADC) ********************************** */
@@ -880,11 +916,6 @@ __FORCEINLINE float hwMathFastSqrtf(const float x)
     return sqrtf(x);
 }
 
-__FORCEINLINE void hwMathSeedRandom(const uint32_t seed)
-{
-    srandom(seed);
-}
-
 __FORCEINLINE uint32_t hwMathGetRandom(void)
 {
     return random();
@@ -912,6 +943,8 @@ void hwInit(void)
 
     sHwLedTickInit();
     sHwLedLoadInit();
+
+    sHwRandomInit(); // before sHwTicTocInit()
 
     sHwTicTocInit();
 }

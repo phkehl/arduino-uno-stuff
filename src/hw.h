@@ -17,6 +17,7 @@
     - #FF_HW_TX_BUFSIZE
     - #FF_HW_NUM_TICTOC
     - #FF_HW_USE_WATCHDOG
+    - #FF_HW_RANDSEED
 
     @{
 */
@@ -160,20 +161,6 @@ void hwAssertWatchdog(void);
 */
 void hwDelay(const uint32_t usDelay);
 
-//! get good random number (slow!)
-/*!
-    Returns a good random number, suitable for seeding the fast generator via
-    hwMathSeedRandom().
-
-    Uses the MCU's built-in random number generator or other means (watchdog
-    jitter).
-
-    \todo it seems this only works when the scheduler is running.. why?
-
-    \returns a fairly random number
-*/
-uint32_t hwGetRandomSeed(void);
-
 //! start runtime measurement
 /*!
     Starts a runtime measurement.
@@ -278,17 +265,10 @@ float hwMathFastSinf(const float phi);
 */
 float hwMathFastSqrtf(const float x);
 
-//! seed random number generator
-/*!
-    Seeds a random number generator.
-
-    \param seed  seed value
-*/
-void hwMathSeedRandom(const uint32_t seed);
-
 //! get random number
 /*!
-    Returns a random number from the generator seeded by hwMathSeedRandom().
+    Returns a random number from the generator. This uses a random number generated that is
+    automatically seeded (#FF_HW_RANDSEED).
 
     \return  random number
 */

@@ -316,9 +316,6 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
-    // initialise random number generator
-    hwMathSeedRandom(hwGetRandomSeed());
-
     // start Alimatrix display
 #if (FFMATRIX_DRIVER == 2)
     alimatrixStart();

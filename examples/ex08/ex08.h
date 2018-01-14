@@ -7,7 +7,7 @@
     \defgroup EXAMPLES_EX08 8th Example Application
     \ingroup EXAMPLES
 
-    This is the eighth example application. It demonstrates the \ref ALIMATRIXX functionality.
+    This is the eighth example application. It demonstrates the \ref ALIMATRIX functionality.
 
     See ex08.c source code for details.
 

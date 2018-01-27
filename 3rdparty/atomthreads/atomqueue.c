@@ -534,7 +534,7 @@ uint8_t atomQueueGet (ATOM_QUEUE *qptr, int32_t timeout, uint8_t *msgptr)
  *
  * @param[in] qptr Pointer to queue object
  * @param[in] timeout Max system ticks to block (0 = forever, -1 =  no block)
- * @param[out] msgptr Pointer from which the message should be copied out
+ * @param[in] msgptr Pointer from which the message should be copied out
  *
  * @retval ATOM_OK Success
  * @retval ATOM_WOULDBLOCK Called with timeout == -1 but queue was full

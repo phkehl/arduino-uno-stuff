@@ -497,9 +497,10 @@ void osMutexDelete(OS_MUTEX_t *pMutex)
 
 /* ***** queue functions **************************************************** */
 
-void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint16_t length, const uint16_t itemSize)
+void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint8_t numItems, const uint8_t itemSize)
 {
-    const uint8_t res = atomQueueCreate((ATOM_QUEUE *)pQueue, pBuf, length, itemSize);
+    DEBUG("os: queue %p %"PRIu16"*%"PRIu16"=%"PRIu16, pBuf, numItems, itemSize, numItems * itemSize);
+    const uint8_t res = atomQueueCreate((ATOM_QUEUE *)pQueue, pBuf, itemSize, numItems);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_Q_CREATE, res);
@@ -526,7 +527,7 @@ bool osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const int32_t timeout)
 }
 
 
-bool osQueueReceive(OS_QUEUE_t *pQueue, const int32_t timeout, void *pMsg)
+bool osQueueReceive(OS_QUEUE_t *pQueue, void *pMsg, const int32_t timeout)
 {
     const uint8_t res = atomQueueGet((ATOM_QUEUE *)pQueue, timeout, pMsg);
     if (res == ATOM_OK)
@@ -545,7 +546,6 @@ bool osQueueReceive(OS_QUEUE_t *pQueue, const int32_t timeout, void *pMsg)
     return false;
 }
 
-
 void osQueueDelete(OS_QUEUE_t *pQueue)
 {
     const uint8_t res = atomQueueDelete((ATOM_QUEUE *)pQueue);
@@ -555,6 +555,13 @@ void osQueueDelete(OS_QUEUE_t *pQueue)
     }
 }
 
+void osQueueDebug(OS_QUEUE_t *pQueue)
+{
+    const ATOM_QUEUE *pkQ = (const ATOM_QUEUE *)pQueue;
+    DEBUG("queue %p %"PRIu32"/%"PRIu32" i %"PRIu32" r %"PRIu32,
+        pkQ->buff_ptr, pkQ->num_msgs_stored, pkQ->max_num_msgs, pkQ->insert_index, pkQ->remove_index);
+
+}
 
 
 /* ***** timer functions **************************************************** */

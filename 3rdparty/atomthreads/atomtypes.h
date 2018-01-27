@@ -87,11 +87,20 @@ typedef struct atom_queue
     ATOM_TCB *  putSuspQ;       /* Queue of threads waiting to send */
     ATOM_TCB *  getSuspQ;       /* Queue of threads waiting to receive */
     uint8_t *   buff_ptr;       /* Pointer to queue data area */
+
+#ifdef ATOM_FLIPFLIP
+    uint8_t    unit_size;      /* Size of each message */
+    uint8_t    max_num_msgs;   /* Max number of storable messages */
+    uint8_t    insert_index;   /* Next byte index to insert into */
+    uint8_t    remove_index;   /* Next byte index to remove from */
+    uint8_t    num_msgs_stored;/* Number of messages stored */
+#else
     uint32_t    unit_size;      /* Size of each message */
     uint32_t    max_num_msgs;   /* Max number of storable messages */
     uint32_t    insert_index;   /* Next byte index to insert into */
     uint32_t    remove_index;   /* Next byte index to remove from */
     uint32_t    num_msgs_stored;/* Number of messages stored */
+#endif
 } ATOM_QUEUE;
 
 /* ***** atomsem.c ******************************************************** */

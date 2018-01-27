@@ -269,10 +269,11 @@ bool osTimerKill(OS_TIMER_t *pTimer);
 //! a queue
 typedef ATOM_QUEUE OS_QUEUE_t;
 
-void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint16_t length, const uint16_t itemSize);
+void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint8_t numItems, const uint8_t itemSize);
 bool osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const int32_t timeout);
-bool osQueueReceive(OS_QUEUE_t *pQueue, const int32_t timeout, void *pMsg);
+bool osQueueReceive(OS_QUEUE_t *pQueue, void *pMsg, const int32_t timeout);
 void osQueueDelete(OS_QUEUE_t *pQueue);
+void osQueueDebug(OS_QUEUE_t *pQueue);
 
 //@}
 

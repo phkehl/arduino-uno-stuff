@@ -15,6 +15,10 @@
 
 #define FF_HW_NUM_TICTOC 1
 
+#define FF_HW_RX_BUFSIZE 0
+#define FF_HW_TX_BUFSIZE 200
+#define FF_OS_IDLE_STACK 100
+
 
 // complete configuration by including the defaults
 #include "defconfig.h"

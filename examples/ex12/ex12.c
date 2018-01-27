@@ -77,6 +77,8 @@ ISR(INT0_vect) // external interrupt 0
 
 #define BUTTON_PRESS_TIME 150
 
+static volatile uint8_t svButtonCnt;
+
 ISR(INT1_vect) // external interrupt 1
 {
     osIsrEnter();
@@ -87,6 +89,7 @@ ISR(INT1_vect) // external interrupt 1
     {
         const EVENT_t ev = EVENT_SGL_PRESS;
         osQueueSend(&sEventQueue, &ev, -1);
+        svButtonCnt++;
     }
     msss0 = msss1;
 
@@ -154,28 +157,27 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        osQueueDebug(&sEventQueue);
         EVENT_t ev;
         if (osQueueReceive(&sEventQueue, &ev, 1000))
         {
             switch (ev)
             {
                 case EVENT_CNT_INC:
-                    DEBUG("EVENT_CNT_INC");
+                    DEBUG("INC %"PRIu16, count);
                     count++;
                     break;
                 case EVENT_CNT_DEC:
-                    DEBUG("EVENT_CNT_DEC");
+                    DEBUG("DEC %"PRIu16, count);
                     count--;
                     break;
                 case EVENT_SGL_PRESS:
-                    DEBUG("EVENT_SGL_PRESS");
+                    DEBUG("SGL %"PRIu8, svButtonCnt);
                     break;
                 case EVENT_DBL_PRESS:
-                    DEBUG("EVENT_DBL_PRESS");
+                    DEBUG("DBL");
                     break;
                 case EVENT_LNG_PRESS:
-                    DEBUG("EVENT_LNG_PRESS");
+                    DEBUG("LNG");
                     break;
             }
         }

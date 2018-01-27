@@ -497,10 +497,10 @@ void osMutexDelete(OS_MUTEX_t *pMutex)
 
 /* ***** queue functions **************************************************** */
 
-void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint8_t numItems, const uint8_t itemSize)
+void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint8_t numMsgs, const uint8_t msgSize)
 {
-    DEBUG("os: queue %p %"PRIu16"*%"PRIu16"=%"PRIu16, pBuf, numItems, itemSize, numItems * itemSize);
-    const uint8_t res = atomQueueCreate((ATOM_QUEUE *)pQueue, pBuf, itemSize, numItems);
+    DEBUG("os: queue %p %"PRIu16"*%"PRIu16"=%"PRIu16, pBuf, numMsgs, msgSize, numMsgs * msgSize);
+    const uint8_t res = atomQueueCreate((ATOM_QUEUE *)pQueue, pBuf, msgSize, numMsgs);
     if (res != ATOM_OK)
     {
         hwPanic(HW_PANIC_OS, OS_PANIC_Q_CREATE, res);
@@ -558,7 +558,7 @@ void osQueueDelete(OS_QUEUE_t *pQueue)
 void osQueueDebug(OS_QUEUE_t *pQueue)
 {
     const ATOM_QUEUE *pkQ = (const ATOM_QUEUE *)pQueue;
-    DEBUG("queue %p %"PRIu32"/%"PRIu32" i %"PRIu32" r %"PRIu32,
+    DEBUG("queue %p %"PRIu8"/%"PRIu8" i %"PRIu8" r %"PRIu8,
         pkQ->buff_ptr, pkQ->num_msgs_stored, pkQ->max_num_msgs, pkQ->insert_index, pkQ->remove_index);
 
 }

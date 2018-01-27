@@ -261,21 +261,50 @@ bool osTimerKill(OS_TIMER_t *pTimer);
 
     See also \ref ATOM_QUEUE.
 
-    \warning Not tested!
-
     @{
 */
 
 //! a queue
 typedef ATOM_QUEUE OS_QUEUE_t;
 
-void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint8_t numItems, const uint8_t itemSize);
+//! initialise queue
+/*!
+    \param[in,out] pQueue   the queue
+    \param[in,out] pBuf     buffer memory (at least \c numMsgs * \c msgsize bytes)
+    \param[in]     numMsgs  number of messages (items) the queue can hold
+    \param[in]     msgSize  size in bytes of a single message (item)
+*/
+void osQueueCreate(OS_QUEUE_t *pQueue, void *pBuf, const uint8_t numMsgs, const uint8_t msgSize);
+
+//! send (put) message to queue
+/*!
+    \param[in,out] pQueue    the queue
+    \param[in]     pkMsg     the message that will be copied into the queue
+    \param[in]     timeout   maximum time to wait for space (0 for endless, -1 for abort if no space)
+
+    \returns true if the message could be put into the queue, false otherwise
+*/
 bool osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const int32_t timeout);
+
+//! receive (get) message from queue
+/*!
+    \param[in,out] pQueue    the queue
+    \param[in]     pMsg      where the message is copied to
+    \param[in]     timeout   maximum time to wait for a message (0 for endless, -1 for abort if no message)
+
+    \returns true if a message was received, false otherwise
+*/
 bool osQueueReceive(OS_QUEUE_t *pQueue, void *pMsg, const int32_t timeout);
+
+//! delete queue
+/*!
+    \param[in,out] pQueue    the queue
+*/
 void osQueueDelete(OS_QUEUE_t *pQueue);
-void osQueueDebug(OS_QUEUE_t *pQueue);
 
 //@}
+
+void osQueueDebug(OS_QUEUE_t *pQueue);
 
 /* ************************************************************************** */
 

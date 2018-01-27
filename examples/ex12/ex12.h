@@ -4,13 +4,10 @@
 
     - Copyright (c) 2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \defgroup EXAMPLES_E211 12th Example Application
+    \defgroup EXAMPLES_EX12 12th Example Application
     \ingroup EXAMPLES
 
-    This is the twelfth example application. It demonstrates rotary encoder reading. It assumes an
-    encoder with detents and hence there is no resolution to loos when it only uses the falling edge
-    of one pin and sampling the other pin. The interrupt pin has to be debounced (100nF or so
-    between pin and ground).
+    This is the twelfth example application. It demonstrates rotary encoder reading and \ref OS queues.
 
     See ex12.c source code for details.
 

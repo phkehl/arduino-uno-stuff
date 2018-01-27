@@ -5,6 +5,11 @@
     - Copyright (c) 2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup EXAMPLES_EX12
+
+    It assumes an encoder with detents and hence there is no resolution to loos when it only uses
+    the falling edge of one pin and sampling the other pin. The interrupt pin has to be debounced
+    (100nF or so between pin and ground).
+
     @{
 */
 
@@ -21,13 +26,26 @@
 
 #include "ex12.h"
 
+/* ***** events ************************************************************** */
+
+typedef enum EVENT_e
+{
+    EVENT_CNT_INC,
+    EVENT_CNT_DEC,
+    EVENT_SGL_PRESS,
+    EVENT_DBL_PRESS,
+    EVENT_LNG_PRESS,
+} EVENT_t;
+
+#define EVENT_QUEUE_LEN 10
+
+static OS_QUEUE_t sEventQueue;
+
 
 /* ***** rotary encoder ****************************************************** */
 
 #define ROTENC_PIN1 _PD2 // pin 1 (must be PD2 = INT0)
 #define ROTENC_PIN2 _PD4 // pin 2
-
-static OS_SEMAPHORE_t sRotEncSem;
 
 typedef enum ROTENC_DIR_e
 {
@@ -35,24 +53,46 @@ typedef enum ROTENC_DIR_e
     ROTENC_DEC,
 } ROTENC_DIR_t;
 
-static volatile ROTENC_DIR_t svRotEncDir;
-
-static volatile uint32_t svRotEncLast;
-static volatile uint16_t svRotEncDt;
+//static volatile uint32_t svRotEncLast;
+//static volatile uint16_t svRotEncDt;
 
 ISR(INT0_vect) // external interrupt 0
 {
     osIsrEnter();
 
-    svRotEncDir = PIN_GET(ROTENC_PIN2) ? ROTENC_DEC : ROTENC_INC;
-    const uint32_t msss = osTaskGetMsss();
-    svRotEncDt = msss - svRotEncLast;
-    svRotEncLast = msss;
+    const EVENT_t ev = PIN_GET(ROTENC_PIN2) ? EVENT_CNT_DEC : EVENT_CNT_INC;
+    osQueueSend(&sEventQueue, &ev, -1);
 
-    osSemaphoreGive(&sRotEncSem, true);
+//    const uint32_t msss = osTaskGetMsss();
+//    svRotEncDt = msss - svRotEncLast;
+//    svRotEncLast = msss;
 
     osIsrLeave();
 }
+
+
+/* ***** button ************************************************************** */
+
+#define BUTTON_PIN  _PD3 // (must be PD3 = INT1)
+
+#define BUTTON_PRESS_TIME 150
+
+ISR(INT1_vect) // external interrupt 1
+{
+    osIsrEnter();
+
+    static volatile uint32_t msss0;
+    const uint32_t msss1 = osTaskGetTicks();
+    if ( (msss1 - msss0) >= BUTTON_PRESS_TIME )
+    {
+        const EVENT_t ev = EVENT_SGL_PRESS;
+        osQueueSend(&sEventQueue, &ev, -1);
+    }
+    msss0 = msss1;
+
+    osIsrLeave();
+}
+
 
 
 /* ***** application init **************************************************** */
@@ -66,18 +106,27 @@ void appInit(void)
 {
     DEBUG("ex12: init");
 
-    PIN_INPUT(ROTENC_PIN1);
+    // rotary encoder
+    PIN_INPUT(ROTENC_PIN1);            // signals
     PIN_PULLUP_ON(ROTENC_PIN1);
     PIN_INPUT(ROTENC_PIN2);
     PIN_PULLUP_ON(ROTENC_PIN2);
+    SETBITS(EICRA, BIT(ISC01));        // falling-edge..
+    CLRBITS(EICRA, BIT(ISC00));        // ..triggers interrupt
+    SETBITS(EIMSK, BIT(INT0));         // enable INT0
+    SETBITS(EIFR, BIT(INTF0));         // clear INT0
 
-    osSemaphoreCreate(&sRotEncSem, 0);
+    // button
+    PIN_INPUT(BUTTON_PIN);
+    PIN_PULLUP_ON(BUTTON_PIN);
+    SETBITS(EICRA, BIT(ISC11));        // falling-edge..
+    CLRBITS(EICRA, BIT(ISC10));        // ..triggers interrupt
+    SETBITS(EIMSK, BIT(INT1));         // enable INT1
+    SETBITS(EIFR, BIT(INTF1));         // clear INT1
 
-    // falling-edge triggers interrupt
-    SETBITS(EICRA, BIT(ISC01));
-    CLRBITS(EICRA, BIT(ISC00));
-    SETBITS(EIMSK, BIT(INT0)); // enable INT0
-    SETBITS(EIFR, BIT(INTF0)); // clear INT0
+    // event queue
+    static EVENT_t sEventQueueBuf[EVENT_QUEUE_LEN];
+    osQueueCreate(&sEventQueue, &sEventQueueBuf, EVENT_QUEUE_LEN, sizeof(EVENT_t));
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
@@ -105,11 +154,30 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        if (osSemaphoreTake(&sRotEncSem, 2))
+        osQueueDebug(&sEventQueue);
+        EVENT_t ev;
+        if (osQueueReceive(&sEventQueue, &ev, 1000))
         {
-            count += svRotEncDir == ROTENC_INC ? 1 : -1;
-
-            PRINT("rotenc %+8"PRIi16" %6"PRIu32" %5"PRIu16, count, svRotEncLast, svRotEncDt);
+            switch (ev)
+            {
+                case EVENT_CNT_INC:
+                    DEBUG("EVENT_CNT_INC");
+                    count++;
+                    break;
+                case EVENT_CNT_DEC:
+                    DEBUG("EVENT_CNT_DEC");
+                    count--;
+                    break;
+                case EVENT_SGL_PRESS:
+                    DEBUG("EVENT_SGL_PRESS");
+                    break;
+                case EVENT_DBL_PRESS:
+                    DEBUG("EVENT_DBL_PRESS");
+                    break;
+                case EVENT_LNG_PRESS:
+                    DEBUG("EVENT_LNG_PRESS");
+                    break;
+            }
         }
     }
 }

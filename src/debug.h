@@ -2,12 +2,12 @@
     \file
     \brief flipflip's Arduino Uno stuff: debugging stuff (see \ref DEBUG)
 
-    - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
+    - Copyright (c) 2016-2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \defgroup DEBUG Debugging
     \ingroup FF
 
-    Debugging output helpers.
+    Debugging output helpers. Note that these must not be used in interrupts!
 
     Configuration:
     - #FF_DEBUG_LEVEL

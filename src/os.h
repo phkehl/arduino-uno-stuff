@@ -228,6 +228,8 @@ void osMutexDelete(OS_MUTEX_t *pMutex);
 
     See also \ref ATOM_TIMER.
 
+    \note Timers run in the system tick interrupt.
+
     @{
 */
 

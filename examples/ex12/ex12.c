@@ -33,57 +33,15 @@ typedef enum EVENT_e
     EVENT_INC_DN,     // increment with button down
     EVENT_DEC_DN,     // decrement with button down
     EVENT_BTN,        // button pressed (actually: released)
+    EVENT_BTN_LONG,   // button long press
 } EVENT_t;
 
-#define EVENT_QUEUE_LEN 10
+#define EVENT_QUEUE_LEN 5
 
 static OS_QUEUE_t sEventQueue;
 
-static volatile uint32_t svEventLastMsss;
 
-#define EVENT_MIN_DT 20
-
-
-/* ***** button ************************************************************** */
-
-#define BUTTON_PIN  _PD3 // (must be PD3 = INT1)
-
-#define BUTTON_MIN_DN_TIME 20 // minumum time button must be pressed down
-
-static volatile uint32_t svButtonDnMsss;
-static volatile bool svButtonDn;
-
-ISR(INT1_vect) // external interrupt 1
-{
-    osIsrEnter();
-
-    // button down
-    if (!PIN_GET(BUTTON_PIN))
-    {
-        svButtonDnMsss = osTaskGetTicks();
-        svButtonDn = true;
-    }
-    // button up
-    else
-    {
-        if (svButtonDnMsss)
-        {
-            const uint32_t msss = osTaskGetTicks();
-            if ((msss - svButtonDnMsss) > BUTTON_MIN_DN_TIME)
-            {
-                const EVENT_t ev = EVENT_BTN;
-                osQueueSend(&sEventQueue, &ev, -1);
-            }
-        }
-        svButtonDnMsss = 0;
-        svButtonDn = false;
-    }
-
-    osIsrLeave();
-}
-
-
-/* ***** rotary encoder ****************************************************** */
+/* ***** rotary encoder with button ****************************************** */
 
 //  clock-wise (increment):                  anti clock-wise (decrement):
 //
@@ -107,12 +65,19 @@ ISR(INT1_vect) // external interrupt 1
 
 #define ROTENC_PIN1 _PD2 // pin 1 (must be PD2 = INT0)
 #define ROTENC_PIN2 _PD4 // pin 2
+#define BUTTON_PIN  _PD3 // (must be PD3 = INT1)
 
-static volatile uint32_t svRotEncDnMsss;
+#define BUTTON_MIN_DN_TIME 20 // minumum time button must be pressed down
+#define BUTTON_LONG_THRS  550 // minumum time for long press
 
 #define ROTENC_MIN_DN_TIME 5
 
-ISR(INT0_vect) // external interrupt 0
+static volatile uint32_t svRotEncDnMsss;
+static volatile uint32_t svButtonDnMsss;
+static volatile bool svButtonDn;
+
+// external interrupt 0 handles rotary encoder signal
+ISR(INT0_vect)
 {
     osIsrEnter();
 
@@ -124,10 +89,9 @@ ISR(INT0_vect) // external interrupt 0
     // up (snap in)
     else
     {
-        const uint32_t msss = osTaskGetTicks();
         if (svRotEncDnMsss)
         {
-            const uint32_t dt = msss - svRotEncDnMsss;
+            const uint32_t dt = osTaskGetTicks() - svRotEncDnMsss;
             if (dt > ROTENC_MIN_DN_TIME)
             {
                 const bool isInc = PIN_GET(ROTENC_PIN2);
@@ -135,7 +99,7 @@ ISR(INT0_vect) // external interrupt 0
                 if (svButtonDn)
                 {
                     ev = isInc ? EVENT_INC_DN : EVENT_DEC_DN;
-                    svButtonDnMsss = 0;
+                    svButtonDnMsss = 0; // invalidate button press
                 }
                 else
                 {
@@ -150,6 +114,54 @@ ISR(INT0_vect) // external interrupt 0
     osIsrLeave();
 }
 
+static OS_TIMER_t sButtonTimer;
+static void sButtonTimerCb(void *pArg);
+
+// external interrupt 1 handles button presses
+ISR(INT1_vect)
+{
+    osIsrEnter();
+
+    // button down
+    if (!PIN_GET(BUTTON_PIN))
+    {
+        svButtonDnMsss = osTaskGetTicks();
+        svButtonDn = true;
+        osTimerKill(&sButtonTimer);
+        osTimerArm(&sButtonTimer, sButtonTimerCb, NULL, BUTTON_LONG_THRS, 0);
+    }
+    // button up
+    else
+    {
+        if (svButtonDnMsss)
+        {
+            if ((osTaskGetTicks() - svButtonDnMsss) > BUTTON_MIN_DN_TIME)
+            {
+                const EVENT_t ev = EVENT_BTN;
+                osQueueSend(&sEventQueue, &ev, -1);
+            }
+        }
+        svButtonDnMsss = 0;
+        svButtonDn = false;
+        osTimerKill(&sButtonTimer);
+    }
+
+    osIsrLeave();
+}
+
+static void sButtonTimerCb(void *pArg)
+{
+    UNUSED(pArg);
+
+    // button still active and down
+    if (svButtonDnMsss && !PIN_GET(BUTTON_PIN))
+    {
+        const EVENT_t ev = EVENT_BTN_LONG;
+        osQueueSend(&sEventQueue, &ev, -1);
+        svButtonDnMsss = 0;
+        svButtonDn = false; // invalidate
+    }
+}
 
 /* ***** application init **************************************************** */
 
@@ -233,6 +245,9 @@ static void sAppTask(void *pArg)
                     break;
                 case EVENT_BTN:
                     DEBUG("BTN");
+                    break;
+                case EVENT_BTN_LONG:
+                    DEBUG("LONG");
                     break;
             }
         }

@@ -336,17 +336,17 @@
 
 //! rotary encoder input pin 1 (signal 1)
 #if !defined(FF_ROTENC_PIN1) || defined(__DOXYGEN__)
-#  define FF_ROTENC_PIN1  _PD2
+#  define FF_ROTENC_PIN1  _D2
 #endif
 
 //! rotary encoder input pin 2 (signal 2)
 #if !defined(FF_ROTENC_PIN2) || defined(__DOXYGEN__)
-#  define FF_ROTENC_PIN2  _PD4
+#  define FF_ROTENC_PIN2  _D4
 #endif
 
 //! rotary encoder input pin 3 (button)
 #if !defined(FF_ROTENC_PIN3) || defined(__DOXYGEN__)
-#  define FF_ROTENC_PIN3  _PD3
+#  define FF_ROTENC_PIN3  _D3
 #endif
 
 //! rotary encoder maximum number of events that can be queued

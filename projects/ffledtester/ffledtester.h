@@ -4,7 +4,7 @@
 
     - Copyright (c) 2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \defgroup PROJECTS_FFLEDTESTER flifplip clock
+    \defgroup PROJECTS_FFLEDTESTER flipflip's LED tester
     \ingroup PROJECTS
 
     @{

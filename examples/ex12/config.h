@@ -20,9 +20,9 @@
 #define FF_OS_IDLE_STACK      100
 
 #define FF_ROTENC_ENABLE      1
-#define FF_ROTENC_PIN1        _PD2
-#define FF_ROTENC_PIN2        _PD4
-#define FF_ROTENC_PIN3        _PD3
+#define FF_ROTENC_PIN1        _D2
+#define FF_ROTENC_PIN2        _D0
+#define FF_ROTENC_PIN3        _D3
 
 
 // complete configuration by including the defaults

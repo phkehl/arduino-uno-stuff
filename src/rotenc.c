@@ -23,10 +23,10 @@
 
 // check config
 #if (!PIN_IS_SAME(FF_ROTENC_PIN1, _PD2))
-#  error Illegal value for FF_ROTENC_PIN1! The current implementation can only use _PD2.
+#  error Illegal value for FF_ROTENC_PIN1! The current implementation can only use _PD2 (aka _D2).
 #endif
 #if (!PIN_IS_SAME(FF_ROTENC_PIN3, _PD3))
-#  error Illegal value for FF_ROTENC_PIN3! The current implementation can only use _PD3.
+#  error Illegal value for FF_ROTENC_PIN3! The current implementation can only use _PD3 (aka _D3).
 #endif
 
 //  clock-wise (increment):                  anti clock-wise (decrement):
@@ -49,7 +49,7 @@
 //  o = if it is, we sample the second signal here to determine the direction
 //
 
-#define ROTENC_ROT_THRS       5
+#define ROTENC_ROT_THRS       3
 #define ROTENC_BTN_THRS       5 // minumum time button must be pressed down
 #define ROTENC_LONG_THRS    550 // minumum time for long press
 

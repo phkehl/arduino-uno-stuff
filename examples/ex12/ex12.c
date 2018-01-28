@@ -28,9 +28,11 @@
 
 typedef enum EVENT_e
 {
-    EVENT_CNT_INC,
-    EVENT_CNT_DEC,
-    EVENT_BTN,
+    EVENT_INC,        // increment
+    EVENT_DEC,        // decrement
+    EVENT_INC_DN,     // increment with button down
+    EVENT_DEC_DN,     // decrement with button down
+    EVENT_BTN,        // button pressed (actually: released)
 } EVENT_t;
 
 #define EVENT_QUEUE_LEN 10
@@ -40,6 +42,45 @@ static OS_QUEUE_t sEventQueue;
 static volatile uint32_t svEventLastMsss;
 
 #define EVENT_MIN_DT 20
+
+
+/* ***** button ************************************************************** */
+
+#define BUTTON_PIN  _PD3 // (must be PD3 = INT1)
+
+#define BUTTON_MIN_DN_TIME 20 // minumum time button must be pressed down
+
+static volatile uint32_t svButtonDnMsss;
+static volatile bool svButtonDn;
+
+ISR(INT1_vect) // external interrupt 1
+{
+    osIsrEnter();
+
+    // button down
+    if (!PIN_GET(BUTTON_PIN))
+    {
+        svButtonDnMsss = osTaskGetTicks();
+        svButtonDn = true;
+    }
+    // button up
+    else
+    {
+        if (svButtonDnMsss)
+        {
+            const uint32_t msss = osTaskGetTicks();
+            if ((msss - svButtonDnMsss) > BUTTON_MIN_DN_TIME)
+            {
+                const EVENT_t ev = EVENT_BTN;
+                osQueueSend(&sEventQueue, &ev, -1);
+            }
+        }
+        svButtonDnMsss = 0;
+        svButtonDn = false;
+    }
+
+    osIsrLeave();
+}
 
 
 /* ***** rotary encoder ****************************************************** */
@@ -61,7 +102,7 @@ static volatile uint32_t svEventLastMsss;
 //  1 = ISR fires as we start rotating (falling edge)
 //  2 = ISR fires again as it locks into the next position (raising edge)
 //  d = we only accept the reading if d > ROTENC_MIN_DN_TIME
-//  o = if it is, we sample the second signal here and determine the direction
+//  o = if it is, we sample the second signal here to determine the direction
 //
 
 #define ROTENC_PIN1 _PD2 // pin 1 (must be PD2 = INT0)
@@ -84,50 +125,30 @@ ISR(INT0_vect) // external interrupt 0
     else
     {
         const uint32_t msss = osTaskGetTicks();
-        if (svRotEncDnMsss && ((msss - svRotEncDnMsss) > ROTENC_MIN_DN_TIME))
+        if (svRotEncDnMsss)
         {
-            const EVENT_t ev = PIN_GET(ROTENC_PIN2) ? EVENT_CNT_INC : EVENT_CNT_DEC;
-            osQueueSend(&sEventQueue, &ev, -1);
+            const uint32_t dt = msss - svRotEncDnMsss;
+            if (dt > ROTENC_MIN_DN_TIME)
+            {
+                const bool isInc = PIN_GET(ROTENC_PIN2);
+                EVENT_t ev;
+                if (svButtonDn)
+                {
+                    ev = isInc ? EVENT_INC_DN : EVENT_DEC_DN;
+                    svButtonDnMsss = 0;
+                }
+                else
+                {
+                    ev = isInc ? EVENT_INC : EVENT_DEC;
+                }
+                osQueueSend(&sEventQueue, &ev, -1);
+            }
         }
         svRotEncDnMsss = 0;
     }
 
     osIsrLeave();
 }
-
-
-/* ***** button ************************************************************** */
-
-#define BUTTON_PIN  _PD3 // (must be PD3 = INT1)
-
-#define BUTTON_MIN_DN_TIME 20 // minumum time button must be pressed down
-
-static volatile uint32_t svButtonDnMsss;
-
-ISR(INT1_vect) // external interrupt 1
-{
-    osIsrEnter();
-
-    // button down
-    if (!PIN_GET(BUTTON_PIN))
-    {
-        svButtonDnMsss = osTaskGetTicks();
-    }
-    // button up
-    else
-    {
-        const uint32_t msss = osTaskGetTicks();
-        if (svButtonDnMsss && ((msss - svButtonDnMsss) > BUTTON_MIN_DN_TIME))
-        {
-            const EVENT_t ev = EVENT_BTN;
-            osQueueSend(&sEventQueue, &ev, -1);
-        }
-        svButtonDnMsss = 0;
-    }
-
-    osIsrLeave();
-}
-
 
 
 /* ***** application init **************************************************** */
@@ -196,13 +217,19 @@ static void sAppTask(void *pArg)
         {
             switch (ev)
             {
-                case EVENT_CNT_INC:
-                    DEBUG("INC %"PRIu16, count);
+                case EVENT_INC_DN:
+                    count += 9;
+                    FALLTHROUGH;
+                case EVENT_INC:
                     count++;
+                    DEBUG("INC %"PRIu16, count);
                     break;
-                case EVENT_CNT_DEC:
-                    DEBUG("DEC %"PRIu16, count);
+                case EVENT_DEC_DN:
+                    count -= 9;
+                    FALLTHROUGH;
+                case EVENT_DEC:
                     count--;
+                    DEBUG("DEC %"PRIu16, count);
                     break;
                 case EVENT_BTN:
                     DEBUG("BTN");

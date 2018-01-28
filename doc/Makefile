@@ -82,9 +82,13 @@ doc: avrlibc_html avrlibc_man stuff_doc
 
 FFDIR := $(subst /docXX,,$(CURDIR)XX)
 
+DEPS :=  $(wildcard ../src/*.c)        $(wildcard ../src/*.h) \
+	     $(wildcard ../examples/*/*.h) $(wildcard ../examples/*/*.c) \
+	     $(wildcard ../projects/*/*.h) $(wildcard ../projects/*/*.c)
+
 # generate stuff documentation
 stuff_doc: html/index.html
-html/index.html: Makefile Doxyfile docu.h $(wildcard ../src/*.c) $(wildcard ../src/*.h) $(wildcard ../examples/*/*.h) $(wildcard ../projects/*/*.h)
+html/index.html: Makefile Doxyfile docu.h $(DEPS)
 # remove previous output and create new output directory
 	$(V)$(RM) -rf html
 	$(V)$(MKDIR) -p html

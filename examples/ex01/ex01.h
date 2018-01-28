@@ -7,7 +7,7 @@
     \defgroup EXAMPLES_EX01 1st Example Application
     \ingroup EXAMPLES
 
-    This is the first example application. It demonstrates some basic \ref OS and \ref UNOPINS
+    This is the first example application. It demonstrates some basic \ref OS and \ref ARDUINOPINS
     functionality.
 
     See ex01.c source code for details.

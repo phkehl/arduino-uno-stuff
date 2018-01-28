@@ -7,7 +7,7 @@
     \defgroup EXAMPLES_EX02 2nd Example Application
     \ingroup EXAMPLES
 
-    This is the second example application. It demonstrates some basic \ref OS and \ref UNOPINS
+    This is the second example application. It demonstrates some basic \ref OS and \ref ARDUINOPINS
     functionality as well as some \ref HW configuration.
 
     See ex02.c source code for details.

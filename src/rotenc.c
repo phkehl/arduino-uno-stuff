@@ -98,7 +98,7 @@ ISR(INT0_vect)
     osIsrLeave();
 }
 
-static void svRotencBtnTimerCb(void *pArg);
+static void sRotencBtnTimerCb(void *pArg);
 
 // external interrupt 1 handles button presses
 ISR(INT1_vect)
@@ -111,7 +111,7 @@ ISR(INT1_vect)
         svRotencBtnMsss = osTaskGetTicks();
         svRotencBtnDn = true;
         osTimerKill(&svRotencBtnTimer);
-        osTimerArm(&svRotencBtnTimer, svRotencBtnTimerCb, NULL, ROTENC_LONG_THRS, 0);
+        osTimerArm(&svRotencBtnTimer, sRotencBtnTimerCb, NULL, ROTENC_LONG_THRS, 0);
     }
     // button up
     else
@@ -132,7 +132,7 @@ ISR(INT1_vect)
     osIsrLeave();
 }
 
-static void svRotencBtnTimerCb(void *pArg)
+static void sRotencBtnTimerCb(void *pArg)
 {
     UNUSED(pArg);
 

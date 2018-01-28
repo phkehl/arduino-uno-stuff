@@ -1,6 +1,6 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: flipflip clock (see \ref PROJECTS_FFFUNKYCLOCK)
+    \brief flipflip's Arduino Uno stuff: flipflip's funky clock (see \ref PROJECTS_FFFUNKYCLOCK)
 
     - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 

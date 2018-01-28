@@ -1,10 +1,10 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: flipflip clock (see \ref PROJECTS_FFCLOCK)
+    \brief flipflip's Arduino Uno stuff: flipflip's funky clock (see \ref PROJECTS_FFFUNKYCLOCK)
 
     - Copyright (c) 2014-2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \addtogroup PROJECTS_FFCLOCK
+    \addtogroup PROJECTS_FFFUNKYCLOCK
     @{
 */
 

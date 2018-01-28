@@ -329,6 +329,35 @@
 
 /* *************************************************************************** */
 
+//! rotary encoder input enabled
+#if !defined(FF_ROTENC_ENABLE) || defined(__DOXYGEN__)
+#  define FF_ROTENC_ENABLE  0
+#endif
+
+//! rotary encoder input pin 1 (signal 1)
+#if !defined(FF_ROTENC_PIN1) || defined(__DOXYGEN__)
+#  define FF_ROTENC_PIN1  _PD2
+#endif
+
+//! rotary encoder input pin 2 (signal 2)
+#if !defined(FF_ROTENC_PIN2) || defined(__DOXYGEN__)
+#  define FF_ROTENC_PIN2  _PD4
+#endif
+
+//! rotary encoder input pin 3 (button)
+#if !defined(FF_ROTENC_PIN3) || defined(__DOXYGEN__)
+#  define FF_ROTENC_PIN3  _PD3
+#endif
+
+//! rotary encoder maximum number of events that can be queued
+#if !defined(FF_ROTENC_NUMQ) || defined(__DOXYGEN__)
+#  define FF_ROTENC_NUMQ  5
+#endif
+
+
+
+/* *************************************************************************** */
+
 #endif // __DEFCONFIG_H__
 
 //@}

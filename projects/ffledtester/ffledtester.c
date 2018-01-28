@@ -5,6 +5,30 @@
     - Copyright (c) 2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup PROJECTS_FFLEDTESTER
+
+    Ardiono UNO Pins usage:
+    - D0: \ref ROTENC pin 2
+    - D1: \ref ROTENC pin 1 ("CLK")
+    - D2: \ref ROTENC pin 3 ("SW")
+    - D3:
+    - D4:
+    - D5:
+    - D6:
+    - D7:
+    - D8:
+    - D9:
+    - D10:
+    - D11:
+    - D12:
+    - D13:
+    - A0:
+    - A1:
+    - A2:
+    - A3:
+    - A4:
+    - A5:
+
+
     @{
 */
 
@@ -23,6 +47,7 @@
 #include "ws2801.h"        // ff: WS2801 LED driver
 #include "ws2801.h"        // ff: WS2801 LED driver
 #include "ledfx.h"         // ff: LED effects
+#include "rotenc.h"        // ff: rotary encoder input
 
 #include "ffledtester.h"
 
@@ -41,10 +66,40 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+    // clear event queue
+    rotencClearEvents();
+
+    static int16_t count;
+
     while (ENDLESS)
     {
-        PRINT("bla..");
-        osTaskDelay(1234);
+        const ROTENC_EVENT_t ev = rotencGetEvent(1000);
+        switch (ev)
+        {
+            case ROTENC_INC_DN:
+                count += 9;
+                FALLTHROUGH;
+            case ROTENC_INC:
+                count++;
+                DEBUG("INC %"PRIu16, count);
+                break;
+            case ROTENC_DEC_DN:
+                count -= 9;
+                FALLTHROUGH;
+            case ROTENC_DEC:
+                count--;
+                DEBUG("DEC %"PRIu16, count);
+                break;
+            case ROTENC_BTN:
+                DEBUG("BTN");
+                break;
+            case ROTENC_BTN_LONG:
+                DEBUG("LONG");
+                break;
+            case ROTENC_NONE:
+                //DEBUG("NONE");
+                break;
+        }
     }
 }
 
@@ -65,6 +120,7 @@ void appInit(void)
 {
     DEBUG("ffledtester: init");
 
+    rotencInit();
     ws2801Init();
 
     // register status function for the system task

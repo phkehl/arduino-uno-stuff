@@ -546,6 +546,16 @@ bool osQueueReceive(OS_QUEUE_t *pQueue, void *pMsg, const int32_t timeout)
     return false;
 }
 
+void osQueueClear(OS_QUEUE_t *pQueue)
+{
+    ATOM_QUEUE *pQ = (ATOM_QUEUE *)pQueue;
+    pQ->putSuspQ = NULL;
+    pQ->getSuspQ = NULL;
+    pQ->insert_index = 0;
+    pQ->remove_index = 0;
+    pQ->num_msgs_stored = 0;
+}
+
 void osQueueDelete(OS_QUEUE_t *pQueue)
 {
     const uint8_t res = atomQueueDelete((ATOM_QUEUE *)pQueue);

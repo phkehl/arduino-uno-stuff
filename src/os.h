@@ -296,6 +296,12 @@ bool osQueueSend(OS_QUEUE_t *pQueue, const void *pkMsg, const int32_t timeout);
 */
 bool osQueueReceive(OS_QUEUE_t *pQueue, void *pMsg, const int32_t timeout);
 
+//! clear (empty) queue
+/*!
+    \param[in,out] pQueue    the queue
+*/
+void osQueueClear(OS_QUEUE_t *pQueue);
+
 //! delete queue
 /*!
     \param[in,out] pQueue    the queue

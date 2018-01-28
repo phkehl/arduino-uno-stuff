@@ -78,7 +78,7 @@ PIN_HIGH(LED_PIN);
 #define PIN_IS_SAME(pin1, pin2) (PIN_TO_UID(pin1) == PIN_TO_UID(pin2))
 //@}
 
-#define PIN_BIT_NONE  9999
+#define PIN_UID__NONE     0x5555
 
 //------------------------------------------------------------------------------
 

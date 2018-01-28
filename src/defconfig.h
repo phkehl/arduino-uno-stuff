@@ -21,12 +21,12 @@
 
 /* *************************************************************************** */
 
-//! system load signal on pin (see \ref ARDUINOPINS, set to NONE to disable)
+//! system load signal on pin (see \ref ARDUINOPINS, set to _NONE to disable)
 #if !defined(FF_HW_LOAD_PIN) || defined(__DOXYGEN__)
 #  define FF_HW_LOAD_PIN _A0
 #endif
 
-//! system tick signal on pin (see \ref ARDUINOPINS, set to NONE to disable)
+//! system tick signal on pin (see \ref ARDUINOPINS, set to _NONE to disable)
 #if !defined(FF_HW_TICK_PIN) || defined(__DOXYGEN__)
 #  define FF_HW_TICK_PIN _A1
 #endif

@@ -357,7 +357,7 @@ static void sHwRxInit(void) { }
 
 /* ***** debug signal LEDs ************************************************** */
 
-#if (PIN_TO_BIT(FF_HW_TICK_PIN) != PIN_BIT_NONE)
+#if (!PIN_IS_SAME(FF_HW_TICK_PIN, _NONE))
 static void sHwLedTickInit(void)
 {
     PIN_OUTPUT(FF_HW_TICK_PIN);
@@ -370,12 +370,11 @@ __FORCEINLINE void hwLedTickToggle(void)
 }
 
 #else
- void sHwLedTickInit(void) { }
+static void sHwLedTickInit(void) { }
 __FORCEINLINE void hwLedTickToggle(void) { }
 #endif
 
-#if (PIN_TO_BIT(FF_HW_LOAD_PIN) != PIN_BIT_NONE)
-
+#if (!PIN_IS_SAME(FF_HW_LOAD_PIN, _NONE))
 static void sHwLedLoadInit(void)
 {
     PIN_OUTPUT(FF_HW_LOAD_PIN);

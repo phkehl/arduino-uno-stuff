@@ -250,6 +250,8 @@ void osTimerArm(OS_TIMER_t *pTimer, OS_TIMERFUNC_t cb, void *pArg, uint32_t time
 //! kill timer
 /*!
     \param[in] pTimer  the timer
+
+    \returns true if the timer was cancelled, false otherwise (timer invalid, already expired)
 */
 bool osTimerKill(OS_TIMER_t *pTimer);
 

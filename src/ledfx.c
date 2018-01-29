@@ -580,8 +580,8 @@ void ledfxDiagonal(const bool init, uint8_t *r0)
     }
     const uint8_t sat = 255;
     const uint8_t val = 255;
-    const uint16_t nxx = FF_LEDFX_NUM_X * FF_LEDFX_NUM_X;
-    const uint16_t nyy = FF_LEDFX_NUM_Y * FF_LEDFX_NUM_Y;
+    const uint16_t nxx = (uint16_t)FF_LEDFX_NUM_X * (uint16_t)FF_LEDFX_NUM_X;
+    const uint16_t nyy = (uint16_t)FF_LEDFX_NUM_Y * (uint16_t)FF_LEDFX_NUM_Y;
     for (uint16_t y = 0; y < FF_LEDFX_NUM_Y; y++)
     {
         const uint16_t yy = y * y;

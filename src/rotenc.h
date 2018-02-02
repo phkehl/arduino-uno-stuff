@@ -57,6 +57,13 @@ typedef enum ROTENC_EVENT_e
 */
 ROTENC_EVENT_t rotencGetEvent(int32_t timeout);
 
+//! stringify event
+/*!
+    \param[in] event  the event
+    \returns a PROGMEM string for the event
+*/
+const char *rotencEventStr(const ROTENC_EVENT_t event);
+
 //! clear event queue
 void rotencClearEvents(void);
 

@@ -146,6 +146,21 @@ static void sRotencBtnTimerCb(void *pArg)
     }
 }
 
+const char *rotencEventStr(const ROTENC_EVENT_t event)
+{
+    switch (event)
+    {
+        case ROTENC_NONE:      return PSTR("NONE");
+        case ROTENC_INC:       return PSTR("INC");
+        case ROTENC_DEC:       return PSTR("DEC");
+        case ROTENC_INC_DN:    return PSTR("INC_DN");
+        case ROTENC_DEC_DN:    return PSTR("DEC_DN");
+        case ROTENC_BTN:       return PSTR("BTN");
+        case ROTENC_BTN_LONG:  return PSTR("BTN_LONG");
+        default:               return PSTR("???");
+    }
+}
+
 
 // -------------------------------------------------------------------------------------------------
 

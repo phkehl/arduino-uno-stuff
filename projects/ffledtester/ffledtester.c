@@ -55,9 +55,245 @@
 #include "ffledtester.h"
 #include "dl2416t.h"
 
+#if 1
+
+// -------------------------------------------------------------------------------------------------
+
+// type of menu entry
+typedef enum MENU_TYPE_e
+{
+    MENU_TYPE_STR,  // entry is list of strings to choose from
+    MENU_TYPE_VAL,  // entry is value
+    MENU_TYPE_MENU, // entry is a sub-menu
+
+} MENU_TYPE_t;
+
+// menu entries
+typedef struct MENU_s
+{
+    uint8_t  uid;
+    uint8_t  pid;
+
+    MENU_TYPE_t type;         // the entry type
+    const char  name[16];     // the name
+    bool        wrap;         // wrap at beginning/end of list/value
+    union
+    {
+        struct
+        {                         // type = MENU_TYPE_STR:
+            const char **strs;    // - strings to choose from
+            uint8_t nStrs;        // - the number of strings
+        };
+        struct
+        {                         // type = MENU_TYPE_NUM
+            int16_t min;          // - minimum value
+            int16_t max;          // - maximum value
+        };
+    };
+} MENU_t;
+
+static const char skModeMenuStrs[][5] PROGMEM =
+{
+    { "MRGB\0" }, { "MHSV\0" }
+};
+static const char skOrderMenuStrs[][5] PROGMEM =
+{
+    { "ORGB\0" }, { "ORBG\0" }, { "OBRG\0" }, { "OBGR\0" }, { "OBRG\0" }, { "OBGR\0" }
+};
+
+static const MENU_t skMenu[] PROGMEM =
+{
+    { .uid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .strs = (const char **)skModeMenuStrs , .nStrs = NUMOF(skModeMenuStrs) },
+    { .uid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .strs = (const char **)skOrderMenuStrs , .nStrs = NUMOF(skOrderMenuStrs) },
+    { .uid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .min = 0, .max = 255 },
+    { .uid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .min = 0, .max = 255 },
+    { .uid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .min = 0, .max = 255 },
+    { .uid =  6, .pid =  0, .type = MENU_TYPE_VAL,  .name = "6 HU (hue)\0",    .wrap = true,  .min = 0, .max = 255 },
+    { .uid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 SA (sat)\0",    .wrap = false, .min = 0, .max = 255 },
+    { .uid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 VA (val)\0",    .wrap = false, .min = 0, .max = 255 },
+    { .uid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0", .wrap = false },
+    { .uid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A XX (test)\0",   .wrap = false },
+
+    { .uid = 31, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .min = 1, .max = 10 },
+    { .uid = 32, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .min = 1, .max = 10 },
+
+    { .uid = 41, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = false, .min = 1, .max = 10 },
+    { .uid = 42, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .min = 1, .max = 10 },
+    { .uid = 43, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0",          .wrap = false },
+
+    { .uid = 44, .pid = 43, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .min = 1, .max = 10 },
+    { .uid = 45, .pid = 43, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .min = 1, .max = 10 },
+};
+
+#define MENU_UID(pkMenu)    ((uint8_t)pgm_read_byte(&((pkMenu)->uid)))
+#define MENU_PID(pkMenu)    ((uint8_t)pgm_read_byte(&((pkMenu)->pid)))
+#define MENU_TYPE(pkMenu)   ((MENU_TYPE_t)pgm_read_byte(&((pkMenu)->type)))
+#define MENU_NAME(pkMenu)   ((pkMenu)->name)
+
+typedef struct MENU_STATE_s
+{
+    const MENU_t *pkMenu ; // list of menu entries
+    uint8_t       nMenu;  // number of menu entries
+    const MENU_t *pkCurr; // current menu
+    bool          active; // true if entry is active
+    int16_t      *vals;   // storage for the values associated with each entry (must be big enough for nMenu values)
+} MENU_STATE_t;
+
+// jump to given menu entry
+static void sMenuSet(MENU_STATE_t *pState, const MENU_t *pkMenu)
+{
+    if (pkMenu == NULL)
+    {
+        pState->pkCurr = pState->pkMenu;
+    }
+    else
+    {
+        pState->pkCurr = pkMenu;
+    }
+    DEBUG("menu: uid=%02"PRIu8" pid=%02"PRIu8" -> %S (%S)",
+        MENU_UID(pState->pkCurr), MENU_PID(pState->pkCurr), MENU_NAME(pState->pkCurr),
+        pState->active ? PSTR("active") : PSTR("menu"));
+}
+
+static void sMenuUpdate(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
+{
+    // change menu entry
+    if (!pState->active)
+    {
+        switch (event)
+        {
+            // go to next menu entry
+            case ROTENC_INC:
+            case ROTENC_INC_DN:
+            {
+                const MENU_t *pkCand = pState->pkCurr + 1;
+                while (pkCand < &pState->pkMenu[pState->nMenu])
+                {
+                    if (MENU_PID(pkCand) == MENU_PID(pState->pkCurr))
+                    {
+                        sMenuSet(pState, pkCand);
+                        break;
+                    }
+                    pkCand++;
+                }
+                break;
+            }
+            // go to previous menu entry
+            case ROTENC_DEC:
+            case ROTENC_DEC_DN:
+            {
+                const MENU_t *pkCand = pState->pkCurr - 1;
+                while (pkCand >= pState->pkMenu)
+                {
+                    if (MENU_PID(pkCand) == MENU_PID(pState->pkCurr))
+                    {
+                        sMenuSet(pState, pkCand);
+                        break;
+                    }
+                    pkCand--;
+                }
+                break;
+            }
+            // activate (to change value) or enter sub-menu
+            case ROTENC_BTN:
+                switch (MENU_TYPE(pState->pkCurr))
+                {
+                    // enter sub-menu
+                    case MENU_TYPE_MENU:
+                    {
+                        const uint8_t uid = MENU_UID(pState->pkCurr);
+                        const MENU_t *pkCand = pState->pkMenu;
+                        while (pkCand < &pState->pkMenu[pState->nMenu])
+                        {
+                            if (MENU_PID(pkCand) == uid)
+                            {
+                                sMenuSet(pState, pkCand);
+                                break;
+                            }
+                            pkCand++;
+                        }
+                        // TODO: remember previous uid in vals
+                        break;
+                    }
+                    // activate entry
+                    case MENU_TYPE_VAL:
+                    case MENU_TYPE_STR:
+                        pState->active = true;
+                        sMenuSet(pState, pState->pkCurr);
+                        break;
+                }
+                break;
+            // leave sub-menu
+            case ROTENC_BTN_LONG:
+            {
+                const uint8_t pid = MENU_PID(pState->pkCurr);
+                const MENU_t *pkCand = pState->pkMenu;
+                while (pkCand < &pState->pkMenu[pState->nMenu])
+                {
+                    if (MENU_UID(pkCand) == pid)
+                    {
+                        sMenuSet(pState, pkCand);
+                        break;
+                    }
+                    pkCand++;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    // change value in currently active menu entry
+    else
+    {
+        DEBUG("active");
+
+    }
+}
+
+static void sAppTask(void *pArg)
+{
+    // not using the task argument
+    UNUSED(pArg);
+
+    // clear event queue
+    rotencClearEvents();
+
+
+    // initialise menu
+    static int16_t sMenuVals[NUMOF(skMenu)];
+    static MENU_STATE_t sMenuState = { .pkMenu = skMenu, .nMenu = NUMOF(skMenu), .vals = sMenuVals };
+    sMenuSet(&sMenuState, NULL);
+
+
+    while (ENDLESS)
+    {
+        const ROTENC_EVENT_t ev = rotencGetEvent(1000);
+        if (ev != ROTENC_NONE)
+        {
+            DEBUG("%S", rotencEventStr(ev));
+        }
+        switch (ev)
+        {
+            case ROTENC_NONE:
+                break;
+            case ROTENC_INC:
+            case ROTENC_INC_DN:
+            case ROTENC_DEC:
+            case ROTENC_DEC_DN:
+            case ROTENC_BTN:
+            case ROTENC_BTN_LONG:
+                sMenuUpdate(&sMenuState, ev);
+                break;
+                break;
+        }
+    }
+
+}
 
 /* ***** application functions *********************************************** */
 
+#else
 typedef enum MENU_e
 {
     CHOOSE,
@@ -434,6 +670,7 @@ static void sAppTask(void *pArg)
     }
 }
 
+#endif
 
 /* ***** application status ************************************************** */
 
@@ -442,7 +679,6 @@ static void sAppStatus(char *str, const size_t size)
 {
     /*const int n = */snprintf_P(str, size, PSTR("ffledtester..."));
 }
-
 
 /* ***** application init **************************************************** */
 

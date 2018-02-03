@@ -28,7 +28,7 @@ void ws2801Init(void)
     PIN_HIGH(_D10);
 
     // enable, master mode
-    SPCR = BIT(SPE) | BIT(MSTR); // | BIT(CPOL);
+    SPCR = /*BIT(SPE) |*/ BIT(MSTR); // | BIT(CPOL);
 
 #if (FF_WS2801_SPI_SPEED == 125)
     SPSR = 0;          SPCR |= BIT(SPR1) | BIT(SPR0); // f/128  125kHz
@@ -54,6 +54,7 @@ void ws2801Init(void)
 void ws2801Send(const uint8_t *data, const uint16_t size)
 {
     CS_ENTER;
+    SETBITS(SPCR, BIT(SPE)); // enable SPI
     PIN_LOW(_D10);
 
     uint16_t n = size;
@@ -77,6 +78,7 @@ void ws2801Send(const uint8_t *data, const uint16_t size)
     // latch data
     //_delay_us(500);
     PIN_HIGH(_D10);
+    CLRBITS(SPCR, BIT(SPE)); // disable SPI
     CS_LEAVE;
 }
 

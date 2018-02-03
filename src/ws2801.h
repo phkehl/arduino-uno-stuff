@@ -10,12 +10,15 @@
     This implements a WS2801 LED driver. It uses the following pins:
 
     - pin 13 is the clock output (SCK), connect to CI (clock in) of the first WS2801 LED
+    - pin 12 (MISO) isn't used (but blocked)
     - pin 11 is the data output (MOSI), connect to DI (data in) of the first WS2801 LED
     - pin 10 is the slave select signal (SS)
 
     Note that the SS signal isn't used by the WS2801 chip. However, the AVR's SPI peripheral seems
-    to require that the CS pin is configured as an output in order for the SPI master mode to work.
-    Hence this driver drives that signal (active low), which might be useful for debugging.
+    to require that the CS pin is configured as an output in order for the SPI master mode to
+    work. Hence this driver drives that signal (active low), which might be useful for debugging.
+    Nor are we reading anything on the MISO pin, but when SPI master mode is active this pin is
+    unavailable.
 
     Configuration:
     - #FF_WS2801_SPI_SPEED

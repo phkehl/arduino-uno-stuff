@@ -23,7 +23,7 @@
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
 #include "ws2801.h"        // ff: WS2801 LED driver
-#include "ws2801.h"        // ff: WS2801 LED driver
+#include "ws2812.h"        // ff: WS2812 LED driver
 #include "ledfx.h"         // ff: LED effects
 #include "hsv2rgb.h"       // ff: HSV to RGV conversion
 #include "rotenc.h"        // ff: rotary encoder input
@@ -470,8 +470,8 @@ typedef enum ORDER_e { ORDER_RGB = 0, ORDER_RBG = 1, ORDER_GRB = 2, ORDER_GBR = 
 static const MENU_t skMenu1[] PROGMEM =
 {
     // main menu
-    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .strs = skModeMenuStrs,  .nStrs = NUMOF(skModeMenuStrs) },
-    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
+    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .def = MODE_RGB, .strs = skModeMenuStrs,  .nStrs = NUMOF(skModeMenuStrs) },
+    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .def = ORDER_RGB, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
     { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   0 },
     { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   0 },
     { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   0 },
@@ -484,7 +484,7 @@ static const MENU_t skMenu1[] PROGMEM =
     // matrix menu
     { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 0 },
     { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 0 },
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 1, .max = 100, .def = FF_LEDFX_NUM_LED },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 1 },
 
     // test menu
     { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
@@ -520,6 +520,7 @@ typedef union MENU1_VALUES_u
     };
 
 } MENU1_VALUES_t;
+#define STRIP_PIN _D7
 
 // -------------------------------------------------------------------------------------------------
 
@@ -549,11 +550,12 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
         case ORDER_RGB: ch1 = rd; ch2 = gr; ch3 = bl; break;
     }
     ledfxClear(0, 0);
-    if (pkVal->nxy > 0)
+    for (int16_t ix = 0; ix < pkVal->nxy; ix++)
     {
-        ledfxFillRGB(0, pkVal->nxy, ch1, ch2, ch3);
+        ledfxSetIxRGB(ix, ch1, ch2, ch3);
     }
     ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+    ws2812Send(WS2812_PIN, ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -624,13 +626,15 @@ static void sAppTask(void *pArg)
                 break;
         }
 
-        DEBUG("m:%"PRIi16" (%S) o:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
-            sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
+        hwTic(0);
+        sUpdateLeds(&sMenu1Values);
+        const uint16_t dt = hwToc(0);
+
+        DEBUG("%03"PRIu16"us m:%"PRIi16" (%S) o:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
+            dt, sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
             sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
             sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
             sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
-
-        sUpdateLeds(&sMenu1Values);
     }
 
 }
@@ -661,6 +665,7 @@ void appInit(void)
 
     ledfxClear(0, 0);
     ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+    ws2812Send(WS2812_PIN, ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);

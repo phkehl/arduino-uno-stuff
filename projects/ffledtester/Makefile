@@ -2,8 +2,9 @@
 # path to stuff
 FFDIR       := ../..
 
-# FTDI cable
-#DEBUGPORT   := /dev/ttyUSB0
+# Nano
+PROGSPEED   := 57600
+DEBUGPORT   := /dev/ttyUSB0
 
 # USBTinyISP programmer
 #AVRDUDEARGS := -c usbtiny -V -B 1

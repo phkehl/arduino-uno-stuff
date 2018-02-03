@@ -53,7 +53,7 @@
 #define FF_HW_TICK_PIN        _NONE
 
 #define FF_LEDFX_NUM_LED      200
-#define FF_LEDFX_ORDER        123
+#define FF_LEDFX_ORDER        123 // must be 123
 
 
 

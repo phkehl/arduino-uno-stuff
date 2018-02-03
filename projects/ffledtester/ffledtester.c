@@ -52,12 +52,12 @@ typedef struct MENU_s
 
     MENU_TYPE_t type;         // the entry type
     const char  name[16];     // the name
-    bool        wrap;         // wrap at beginning/end of list/value
+    bool        wrap;         // wrap at beginning/end of list/value (only for MENU_TYPE_STR/MENU_TYPE_NUM)
     union
     {
         struct
         {                         // type = MENU_TYPE_STR:
-            const char **strs;    // - strings to choose from
+            const __flash char * const __flash *strs;    // - strings to choose from
             uint8_t nStrs;        // - the number of strings
         };
         struct
@@ -81,86 +81,50 @@ typedef struct MENU_s
 #define MENU_IX(pkMenu, pkCurr)  ((uint8_t)((pkCurr) - (pkMenu)))
 #define MENU_WRAP(pkMenu)        ((bool)pgm_read_byte(&((pkMenu)->wrap)))
 #define MENU_NSTRS(pkMenu)       ((uint8_t)pgm_read_byte(&((pkMenu)->nStrs)))
+#define MENU_STRS(pkMenu)        ((pkMenu)->strs))
+#define MENU_STR_IX(pkMenu, ix)  ((pkMenu)->strs[ix])
 #define MENU_MIN(pkMenu)         ((int16_t)pgm_read_word(&((pkMenu)->min)))
 #define MENU_MAX(pkMenu)         ((int16_t)pgm_read_word(&((pkMenu)->max)))
 #define MENU_IND(pkMenu)         ((char)pgm_read_byte(&((pkMenu)->ind)))
 #define MENU_DEF(pkMenu)         ((int16_t)pgm_read_byte(&((pkMenu)->def)))
 #define MENU_JUMP(pkMenu)        ((uint8_t)pgm_read_byte(&((pkMenu)->jump)))
 
-static const char skModeMenuStrs[][5] PROGMEM =
-{
-    { "MRGB\0" }, { "MHSV\0" }
-};
-static const char skOrderMenuStrs[][5] PROGMEM =
-{
-    { "ORGB\0" }, { "ORBG\0" }, { "OBRG\0" }, { "OBGR\0" }, { "OBRG\0" }, { "OBGR\0" }
-};
-
-// menu structure
-static const MENU_t skMenu1[] PROGMEM =
-{
-    // main menu
-    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .strs = (const char **)skModeMenuStrs, .nStrs = NUMOF(skModeMenuStrs) },
-    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .strs = (const char **)skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
-    { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   0 },
-    { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   0 },
-    { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   0 },
-    { .mid =  6, .pid =  0, .type = MENU_TYPE_VAL,  .name = "6 HU (hue)\0",    .wrap = true,  .ind = 'H', .min = 0, .max = 255, .def =   0 },
-    { .mid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 SA (sat)\0",    .wrap = false, .ind = 'S', .min = 0, .max = 255, .def = 255 },
-    { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   0 },
-    { .mid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0", .wrap = false },
-    { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A XX (test)\0",   .wrap = false },
-
-    // matrix menu
-    { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 0 },
-    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 0 },
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 1, .max = 100, .def = 0 },
-
-    // test menu
-    { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
-    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
-    { .mid = 16, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0",          .wrap = false },
-    { .mid = 17, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X <-\0",          .wrap = false, .jump = 10 },
-    // test sub-menu
-    { .mid = 18, .pid = 15, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
-    { .mid = 19, .pid = 15, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
-};
-
-// storage for menu values
-typedef union MENU1_VALUES_u
-{
-    // this many values
-    int16_t values[NUMOF(skMenu1)];
-    // and direct, named access (offset must be in sync with the above list)
-    struct
-    {
-        int16_t mode;   //  1
-        int16_t order;  //  2
-        int16_t red;    //  3
-        int16_t green;  //  4
-        int16_t blue;   //  5
-        int16_t hue;    //  6
-        int16_t sat;    //  7
-        int16_t val;    //  8
-        int16_t _pad0;  //  9
-        int16_t _pad1;  // 10
-        int16_t nx;     // 11
-        int16_t ny;     // 12
-        int16_t nxy;    // 13
-    };
-
-} MENU1_VALUES_t;
-
-
 typedef struct MENU_STATE_s
 {
-    const MENU_t *pkMenu; // list of menu entries
-    uint8_t       nMenu;  // number of menu entries
-    const MENU_t *pkCurr; // current menu
-    bool          active; // true if entry is active
-    int16_t      *vals;   // storage for the values associated with each entry (must be big enough for nMenu values)
+    const __flash MENU_t *pkMenu; // list of menu entries
+    uint8_t               nMenu;  // number of menu entries
+    const __flash MENU_t *pkCurr; // current menu
+    bool                  active; // true if entry is active
+    int16_t              *vals;   // storage for the values associated with each entry (must be big enough for nMenu values)
 } MENU_STATE_t;
 
+// forward declarations
+static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu);
+
+// initialise menu state and values
+static void sMenuInit(MENU_STATE_t *pState, const MENU_t *pkMenu, const uint8_t nMenu, int16_t *pVals)
+{
+    memset(pState, 0, sizeof(*pState));
+    memset(pVals, 0, nMenu * sizeof(*pVals));
+    pState->pkMenu = pkMenu;
+    pState->nMenu  = nMenu;
+    pState->vals   = pVals;
+    for (uint8_t ix = 0; ix < nMenu; ix++)
+    {
+        switch (MENU_TYPE(&pkMenu[ix]))
+        {
+            case MENU_TYPE_VAL:
+                pVals[ix] = MENU_DEF(&pkMenu[ix]);
+                break;
+            case MENU_TYPE_STR:
+                break;
+            case MENU_TYPE_MENU:
+            case MENU_TYPE_JUMP:
+                break;
+        }
+    }
+    sMenuUpdate(pState, NULL);
+}
 
 // activate / update menu entry
 static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
@@ -199,8 +163,11 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
                 break;
             }
             case MENU_TYPE_STR:
+            {
+                const int16_t ix = pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ];
+                dl2416tStr_P(MENU_STR_IX(pState->pkCurr, ix), 0, 4);
                 break;
-
+            }
             case MENU_TYPE_MENU:
             case MENU_TYPE_JUMP:
                 dl2416tStr_P(PSTR("WTF?"), 0, 4);
@@ -211,32 +178,6 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
     {
         dl2416tStr_P(MENU_NAME(pState->pkCurr), 0, 4);
     }
-}
-
-// initialise menu state and values
-static void sMenuInit(MENU_STATE_t *pState, const MENU_t *pkMenu, const uint8_t nMenu, int16_t *pVals)
-{
-    memset(pState, 0, sizeof(*pState));
-    memset(pVals, 0, nMenu * sizeof(*pVals));
-    pState->pkMenu = pkMenu;
-    pState->nMenu  = nMenu;
-    pState->vals   = pVals;
-    for (uint8_t ix = 0; ix < nMenu; ix++)
-    {
-        switch (MENU_TYPE(&pkMenu[ix]))
-        {
-            case MENU_TYPE_VAL:
-                pVals[ix] = MENU_DEF(&pkMenu[ix]);
-                break;
-            case MENU_TYPE_STR:
-                break;
-            case MENU_TYPE_MENU:
-            case MENU_TYPE_JUMP:
-                break;
-        }
-    }
-    DEBUG("vals %p %p %p", pState->vals, &pState->vals[0], &pState->vals[1]);
-    sMenuUpdate(pState, NULL);
 }
 
 // handle menu events
@@ -445,7 +386,50 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
             }
 
             case MENU_TYPE_STR:
+            {
+                update = true;
+                const bool wrap = MENU_WRAP(pState->pkCurr);
+                const uint8_t nStrs = MENU_NSTRS(pState->pkCurr);
+                const uint8_t maxIx = nStrs - 1;
+                //const char   **strs = MENU_STRS(pState->pkCurr);
+                int16_t val = pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ];
+                if (val < 0) { val = 0; }
+                if (val > maxIx) { val = maxIx; }
+                switch (event)
+                {
+                    case ROTENC_INC:
+                    case ROTENC_INC_DN:
+                        if (val < maxIx)
+                        {
+                            val++;
+                        }
+                        else if (wrap)
+                        {
+                            val = 0;
+                        }
+                        break;
+                    case ROTENC_DEC:
+                    case ROTENC_DEC_DN:
+                        if (val > 0)
+                        {
+                            val--;
+                        }
+                        else if (wrap)
+                        {
+                            val = maxIx;
+                        }
+                        break;
+                    // back to menu
+                    case ROTENC_BTN:
+                        pState->active = false;
+                        break;
+                    case ROTENC_BTN_LONG:
+                    case ROTENC_NONE:
+                        break;
+                }
+                pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ] = val;
                 break;
+            }
 
         }
         if (update)
@@ -517,6 +501,80 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
 
 /* ***** application task **************************************************** */
 
+const __flash char skModeMenuStr0[] = "MRGB";
+const __flash char skModeMenuStr1[] = "MHSV";
+const __flash char * const __flash skModeMenuStrs[] =
+{
+    skModeMenuStr0, skModeMenuStr1
+};
+
+const __flash char skOrderMenuStr0[] = "ORGB";
+const __flash char skOrderMenuStr1[] = "ORGB";
+const __flash char skOrderMenuStr2[] = "OBRG";
+const __flash char skOrderMenuStr3[] = "OBGR";
+const __flash char skOrderMenuStr4[] = "OBRG";
+const __flash char skOrderMenuStr5[] = "OBGR";
+const __flash char * const __flash skOrderMenuStrs[] =
+{
+    skOrderMenuStr0, skOrderMenuStr1, skOrderMenuStr2, skOrderMenuStr3, skOrderMenuStr4, skOrderMenuStr5
+};
+
+// menu structure
+static const MENU_t skMenu1[] PROGMEM =
+{
+    // main menu
+    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .strs = skModeMenuStrs,  .nStrs = NUMOF(skModeMenuStrs) },
+    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
+    { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   0 },
+    { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   0 },
+    { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   0 },
+    { .mid =  6, .pid =  0, .type = MENU_TYPE_VAL,  .name = "6 HU (hue)\0",    .wrap = true,  .ind = 'H', .min = 0, .max = 255, .def =   0 },
+    { .mid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 SA (sat)\0",    .wrap = false, .ind = 'S', .min = 0, .max = 255, .def = 255 },
+    { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   0 },
+    { .mid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0" },
+    { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A XX (test)\0" },
+
+    // matrix menu
+    { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 0 },
+    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 0 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 1, .max = 100, .def = 0 },
+
+    // test menu
+    { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
+    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
+    { .mid = 16, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0" },
+    { .mid = 17, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X <-\0",          .wrap = false, .jump = 10 },
+    // test sub-menu
+    { .mid = 18, .pid = 15, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
+    { .mid = 19, .pid = 15, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
+};
+
+// storage for menu values
+typedef union MENU1_VALUES_u
+{
+    // this many values
+    int16_t values[NUMOF(skMenu1)];
+    // and direct, named access (offset must be in sync with the above list)
+    struct
+    {
+        int16_t mode;   //  1
+        int16_t order;  //  2
+        int16_t red;    //  3
+        int16_t green;  //  4
+        int16_t blue;   //  5
+        int16_t hue;    //  6
+        int16_t sat;    //  7
+        int16_t val;    //  8
+        int16_t _pad0;  //  9
+        int16_t _pad1;  // 10
+        int16_t nx;     // 11
+        int16_t ny;     // 12
+        int16_t nxy;    // 13
+    };
+
+} MENU1_VALUES_t;
+
+
 // application task
 static void sAppTask(void *pArg)
 {
@@ -558,12 +616,11 @@ static void sAppTask(void *pArg)
                 break;
         }
 
-
-        DEBUG("m:%"PRIi16" o:%"PRIi16" n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
-            sMenu1Values.mode, sMenu1Values.order, sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
+        DEBUG("m:%"PRIi16" (%S) o:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
+            sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
+            sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
+            sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
             sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
-
-
     }
 
 }

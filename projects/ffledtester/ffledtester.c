@@ -32,7 +32,7 @@
 #include "dl2416t.h"
 
 
-/* ***** application functions *********************************************** */
+/* ***** menu stuff ********************************************************** */
 
 // type of menu entry
 typedef enum MENU_TYPE_e
@@ -443,63 +443,8 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
     }
 }
 
-// -------------------------------------------------------------------------------------------------
 
-// static void sUpdateLeds(const STATE_t *pkState)
-// {
-//     uint8_t rd, gr, bl;
-//     switch ((MODE_t)pgm_read_byte(&skModeChoices[ pkState->mode ]))
-//     {
-//         case MODE_RGB:
-//             rd = pkState->red;
-//             gr = pkState->green;
-//             bl = pkState->blue;
-//             break;
-//         case MODE_HSV:
-//             hsv2rgb(pkState->hue, pkState->sat, pkState->val, &rd, &gr, &bl);
-//             break;
-//     }
-//     uint8_t ch1, ch2, ch3;
-//     switch ((ORDER_t)pgm_read_byte(&skOrderChoices[ pkState->order ]))
-//     {
-//         case ORDER_RBG: ch1 = rd; ch2 = bl; ch3 = gr; break;
-//         case ORDER_GRB: ch1 = gr; ch2 = rd; ch3 = bl; break;
-//         case ORDER_GBR: ch1 = gr; ch2 = bl; ch3 = rd; break;
-//         case ORDER_BRG: ch1 = bl; ch2 = rd; ch3 = gr; break;
-//         case ORDER_BGR: ch1 = bl; ch2 = gr; ch3 = rd; break;
-//         default:
-//         case ORDER_RGB: ch1 = rd; ch2 = gr; ch3 = bl; break;
-//     }
-//     ledfxFillRGB(0, 0, ch1, ch2, ch3);
-//     ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
-// }
-
-// -------------------------------------------------------------------------------------------------
-
-// static void sRunDemo(const STATE_t *pkState, const DEMO_t which)
-// {
-//     UNUSED(pkState);
-//     PRINT("Demo %S", skDemoStrs[which]);
-//     switch (which)
-//     {
-//         case DEMO_DISP:
-//         {
-//             const char *skDemoStr = PSTR("    !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_    ");
-//             uint8_t n = 10;
-//             while (n > 0)
-//             {
-//                 dl2416tClear();
-//                 dl2416tUnsigned(n, 1, 2);
-//                 dl2416tBlink(3, 100, 200);
-//                 dl2416tStrScroll_P(skDemoStr, 300);
-//                 n--;
-//             }
-//         }
-//     }
-// }
-
-
-/* ***** application task **************************************************** */
+/* ***** LED stuff *********************************************************** */
 
 const __flash char skModeMenuStr0[] = "MRGB";
 const __flash char skModeMenuStr1[] = "MHSV";
@@ -507,17 +452,19 @@ const __flash char * const __flash skModeMenuStrs[] =
 {
     skModeMenuStr0, skModeMenuStr1
 };
+typedef enum MODE_e { MODE_RGB = 0, MODE_HSV = 1 } MODE_t;
 
 const __flash char skOrderMenuStr0[] = "ORGB";
-const __flash char skOrderMenuStr1[] = "ORGB";
-const __flash char skOrderMenuStr2[] = "OBRG";
-const __flash char skOrderMenuStr3[] = "OBGR";
+const __flash char skOrderMenuStr1[] = "ORBG";
+const __flash char skOrderMenuStr2[] = "OGRB";
+const __flash char skOrderMenuStr3[] = "OGBR";
 const __flash char skOrderMenuStr4[] = "OBRG";
 const __flash char skOrderMenuStr5[] = "OBGR";
 const __flash char * const __flash skOrderMenuStrs[] =
 {
     skOrderMenuStr0, skOrderMenuStr1, skOrderMenuStr2, skOrderMenuStr3, skOrderMenuStr4, skOrderMenuStr5
 };
+typedef enum ORDER_e { ORDER_RGB = 0, ORDER_RBG = 1, ORDER_GRB = 2, ORDER_GBR = 3, ORDER_BRG = 4, ORDER_BGR = 5 } ORDER_t;
 
 // menu structure
 static const MENU_t skMenu1[] PROGMEM =
@@ -537,7 +484,7 @@ static const MENU_t skMenu1[] PROGMEM =
     // matrix menu
     { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 0 },
     { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 0 },
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 1, .max = 100, .def = 0 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 1, .max = 100, .def = FF_LEDFX_NUM_LED },
 
     // test menu
     { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
@@ -574,6 +521,67 @@ typedef union MENU1_VALUES_u
 
 } MENU1_VALUES_t;
 
+// -------------------------------------------------------------------------------------------------
+
+static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
+{
+    uint8_t rd, gr, bl;
+    switch ((MODE_t)pkVal->mode)
+    {
+        case MODE_RGB:
+            rd = pkVal->red;
+            gr = pkVal->green;
+            bl = pkVal->blue;
+            break;
+        case MODE_HSV:
+            hsv2rgb(pkVal->hue, pkVal->sat, pkVal->val, &rd, &gr, &bl);
+            break;
+    }
+    uint8_t ch1, ch2, ch3;
+    switch ((ORDER_t)pkVal->order)
+    {
+        case ORDER_RBG: ch1 = rd; ch2 = bl; ch3 = gr; break;
+        case ORDER_GRB: ch1 = gr; ch2 = rd; ch3 = bl; break;
+        case ORDER_GBR: ch1 = gr; ch2 = bl; ch3 = rd; break;
+        case ORDER_BRG: ch1 = bl; ch2 = rd; ch3 = gr; break;
+        case ORDER_BGR: ch1 = bl; ch2 = gr; ch3 = rd; break;
+        default:
+        case ORDER_RGB: ch1 = rd; ch2 = gr; ch3 = bl; break;
+    }
+    ledfxClear(0, 0);
+    if (pkVal->nxy > 0)
+    {
+        ledfxFillRGB(0, pkVal->nxy, ch1, ch2, ch3);
+    }
+    ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+}
+
+// -------------------------------------------------------------------------------------------------
+
+// static void sRunDemo(const STATE_t *pkState, const DEMO_t which)
+// {
+//     UNUSED(pkState);
+//     PRINT("Demo %S", skDemoStrs[which]);
+//     switch (which)
+//     {
+//         case DEMO_DISP:
+//         {
+//             const char *skDemoStr = PSTR("    !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_    ");
+//             uint8_t n = 10;
+//             while (n > 0)
+//             {
+//                 dl2416tClear();
+//                 dl2416tUnsigned(n, 1, 2);
+//                 dl2416tBlink(3, 100, 200);
+//                 dl2416tStrScroll_P(skDemoStr, 300);
+//                 n--;
+//             }
+//         }
+//     }
+// }
+
+
+/* ***** application task **************************************************** */
 
 // application task
 static void sAppTask(void *pArg)
@@ -621,6 +629,8 @@ static void sAppTask(void *pArg)
             sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
             sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
             sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
+
+        sUpdateLeds(&sMenu1Values);
     }
 
 }

@@ -41,7 +41,7 @@ void dl2416tStr_P(const char *str, const uint8_t offs, const uint8_t nChars);
 void dl2416tStrScroll_P(const char *str, const uint32_t delay);
 
 //! display unsigned number
-void dl2416tUnsigned(const uint16_t n, const uint8_t offs, const uint8_t nDigits);
+void dl2416tUnsigned(const uint16_t num, const uint8_t offs, const uint8_t nDigits);
 
 
 /* *************************************************************************** */

@@ -148,42 +148,24 @@ void dl2416tStrScroll_P(const char *str, const uint32_t delay)
     }
 }
 
-void dl2416tUnsigned(const uint16_t n, const uint8_t offs, const uint8_t nDigits)
+void dl2416tUnsigned(const uint16_t num, const uint8_t offs, const uint8_t nDigits)
 {
     if ( (nDigits < 1) || (offs > 3) )
     {
         return;
     }
-    uint16_t t = n;
-    uint8_t ix = 3 - offs + 1;
-
-    if ( (ix > 0) && (nDigits > 0) )
+    // the number of digits we can put
+    uint8_t n = MIN(4 - offs, nDigits);
+    // we'll start from the right, with the least significant digit (LSD :-)
+    uint8_t ix = offs + n - 1;
+    uint16_t t = num;
+    while ( (ix > 0) && (n > 0) )
     {
-        ix--;
         dl2416tWrite(ix, '0' + (t % 10));
-    }
-
-    if ( (ix > 0) && (nDigits > 1) )
-    {
         ix--;
+        n--;
         t /= 10;
-        dl2416tWrite(ix, '0' + (t % 10));
     }
-
-    if ( (ix > 0) && (nDigits > 2) )
-    {
-        ix--;
-        t /= 10;
-        dl2416tWrite(ix, '0' + (t % 10));
-    }
-
-    if ( (ix > 0) && (nDigits > 3) )
-    {
-        ix--;
-        t /= 10;
-        dl2416tWrite(ix, '0' + (t % 10));
-    }
-
     dl2416tBlank(false);
 }
 

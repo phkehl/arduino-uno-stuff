@@ -6,30 +6,6 @@
 
     \addtogroup PROJECTS_FFLEDTESTER
 
-    \ref ARDUINOPINS usage:
-    - D0: \ref ROTENC pin 2
-    - D1: serial tx for \ref DEBUG output
-    - D2: \ref ROTENC pin 1 ("CLK")
-    - D3: \ref ROTENC pin 3 ("SW")
-    - D4: Siemens DL2416T display: data input (D0)
-    - D5: Siemens DL2416T display: data input (D1)
-    - D6: Siemens DL2416T display: data input (D2)
-    - D7: Siemens DL2416T display: data input (D3)
-    - D8: Siemens DL2416T display: display blank (~BL)
-    - D9: \ref FF_HW_LOAD_PIN
-    - D10 (SS): needed by \ref WS2801 (FIXME: really?)
-    - D11 (MOSI): \ref WS2801 data ("DI")
-    - D12: \ref WS2812 data pin
-    - D13 (SCK): \ref WS2801 clock output ("CI")
-    - A0: Siemens DL2416T display: data input (D4)
-    - A1: Siemens DL2416T display: data input (D5)
-    - A2: Siemens DL2416T display: data input (D6)
-    - A3: Siemens DL2416T display: address (A0)
-    - A4: Siemens DL2416T display: address (A1)
-    - A5: Siemens DL2416T display: write (~WR)
-
-    Yay, all used! See also config.h.
-
     @{
 */
 
@@ -121,11 +97,11 @@ static const char skOrderMenuStrs[][5] PROGMEM =
 };
 
 // menu structure
-static const MENU_t skMenu[] PROGMEM =
+static const MENU_t skMenu1[] PROGMEM =
 {
     // main menu
-    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .strs = (const char **)skModeMenuStrs , .nStrs = NUMOF(skModeMenuStrs) },
-    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .strs = (const char **)skOrderMenuStrs , .nStrs = NUMOF(skOrderMenuStrs) },
+    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .strs = (const char **)skModeMenuStrs, .nStrs = NUMOF(skModeMenuStrs) },
+    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .strs = (const char **)skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
     { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   0 },
     { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   0 },
     { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   0 },
@@ -136,19 +112,45 @@ static const MENU_t skMenu[] PROGMEM =
     { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A XX (test)\0",   .wrap = false },
 
     // matrix menu
-    { .mid = 31, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 0 },
-    { .mid = 32, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 0 },
-    { .mid = 33, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 1, .max = 100, .def = 0 },
+    { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 0 },
+    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 0 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 1, .max = 100, .def = 0 },
 
     // test menu
-    { .mid = 41, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
-    { .mid = 42, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
-    { .mid = 43, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0",          .wrap = false },
-    { .mid = 44, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X <-\0",          .wrap = false, .jump = 10 },
+    { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
+    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
+    { .mid = 16, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0",          .wrap = false },
+    { .mid = 17, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X <-\0",          .wrap = false, .jump = 10 },
     // test sub-menu
-    { .mid = 51, .pid = 43, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
-    { .mid = 52, .pid = 43, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
+    { .mid = 18, .pid = 15, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
+    { .mid = 19, .pid = 15, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
 };
+
+// storage for menu values
+typedef union MENU1_VALUES_u
+{
+    // this many values
+    int16_t values[NUMOF(skMenu1)];
+    // and direct, named access (offset must be in sync with the above list)
+    struct
+    {
+        int16_t mode;   //  1
+        int16_t order;  //  2
+        int16_t red;    //  3
+        int16_t green;  //  4
+        int16_t blue;   //  5
+        int16_t hue;    //  6
+        int16_t sat;    //  7
+        int16_t val;    //  8
+        int16_t _pad0;  //  9
+        int16_t _pad1;  // 10
+        int16_t nx;     // 11
+        int16_t ny;     // 12
+        int16_t nxy;    // 13
+    };
+
+} MENU1_VALUES_t;
+
 
 typedef struct MENU_STATE_s
 {
@@ -215,7 +217,7 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
 static void sMenuInit(MENU_STATE_t *pState, const MENU_t *pkMenu, const uint8_t nMenu, int16_t *pVals)
 {
     memset(pState, 0, sizeof(*pState));
-    memset(pVals, 0, nMenu * sizeof(*pState));
+    memset(pVals, 0, nMenu * sizeof(*pVals));
     pState->pkMenu = pkMenu;
     pState->nMenu  = nMenu;
     pState->vals   = pVals;
@@ -233,6 +235,7 @@ static void sMenuInit(MENU_STATE_t *pState, const MENU_t *pkMenu, const uint8_t 
                 break;
         }
     }
+    DEBUG("vals %p %p %p", pState->vals, &pState->vals[0], &pState->vals[1]);
     sMenuUpdate(pState, NULL);
 }
 
@@ -532,15 +535,14 @@ static void sAppTask(void *pArg)
     rotencClearEvents();
 
     // initialise menu
-    static int16_t sMenuVals[NUMOF(skMenu)];
-    static MENU_STATE_t sMenuState;
-    sMenuInit(&sMenuState, skMenu, NUMOF(skMenu), sMenuVals);
-
+    static MENU_STATE_t sMenu1State;
+    static MENU1_VALUES_t sMenu1Values;
+    sMenuInit(&sMenu1State, skMenu1, NUMOF(skMenu1), sMenu1Values.values);
 
     while (ENDLESS)
     {
         const ROTENC_EVENT_t ev = rotencGetEvent(1000);
-        if (ev != ROTENC_NONE) { DEBUG("%S", rotencEventStr(ev));  }
+        //if (ev != ROTENC_NONE) { DEBUG("%S", rotencEventStr(ev));  }
         switch (ev)
         {
             case ROTENC_NONE:
@@ -551,10 +553,17 @@ static void sAppTask(void *pArg)
             case ROTENC_DEC_DN:
             case ROTENC_BTN:
             case ROTENC_BTN_LONG:
-                sMenuHandle(&sMenuState, ev);
+                sMenuHandle(&sMenu1State, ev);
                 break;
                 break;
         }
+
+
+        DEBUG("m:%"PRIi16" o:%"PRIi16" n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
+            sMenu1Values.mode, sMenu1Values.order, sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
+            sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
+
+
     }
 
 }
@@ -593,8 +602,8 @@ void appInit(void)
 // starts the user application task
 void appCreateTask(void)
 {
-    static uint8_t stack[250];
     static OS_TASK_t task;
+    static uint8_t stack[250];
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
 

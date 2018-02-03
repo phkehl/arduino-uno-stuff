@@ -5,6 +5,31 @@
     - Copyright (c) 2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
     \addtogroup PROJECTS_FFLEDTESTER
+
+    \ref ARDUINOPINS usage:
+    - D0: \ref ROTENC pin 2
+    - D1: serial tx for \ref DEBUG output
+    - D2: \ref ROTENC pin 1 ("CLK")
+    - D3: \ref ROTENC pin 3 ("SW")
+    - D4: Siemens DL2416T display: data input (D0)
+    - D5: Siemens DL2416T display: data input (D1)
+    - D6: Siemens DL2416T display: data input (D2)
+    - D7: Siemens DL2416T display: data input (D3)
+    - D8: Siemens DL2416T display: display blank (~BL)
+    - D9: \ref FF_HW_LOAD_PIN
+    - D10 (SS): needed by \ref WS2801 (FIXME: really?)
+    - D11 (MOSI): \ref WS2801 data ("DI")
+    - D12: \ref WS2812 data pin
+    - D13 (SCK): \ref WS2801 clock output ("CI")
+    - A0: Siemens DL2416T display: data input (D4)
+    - A1: Siemens DL2416T display: data input (D5)
+    - A2: Siemens DL2416T display: data input (D6)
+    - A3: Siemens DL2416T display: address (A0)
+    - A4: Siemens DL2416T display: address (A1)
+    - A5: Siemens DL2416T display: write (~WR)
+
+    Yay, all used! See also config.h.
+
     @{
 */
 

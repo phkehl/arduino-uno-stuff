@@ -50,7 +50,7 @@
 //
 
 #define ROTENC_ROT_THRS       3
-#define ROTENC_BTN_THRS       5 // minumum time button must be pressed down
+#define ROTENC_BTN_THRS      15 // minumum time button must be pressed down
 #define ROTENC_LONG_THRS    550 // minumum time for long press
 
 

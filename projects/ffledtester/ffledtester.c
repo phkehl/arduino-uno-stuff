@@ -466,34 +466,42 @@ const __flash char * const __flash skOrderMenuStrs[] =
 };
 typedef enum ORDER_e { ORDER_RGB = 0, ORDER_RBG = 1, ORDER_GRB = 2, ORDER_GBR = 3, ORDER_BRG = 4, ORDER_BGR = 5 } ORDER_t;
 
-// menu structure
+#define TEST_MENU 1
+
+//menu structure
 static const MENU_t skMenu1[] PROGMEM =
 {
     // main menu
     { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .def = MODE_RGB, .strs = skModeMenuStrs,  .nStrs = NUMOF(skModeMenuStrs) },
     { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .def = ORDER_RGB, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
-    { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   0 },
-    { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   0 },
-    { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   0 },
+    { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   1 },
+    { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   1 },
+    { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   1 },
     { .mid =  6, .pid =  0, .type = MENU_TYPE_VAL,  .name = "6 HU (hue)\0",    .wrap = true,  .ind = 'H', .min = 0, .max = 255, .def =   0 },
     { .mid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 SA (sat)\0",    .wrap = false, .ind = 'S', .min = 0, .max = 255, .def = 255 },
-    { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   0 },
+    { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   1 },
     { .mid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0" },
+#if (TEST_MENU > 0)
     { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A XX (test)\0" },
+#endif
 
     // matrix menu
-    { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 0 },
-    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 0 },
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 1 },
+    { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
+    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
+    { .mid = 14, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 9 },
 
     // test menu
-    { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
-    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
-    { .mid = 16, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0" },
-    { .mid = 17, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X <-\0",          .wrap = false, .jump = 10 },
+#if (TEST_MENU > 0)
+    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
+    { .mid = 16, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
+    { .mid = 17, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0" },
+    { .mid = 18, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 10 },
     // test sub-menu
-    { .mid = 18, .pid = 15, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
-    { .mid = 19, .pid = 15, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
+    { .mid = 19, .pid = 15, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
+    { .mid = 20, .pid = 15, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
+#endif // (TEST_MENU > 0)
+
 };
 
 // storage for menu values
@@ -513,7 +521,9 @@ typedef union MENU1_VALUES_u
         int16_t sat;    //  7
         int16_t val;    //  8
         int16_t _pad0;  //  9
+#if (TEST_MENU > 0)
         int16_t _pad1;  // 10
+#endif // (TEST_MENU > 0)
         int16_t nx;     // 11
         int16_t ny;     // 12
         int16_t nxy;    // 13

@@ -24,11 +24,11 @@
     - A0: Siemens DL2416T display: data input (D4)
     - A1: Siemens DL2416T display: data input (D5)
     - A2: Siemens DL2416T display: data input (D6)
-    - A3: Siemens DL2416T display: address (A0)
+    - A3: Siemens DL2416T display: write (~WR)
     - A4: Siemens DL2416T display: address (A1)
-    - A5: Siemens DL2416T display: write (~WR)
+    - A5: Siemens DL2416T display: address (A0)
 
-    Yay, all used! See also config.h.
+    See also config.h.
 
     @{
 */
@@ -64,9 +64,9 @@
 #define DL_D4_PIN   _A0
 #define DL_D5_PIN   _A1
 #define DL_D6_PIN   _A2
-#define DL_A0_PIN   _A3
+#define DL_A0_PIN   _A5
 #define DL_A1_PIN   _A4
-#define DL_WR_PIN   _A5
+#define DL_WR_PIN   _A3
 #define DL_BL_PIN   _D8
 #define WS2812_PIN  _D12
 

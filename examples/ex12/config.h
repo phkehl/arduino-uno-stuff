@@ -18,6 +18,7 @@
 #define FF_HW_RX_BUFSIZE      0
 #define FF_HW_TX_BUFSIZE      200
 #define FF_OS_IDLE_STACK      100
+#define FF_SYS_MON_VERBOSE    0
 
 #define FF_ROTENC_ENABLE      1
 #define FF_ROTENC_PIN1        _D2

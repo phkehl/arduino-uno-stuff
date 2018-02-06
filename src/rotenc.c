@@ -49,10 +49,12 @@
 //  o = if it is, we sample the second signal here to determine the direction
 //
 
-#define ROTENC_ROT_THRS       3
+#define ROTENC_ROT_THRS       1
 #define ROTENC_BTN_THRS      15 // minumum time button must be pressed down
 #define ROTENC_LONG_THRS    550 // minumum time for long press
 
+
+#define ROTENC_DEBUG(x) /* nothing */
 
 static OS_QUEUE_t sRotencEventQueue;
 static volatile uint32_t svRotencRotMsss;
@@ -64,6 +66,8 @@ static OS_TIMER_t svRotencBtnTimer;
 ISR(INT0_vect)
 {
     osIsrEnter();
+
+    ROTENC_DEBUG(PIN_HIGH(_D4); PIN_LOW(_D4) );
 
     // down
     if (!PIN_GET(FF_ROTENC_PIN1))
@@ -90,6 +94,7 @@ ISR(INT0_vect)
                     ev = isInc ? ROTENC_INC : ROTENC_DEC;
                 }
                 osQueueSend(&sRotencEventQueue, &ev, -1);
+                ROTENC_DEBUG(PIN_HIGH(_D6); PIN_LOW(_D6) );
             }
         }
         svRotencRotMsss = 0;
@@ -104,6 +109,9 @@ static void sRotencBtnTimerCb(void *pArg);
 ISR(INT1_vect)
 {
     osIsrEnter();
+
+
+    ROTENC_DEBUG(PIN_HIGH(_D5); PIN_LOW(_D5) );
 
     // button down
     if (!PIN_GET(FF_ROTENC_PIN3))
@@ -122,6 +130,7 @@ ISR(INT1_vect)
             {
                 const ROTENC_EVENT_t ev = ROTENC_BTN;
                 osQueueSend(&sRotencEventQueue, &ev, -1);
+                ROTENC_DEBUG(PIN_HIGH(_D6); PIN_LOW(_D6) );
             }
         }
         svRotencBtnMsss = 0;
@@ -141,6 +150,7 @@ static void sRotencBtnTimerCb(void *pArg)
     {
         const ROTENC_EVENT_t ev = ROTENC_BTN_LONG;
         osQueueSend(&sRotencEventQueue, &ev, -1);
+        ROTENC_DEBUG(PIN_HIGH(_D6); PIN_LOW(_D6) );
         svRotencBtnMsss = 0;
         svRotencBtnDn = false; // invalidate
     }
@@ -181,6 +191,11 @@ void rotencInit(void)
     SETBITS(EICRA, BIT(ISC00));        // ..triggers interrupt
     SETBITS(EIMSK, BIT(INT0));         // enable INT0
     SETBITS(EIFR, BIT(INTF0));         // clear INT0
+
+
+    ROTENC_DEBUG( PIN_OUTPUT(_D4); PIN_LOW(_D4) );
+    ROTENC_DEBUG( PIN_OUTPUT(_D5); PIN_LOW(_D5) );
+    ROTENC_DEBUG( PIN_OUTPUT(_D6); PIN_LOW(_D6) );
 
     // button
     PIN_INPUT(FF_ROTENC_PIN3);

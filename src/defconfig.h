@@ -351,7 +351,7 @@
 
 //! rotary encoder maximum number of events that can be queued
 #if !defined(FF_ROTENC_NUMQ) || defined(__DOXYGEN__)
-#  define FF_ROTENC_NUMQ  5
+#  define FF_ROTENC_NUMQ  10
 #endif
 
 

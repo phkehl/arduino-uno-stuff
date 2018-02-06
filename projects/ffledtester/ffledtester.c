@@ -39,6 +39,7 @@ typedef enum MENU_TYPE_e
 {
     MENU_TYPE_STR,  // entry is list of strings to choose from
     MENU_TYPE_VAL,  // entry is value
+    MENU_TYPE_HEX,  // entry is value, display hex
     MENU_TYPE_MENU, // entry is a sub-menu
     MENU_TYPE_JUMP, // entry is jump (link) elsewhere
 
@@ -114,6 +115,7 @@ static void sMenuInit(MENU_STATE_t *pState, const MENU_t *pkMenu, const uint8_t 
         switch (MENU_TYPE(&pkMenu[ix]))
         {
             case MENU_TYPE_VAL:
+            case MENU_TYPE_HEX:
                 pVals[ix] = MENU_DEF(&pkMenu[ix]);
                 break;
             case MENU_TYPE_STR:
@@ -148,7 +150,6 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
             case MENU_TYPE_VAL:
             {
                 const int16_t min = MENU_MIN(pState->pkCurr);
-                //const int16_t max = MENU_MAX(pState->pkCurr);
                 int16_t val = pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ];
                 dl2416tWrite(0, MENU_IND(pState->pkCurr));
                 if (min < 0)
@@ -160,6 +161,14 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
                 {
                     dl2416tUnsigned(val, 1, 3);
                 }
+                break;
+            }
+            case MENU_TYPE_HEX:
+            {
+                int16_t val = pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ];
+                dl2416tWrite(0, MENU_IND(pState->pkCurr));
+                dl2416tWrite(1, ' ');
+                dl2416tHex(val, 2, 2);
                 break;
             }
             case MENU_TYPE_STR:
@@ -274,6 +283,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                     }
                     // activate entry
                     case MENU_TYPE_VAL:
+                    case MENU_TYPE_HEX:
                     case MENU_TYPE_STR:
                         pState->active = true;
                         sMenuUpdate(pState, pState->pkCurr);
@@ -317,6 +327,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
 
             // adjust value
             case MENU_TYPE_VAL:
+            case MENU_TYPE_HEX:
             {
                 update = true;
                 const bool wrap = MENU_WRAP(pState->pkCurr);
@@ -466,13 +477,38 @@ const __flash char * const __flash skOrderMenuStrs[] =
 };
 typedef enum ORDER_e { ORDER_RGB = 0, ORDER_RBG = 1, ORDER_GRB = 2, ORDER_GBR = 3, ORDER_BRG = 4, ORDER_BGR = 5 } ORDER_t;
 
+const __flash char skCharsMenuStr0[] = " !\"#";
+const __flash char skCharsMenuStr1[] = "$%&'";
+const __flash char skCharsMenuStr2[] = "()*+";
+const __flash char skCharsMenuStr3[] = ",-./";
+const __flash char skCharsMenuStr4[] = "0123";
+const __flash char skCharsMenuStr5[] = "4567";
+const __flash char skCharsMenuStr6[] = "89:;";
+const __flash char skCharsMenuStr7[] = "<=>?";
+const __flash char skCharsMenuStr8[] = "@ABC";
+const __flash char skCharsMenuStr9[] = "DEFG";
+const __flash char skCharsMenuStrA[] = "HIJK";
+const __flash char skCharsMenuStrB[] = "LMNO";
+const __flash char skCharsMenuStrC[] = "PQRS";
+const __flash char skCharsMenuStrD[] = "TUVW";
+const __flash char skCharsMenuStrE[] = "XYZ[";
+const __flash char skCharsMenuStrF[] = "\\]^_";
+const __flash char * const __flash skCharsMenuStrs[] =
+{
+    skCharsMenuStr0, skCharsMenuStr1, skCharsMenuStr2, skCharsMenuStr3,
+    skCharsMenuStr4, skCharsMenuStr5, skCharsMenuStr6, skCharsMenuStr7,
+    skCharsMenuStr8, skCharsMenuStr9, skCharsMenuStrA, skCharsMenuStrB,
+    skCharsMenuStrC, skCharsMenuStrD, skCharsMenuStrE, skCharsMenuStrF
+};
+
+
 #define TEST_MENU 1
 
 //menu structure
 static const MENU_t skMenu1[] PROGMEM =
 {
     // main menu
-    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .def = MODE_RGB, .strs = skModeMenuStrs,  .nStrs = NUMOF(skModeMenuStrs) },
+    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .def = MODE_RGB, .strs = skModeMenuStrs, .nStrs = NUMOF(skModeMenuStrs) },
     { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .def = ORDER_RGB, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
     { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   1 },
     { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   1 },
@@ -481,25 +517,33 @@ static const MENU_t skMenu1[] PROGMEM =
     { .mid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 SA (sat)\0",    .wrap = false, .ind = 'S', .min = 0, .max = 255, .def = 255 },
     { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   1 },
     { .mid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0" },
+    { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A HD (hex-dec)\0" },
+    { .mid = 11, .pid =  0, .type = MENU_TYPE_STR,  .name = "B CH (chars)\0",  .wrap = true, .def = 0, .strs = skCharsMenuStrs, .nStrs = NUMOF(skCharsMenuStrs) },
 #if (TEST_MENU > 0)
-    { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A XX (test)\0" },
+    { .mid = 12, .pid =  0, .type = MENU_TYPE_MENU, .name = "X XX (test)\0" },
 #endif
 
     // matrix menu
-    { .mid = 11, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
-    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
-    { .mid = 14, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 9 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
+    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
+    { .mid = 15, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
+    { .mid = 16, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 9 },
+
+    // hex-dec menu
+#define HEXDEC_MENU_IX 16
+    { .mid = 17, .pid = 10, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
+    { .mid = 18, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
+    { .mid = 19, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 10 },
 
     // test menu
 #if (TEST_MENU > 0)
-    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
-    { .mid = 16, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
-    { .mid = 17, .pid = 10, .type = MENU_TYPE_MENU, .name = "3 CC\0" },
-    { .mid = 18, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 10 },
+    { .mid = 91, .pid = 12, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
+    { .mid = 92, .pid = 12, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
+    { .mid = 93, .pid = 12, .type = MENU_TYPE_MENU, .name = "3 CC\0" },
+    { .mid = 94, .pid = 12, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 10 },
     // test sub-menu
-    { .mid = 19, .pid = 15, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
-    { .mid = 20, .pid = 15, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
+    { .mid = 95, .pid = 93, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
+    { .mid = 96, .pid = 93, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
 #endif // (TEST_MENU > 0)
 
 };
@@ -521,12 +565,17 @@ typedef union MENU1_VALUES_u
         int16_t sat;    //  7
         int16_t val;    //  8
         int16_t _pad0;  //  9
-#if (TEST_MENU > 0)
         int16_t _pad1;  // 10
+        int16_t _pad2;  // 11
+#if (TEST_MENU > 0)
+        int16_t _pad3;  // 12
 #endif // (TEST_MENU > 0)
-        int16_t nx;     // 11
-        int16_t ny;     // 12
-        int16_t nxy;    // 13
+        int16_t nx;     // 13
+        int16_t ny;     // 14
+        int16_t nxy;    // 15
+        int16_t _pad4;  // 16
+        int16_t hex;    // 17
+        int16_t dec;    // 18
     };
 
 } MENU1_VALUES_t;
@@ -606,10 +655,13 @@ static void sAppTask(void *pArg)
 
     // say hello
     dl2416tStrScroll_P(PSTR("    FLIPFLIP'S LED TESTER (C) 2018 FFI    "), 200);
+    dl2416tClear();
     osTaskDelay(500);
+    dl2416tStr_P(PSTR(":-)"), 1, 3);
+    dl2416tBlink(5, 150, 250);
+
 
     // clear event queue
-    dl2416tClear();
     rotencClearEvents();
 
     // initialise menu
@@ -636,15 +688,35 @@ static void sAppTask(void *pArg)
                 break;
         }
 
-        hwTic(0);
-        sUpdateLeds(&sMenu1Values);
-        const uint16_t dt = hwToc(0);
+        // special hex-dec conversion menu
+        if ( (sMenu1State.pkCurr == &skMenu1[HEXDEC_MENU_IX]) || (sMenu1State.pkCurr == &skMenu1[HEXDEC_MENU_IX + 1]) )
+        {
+            static int16_t oldHexDec;
+            if (sMenu1Values.hex != oldHexDec)
+            {
+                sMenu1Values.dec = sMenu1Values.hex;
+                oldHexDec = sMenu1Values.hex;
+            }
+            else if (sMenu1Values.dec != oldHexDec)
+            {
+                sMenu1Values.hex = sMenu1Values.dec;
+                oldHexDec = sMenu1Values.dec;
+            }
+            DEBUG("%03"PRIi16" 0x%02"PRIx16, sMenu1Values.dec, sMenu1Values.hex);
+        }
+        // any other menu -> update LEDs
+        else
+        {
+            hwTic(0);
+            sUpdateLeds(&sMenu1Values);
+            const uint16_t dt = hwToc(0);
+            DEBUG("%03"PRIu16"us m:%"PRIi16" (%S) o:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
+                dt, sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
+                sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
+                sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
+                sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
+        }
 
-        DEBUG("%03"PRIu16"us m:%"PRIi16" (%S) o:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
-            dt, sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
-            sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
-            sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
-            sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
     }
 
 }

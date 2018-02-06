@@ -169,5 +169,28 @@ void dl2416tUnsigned(const uint16_t num, const uint8_t offs, const uint8_t nDigi
     dl2416tBlank(false);
 }
 
+void dl2416tHex(const uint16_t num, const uint8_t offs, const uint8_t nDigits)
+{
+    if ( (nDigits < 1) || (offs > 3) )
+    {
+        return;
+    }
+    // the number of digits we can put
+    uint8_t n = MIN(4 - offs, nDigits);
+    // we'll start from the right, with the least significant digit (LSD :-)
+    uint8_t ix = offs + n - 1;
+    uint16_t t = num;
+    while ( (ix > 0) && (n > 0) )
+    {
+        const uint8_t v = t & 0xf;
+        const char c = (v < 10) ? ('0' + v) : ('A' - 10 + v);
+        dl2416tWrite(ix, c);
+        ix--;
+        n--;
+        t >>= 4;
+    }
+    dl2416tBlank(false);
+}
+
 //@}
 // eof

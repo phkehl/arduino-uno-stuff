@@ -181,6 +181,21 @@ void hwTic(const uint8_t reg);
 */
 uint16_t hwToc(const uint8_t reg);
 
+//! reset types for hwReset()
+typedef enum HW_RESET_e
+{
+    HW_RESET_HARD, //!< hard reset using watchdog (re-initialises all peripherals, but needs to bootloader to cooperate)
+    HW_RESET_SOFT  //!< soft reset (restart software)
+} HW_RESET_t;
+
+//! reset system
+/*!
+    Resets the system.
+
+    \param[in] type  type of reset
+*/
+void hwReset(const HW_RESET_t type);
+
 //@}
 
 

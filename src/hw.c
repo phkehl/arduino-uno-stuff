@@ -478,9 +478,7 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
         //void(* reset) (void) = 0;
         //reset();
 
-        sei();
-        wdt_enable(WDTO_15MS);
-        _delay_ms(100);
+        hwReset(HW_RESET_HARD);
     }
 }
 
@@ -498,6 +496,7 @@ void get_mcusr(void)
     }
     MCUSR = 0;
 }
+// s.a. wdt_init()
 
 // https://github.com/Optiboot/optiboot/issues/97
 //uint8_t MCUSR_mirror_optiboot __SECTION(.noinit);
@@ -644,6 +643,31 @@ void hwTic(const uint8_t reg) { UNUSED(reg); }
 uint16_t hwToc(const uint8_t reg) { UNUSED(reg); return 0; }
 #endif // (FF_HW_NUM_TICTOC > 0)
 
+void hwReset(const HW_RESET_t type)
+{
+    switch (type)
+    {
+        case HW_RESET_SOFT:
+            asm volatile ("jmp 0");
+            break;
+        case HW_RESET_HARD:
+            sei();
+            wdt_enable(WDTO_15MS);
+            while (ENDLESS)
+            {
+            }
+            break;
+    }
+}
+
+// disable watchdog early, we may have used it to do a hard reset
+// (the bootload will have to do this in case we have one)
+// s.a. get_mcusr()
+void wdt_init(void) __NAKED __SECTION(.init3);
+void wdt_init(void)
+{
+    wdt_disable();
+}
 
 
 /* ***** random number seeding ********************************************** */

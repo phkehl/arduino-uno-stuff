@@ -128,6 +128,7 @@ static void sMenuInit(MENU_STATE_t *pState, const MENU_t *pkMenu, const uint8_t 
     sMenuUpdate(pState, NULL);
 }
 
+// dump menu recursively
 static void sMenuDumpHelper(const MENU_t *pkMenu, const uint8_t nMenu, const uint8_t pid, const uint8_t indent)
 {
     char indentBuf[10];
@@ -148,6 +149,7 @@ static void sMenuDumpHelper(const MENU_t *pkMenu, const uint8_t nMenu, const uin
     }
 }
 
+// dump whole menu structure
 static void sMenuDump(const MENU_t *pkMenu, const uint8_t nMenu)
 {
     NOTICE_W("The menu today:");
@@ -529,8 +531,6 @@ const __flash char * const __flash skCharsMenuStrs[] =
 };
 
 
-#define TEST_MENU 1
-
 //menu structure
 static const MENU_t skMenu1[] PROGMEM =
 {
@@ -546,33 +546,19 @@ static const MENU_t skMenu1[] PROGMEM =
     { .mid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0" },
     { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A HD (hex-dec)\0" },
     { .mid = 11, .pid =  0, .type = MENU_TYPE_STR,  .name = "B CH (chars)\0",  .wrap = true, .def = 0, .strs = skCharsMenuStrs, .nStrs = NUMOF(skCharsMenuStrs) },
-#if (TEST_MENU > 0)
-    { .mid = 12, .pid =  0, .type = MENU_TYPE_MENU, .name = "X XX (test)\0" },
-#endif
 
     // matrix menu
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
-    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
-    { .mid = 15, .pid =  9, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
+    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
+    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
     // TODO: XY arrangement
-    { .mid = 16, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 9 },
+    { .mid = 15, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 9 },
 
     // hex-dec menu
 #define HEXDEC_MENU_IX 16
-    { .mid = 17, .pid = 10, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
-    { .mid = 18, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
-    { .mid = 19, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
-
-    // test menu
-#if (TEST_MENU > 0)
-    { .mid = 91, .pid = 12, .type = MENU_TYPE_VAL,  .name = "1 AA\0",          .wrap = true,  .ind = 'A', .min = 3, .max = 45, .def = 0 },
-    { .mid = 92, .pid = 12, .type = MENU_TYPE_VAL,  .name = "2 BB\0",          .wrap = false, .ind = 'B', .min = -8, .max = +8, .def = 0 },
-    { .mid = 93, .pid = 12, .type = MENU_TYPE_MENU, .name = "3 CC\0" },
-    { .mid = 94, .pid = 12, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
-    // test sub-menu
-    { .mid = 95, .pid = 93, .type = MENU_TYPE_VAL,  .name = "1 FOO\0",         .wrap = false, .ind = 'F', .min = 1, .max = 10, .def = 0 },
-    { .mid = 96, .pid = 93, .type = MENU_TYPE_VAL,  .name = "2 BAR\0",         .wrap = false, .ind = 'B', .min = 1, .max = 10, .def = 0 },
-#endif // (TEST_MENU > 0)
+    { .mid = 16, .pid = 10, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
+    { .mid = 17, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
+    { .mid = 18, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
 
 };
 
@@ -595,15 +581,13 @@ typedef union MENU1_VALUES_u
         int16_t _pad0;  //  9
         int16_t _pad1;  // 10
         int16_t _pad2;  // 11
-#if (TEST_MENU > 0)
-        int16_t _pad3;  // 12
-#endif // (TEST_MENU > 0)
-        int16_t nxy;    // 13
-        int16_t nx;     // 14
-        int16_t ny;     // 15
-        int16_t _pad4;  // 16
-        int16_t hex;    // 17
-        int16_t dec;    // 18
+        int16_t nxy;    // 12
+        int16_t nx;     // 13
+        int16_t ny;     // 14
+        int16_t _pad4;  // 15
+        int16_t hex;    // 16
+        int16_t dec;    // 17
+        int16_t _pad6;  // 18
     };
 
 } MENU1_VALUES_t;

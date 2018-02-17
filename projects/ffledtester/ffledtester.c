@@ -522,6 +522,15 @@ const __flash char * const __flash skOrderMenuStrs[] =
 };
 typedef enum ORDER_e { ORDER_RGB = 0, ORDER_RBG = 1, ORDER_GRB = 2, ORDER_GBR = 3, ORDER_BRG = 4, ORDER_BGR = 5 } ORDER_t;
 
+const __flash char skDriverMenuStr0[] = "NONE";
+const __flash char skDriverMenuStr1[] = "2801";
+const __flash char skDriverMenuStr2[] = "2812";
+const __flash char * const __flash skDriverMenuStrs[] =
+{
+    skDriverMenuStr0, skDriverMenuStr1, skDriverMenuStr2
+};
+typedef enum DRIVER_e { DRIVER_NONE = 0, DRIVER_WS2801 = 1, DRIVER_WS2812 = 2 } DRIVER_t;
+
 const __flash char skCharsMenuStr0[] = " !\"#";
 const __flash char skCharsMenuStr1[] = "$%&'";
 const __flash char skCharsMenuStr2[] = "()*+";
@@ -560,31 +569,35 @@ static void sHardReset(void)
 static const MENU_t skMenu1[] PROGMEM =
 {
     // main menu
-    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .def = MODE_RGB, .strs = skModeMenuStrs, .nStrs = NUMOF(skModeMenuStrs) },
-    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .def = ORDER_RGB, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
-    { .mid =  3, .pid =  0, .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   1 },
-    { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   1 },
-    { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   1 },
-    { .mid =  6, .pid =  0, .type = MENU_TYPE_VAL,  .name = "6 HU (hue)\0",    .wrap = true,  .ind = 'H', .min = 0, .max = 255, .def =   0 },
-    { .mid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 SA (sat)\0",    .wrap = false, .ind = 'S', .min = 0, .max = 255, .def = 255 },
-    { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   1 },
-    { .mid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0" },
-    { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A HD (hex-dec)\0" },
-    { .mid = 11, .pid =  0, .type = MENU_TYPE_STR,  .name = "B CH (chars)\0",  .wrap = true, .def = 0, .strs = skCharsMenuStrs, .nStrs = NUMOF(skCharsMenuStrs) },
-    { .mid = 12, .pid =  0, .type = MENU_TYPE_FUNC, .name = "KILL (reset)\0",  .func = sHardReset },
+    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (mode)\0",   .wrap = false, .def = MODE_RGB, .strs = skModeMenuStrs, .nStrs = NUMOF(skModeMenuStrs) },
+    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (order)\0",  .wrap = false, .def = ORDER_RGB, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
+    { .mid =  3, .pid =  0, .type = MENU_TYPE_STR,  .name = "3 DR (driver)\0", .wrap = false, .def = DRIVER_NONE, .strs = skDriverMenuStrs, .nStrs = NUMOF(skDriverMenuStrs) },
+
+    { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   1 },
+    { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   1 },
+    { .mid =  6, .pid =  0, .type = MENU_TYPE_VAL,  .name = "6 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   1 },
+
+    { .mid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 HU (hue)\0",    .wrap = true,  .ind = 'H', .min = 0, .max = 255, .def =   0 },
+    { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 SA (sat)\0",    .wrap = false, .ind = 'S', .min = 0, .max = 255, .def = 255 },
+    { .mid =  9, .pid =  0, .type = MENU_TYPE_VAL,  .name = "9 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   1 },
+
+    { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A MA (matrix)\0" },
+    { .mid = 11, .pid =  0, .type = MENU_TYPE_MENU, .name = "B HD (hex-dec)\0" },
+    { .mid = 12, .pid =  0, .type = MENU_TYPE_STR,  .name = "C CH (chars)\0",  .wrap = true, .def = 0, .strs = skCharsMenuStrs, .nStrs = NUMOF(skCharsMenuStrs) },
+    { .mid = 13, .pid =  0, .type = MENU_TYPE_FUNC, .name = "KILL (reset)\0",  .func = sHardReset },
 
     // matrix menu
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
-    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
-    { .mid = 15, .pid =  9, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
+    { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
+    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
+    { .mid = 16, .pid = 10, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
     // TODO: XY arrangement
-    { .mid = 16, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 9 },
+    { .mid = 17, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 9 },
 
     // hex-dec menu
-#define HEXDEC_MENU_IX 16
-    { .mid = 17, .pid = 10, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
-    { .mid = 18, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
-    { .mid = 19, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
+#define HEXDEC_MENU_IX 17
+    { .mid = 18, .pid = 11, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
+    { .mid = 19, .pid = 11, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
+    { .mid = 20, .pid = 11, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
 
 };
 
@@ -598,23 +611,29 @@ typedef union MENU1_VALUES_u
     {
         int16_t mode;   //  1
         int16_t order;  //  2
-        int16_t red;    //  3
-        int16_t green;  //  4
-        int16_t blue;   //  5
-        int16_t hue;    //  6
-        int16_t sat;    //  7
-        int16_t val;    //  8
-        int16_t _pad0;  //  9
-        int16_t _pad1;  // 10
-        int16_t _pad2;  // 11
-        int16_t _pad3;  // 12
-        int16_t nxy;    // 13
-        int16_t nx;     // 14
-        int16_t ny;     // 15
-        int16_t _pad4;  // 16
-        int16_t hex;    // 17
-        int16_t dec;    // 18
-        int16_t _pad6;  // 19
+        int16_t driver; //  3
+
+        int16_t red;    //  4
+        int16_t green;  //  5
+        int16_t blue;   //  6
+
+        int16_t hue;    //  7
+        int16_t sat;    //  8
+        int16_t val;    //  9
+
+        int16_t _pad0;  // 10
+        int16_t _pad1;  // 11
+        int16_t _pad2;  // 12
+        int16_t _pad3;  // 13
+
+        int16_t nxy;    // 14
+        int16_t nx;     // 15
+        int16_t ny;     // 16
+        int16_t _pad4;  // 17
+
+        int16_t hex;    // 18
+        int16_t dec;    // 19
+        int16_t _pad6;  // 20
     };
 
 } MENU1_VALUES_t;
@@ -652,8 +671,36 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
     {
         ledfxSetIxRGB(ix, ch1, ch2, ch3);
     }
-    ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
-    ws2812Send(WS2812_PIN, ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+    static DRIVER_t oldDriver = DRIVER_NONE;
+    const DRIVER_t newDriver = (DRIVER_t)pkVal->driver;
+    if (oldDriver != newDriver)
+    {
+        DEBUG("driver switch");
+        switch (oldDriver)
+        {
+            case DRIVER_WS2801:
+                ws2801Send(NULL, ledfxGetFrameBufferSize());
+                break;
+            case DRIVER_WS2812:
+                ws2812Send(WS2812_PIN, NULL, ledfxGetFrameBufferSize());
+                break;
+            default:
+                break;
+        }
+        oldDriver = newDriver;
+    }
+
+    switch (newDriver)
+    {
+        case DRIVER_WS2801:
+            ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+            break;
+        case DRIVER_WS2812:
+            ws2812Send(WS2812_PIN, ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+            break;
+        default:
+            break;
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -751,9 +798,10 @@ static void sAppTask(void *pArg)
             hwTic(0);
             sUpdateLeds(&sMenu1Values);
             const uint16_t dt = hwToc(0);
-            DEBUG("%03"PRIu16"us m:%"PRIi16" (%S) o:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
+            DEBUG("%03"PRIu16"us m:%"PRIi16" (%S) o:%"PRIi16" (%S) d:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
                 dt, sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
                 sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
+                sMenu1Values.driver, skDriverMenuStrs[sMenu1Values.driver],
                 sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
                 sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
         }
@@ -787,8 +835,8 @@ void appInit(void)
     dl2416tInit();
 
     ledfxClear(0, 0);
-    ws2801Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
-    ws2812Send(WS2812_PIN, ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+    ws2801Send(NULL, ledfxGetFrameBufferSize());
+    ws2812Send(WS2812_PIN, NULL, ledfxGetFrameBufferSize());
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);

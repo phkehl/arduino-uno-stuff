@@ -524,9 +524,10 @@ static const MENU_t skMenu1[] PROGMEM =
 #endif
 
     // matrix menu
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
-    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
-    { .mid = 15, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 XY (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
+    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
+    { .mid = 15, .pid =  9, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
+    // TODO: XY arrangement
     { .mid = 16, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (-\0",          .wrap = false, .jump = 9 },
 
     // hex-dec menu
@@ -570,9 +571,9 @@ typedef union MENU1_VALUES_u
 #if (TEST_MENU > 0)
         int16_t _pad3;  // 12
 #endif // (TEST_MENU > 0)
-        int16_t nx;     // 13
-        int16_t ny;     // 14
-        int16_t nxy;    // 15
+        int16_t nxy;    // 13
+        int16_t nx;     // 14
+        int16_t ny;     // 15
         int16_t _pad4;  // 16
         int16_t hex;    // 17
         int16_t dec;    // 18

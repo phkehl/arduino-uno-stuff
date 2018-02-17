@@ -42,6 +42,7 @@ typedef enum MENU_TYPE_e
     MENU_TYPE_HEX,  // entry is value, display hex
     MENU_TYPE_MENU, // entry is a sub-menu
     MENU_TYPE_JUMP, // entry is jump (link) elsewhere
+    MENU_TYPE_FUNC, // entry calls function
 
 } MENU_TYPE_t;
 
@@ -72,6 +73,11 @@ typedef struct MENU_s
         {                         // type = MENU_TYPE_JUMP
             uint8_t jump;         // - mid to jump to
         };
+        struct                    // type = MENU_TYPE_FUNC
+        {
+            void (*func)(void);   // function to call
+
+        };
     };
 } MENU_t;
 
@@ -89,6 +95,7 @@ typedef struct MENU_s
 #define MENU_IND(pkMenu)         ((char)pgm_read_byte(&((pkMenu)->ind)))
 #define MENU_DEF(pkMenu)         ((int16_t)pgm_read_byte(&((pkMenu)->def)))
 #define MENU_JUMP(pkMenu)        ((uint8_t)pgm_read_byte(&((pkMenu)->jump)))
+#define MENU_FUNC(pkMenu)        ((void (*)(void))pgm_read_word(&((pkMenu)->func)))
 
 typedef struct MENU_STATE_s
 {
@@ -119,6 +126,8 @@ static void sMenuInit(MENU_STATE_t *pState, const MENU_t *pkMenu, const uint8_t 
                 pVals[ix] = MENU_DEF(&pkMenu[ix]);
                 break;
             case MENU_TYPE_STR:
+                break;
+            case MENU_TYPE_FUNC:
                 break;
             case MENU_TYPE_MENU:
             case MENU_TYPE_JUMP:
@@ -206,6 +215,8 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
                 dl2416tStr_P(MENU_STR_IX(pState->pkCurr, ix), 0, 4);
                 break;
             }
+            case MENU_TYPE_FUNC:
+                break;
             case MENU_TYPE_MENU:
             case MENU_TYPE_JUMP:
                 dl2416tStr_P(PSTR("WTF?"), 0, 4);
@@ -317,6 +328,10 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         pState->active = true;
                         sMenuUpdate(pState, pState->pkCurr);
                         break;
+                    // call function
+                    case MENU_TYPE_FUNC:
+                        MENU_FUNC(pState->pkCurr)();
+                        break;
                 }
                 break;
             // leave sub-menu
@@ -351,6 +366,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
             // not handled here (these should never be active)
             case MENU_TYPE_MENU:
             case MENU_TYPE_JUMP:
+            case MENU_TYPE_FUNC:
                 DEBUG("WTF?!");
                 break;
 
@@ -530,6 +546,15 @@ const __flash char * const __flash skCharsMenuStrs[] =
     skCharsMenuStrC, skCharsMenuStrD, skCharsMenuStrE, skCharsMenuStrF
 };
 
+static void sHardReset(void)
+{
+    PRINT_W("RESET");
+    dl2416tBlink(2, 100, 150);
+    dl2416tStr_P(PSTR("BOOM"), 0, 4);
+    dl2416tBlink(10, 50, 50);
+    dl2416tClear();
+    hwReset(HW_RESET_HARD);
+}
 
 //menu structure
 static const MENU_t skMenu1[] PROGMEM =
@@ -546,19 +571,20 @@ static const MENU_t skMenu1[] PROGMEM =
     { .mid =  9, .pid =  0, .type = MENU_TYPE_MENU, .name = "9 MA (matrix)\0" },
     { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A HD (hex-dec)\0" },
     { .mid = 11, .pid =  0, .type = MENU_TYPE_STR,  .name = "B CH (chars)\0",  .wrap = true, .def = 0, .strs = skCharsMenuStrs, .nStrs = NUMOF(skCharsMenuStrs) },
+    { .mid = 12, .pid =  0, .type = MENU_TYPE_FUNC, .name = "KILL (reset)\0",  .func = sHardReset },
 
     // matrix menu
-    { .mid = 12, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
-    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
-    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
+    { .mid = 13, .pid =  9, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
+    { .mid = 14, .pid =  9, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
+    { .mid = 15, .pid =  9, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
     // TODO: XY arrangement
-    { .mid = 15, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 9 },
+    { .mid = 16, .pid =  9, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 9 },
 
     // hex-dec menu
 #define HEXDEC_MENU_IX 16
-    { .mid = 16, .pid = 10, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
-    { .mid = 17, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
-    { .mid = 18, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
+    { .mid = 17, .pid = 10, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
+    { .mid = 18, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
+    { .mid = 19, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
 
 };
 
@@ -581,13 +607,14 @@ typedef union MENU1_VALUES_u
         int16_t _pad0;  //  9
         int16_t _pad1;  // 10
         int16_t _pad2;  // 11
-        int16_t nxy;    // 12
-        int16_t nx;     // 13
-        int16_t ny;     // 14
-        int16_t _pad4;  // 15
-        int16_t hex;    // 16
-        int16_t dec;    // 17
-        int16_t _pad6;  // 18
+        int16_t _pad3;  // 12
+        int16_t nxy;    // 13
+        int16_t nx;     // 14
+        int16_t ny;     // 15
+        int16_t _pad4;  // 16
+        int16_t hex;    // 17
+        int16_t dec;    // 18
+        int16_t _pad6;  // 19
     };
 
 } MENU1_VALUES_t;
@@ -673,7 +700,7 @@ static void sAppTask(void *pArg)
     dl2416tClear();
     osTaskDelay(500);
     dl2416tStr_P(PSTR(":-)"), 1, 3);
-    dl2416tBlink(5, 150, 250);
+    dl2416tBlink(5, 100, 150);
 
     // initialise menu
     static MENU_STATE_t sMenu1State;

@@ -3,7 +3,7 @@
 FFDIR       := ../..
 
 # Nano
-PROGSPEED   := 57600
+#PROGSPEED   := 57600
 DEBUGPORT   := /dev/ttyUSB0
 
 # USBTinyISP programmer

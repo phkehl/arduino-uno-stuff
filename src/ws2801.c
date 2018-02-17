@@ -60,7 +60,7 @@ void ws2801Send(const uint8_t *data, const uint16_t size)
     uint16_t n = size;
     while (n--)
     {
-        SPDR = *data++;
+        SPDR = data != NULL ? *data++ : 0;
         loop_until_bit_is_set(SPSR, SPIF); // delay between bytes: 1.08us
         //while (!(SPSR & BIT(SPIF)));     // delay between bytes: 1.25us
         //__asm__ volatile ("nop");        // delay between bytes: 0.167us

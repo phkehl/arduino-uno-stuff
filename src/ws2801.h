@@ -42,9 +42,9 @@
 //! initialise things (the SPI master interface)
 void ws2801Init(void);
 
-//! send data to the WS2891 chip(s)
+//! send data to the WS2801 chip(s)
 /*!
-    \param[in] data  data
+    \param[in] data  data, NULL to blank
     \param[in] size  data size
 */
 void ws2801Send(const uint8_t *data, const uint16_t size);

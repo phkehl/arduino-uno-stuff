@@ -97,7 +97,7 @@ void light_ws2812_send_PORTB(const uint8_t *data, uint8_t size, uint8_t mask)
   uint8_t datlen = size;
 
   while (datlen--) {
-    curbyte=*data++;
+    curbyte= data ? *data++ : 0;
     
     asm volatile(
     "       ldi   %0,8  \n\t"
@@ -180,7 +180,7 @@ void light_ws2812_send_PORTC(const uint8_t *data, const uint8_t size, uint8_t ma
   uint8_t datlen = size;
 
   while (datlen--) {
-    curbyte=*data++;
+    curbyte= data ? *data++ : 0;
     
     asm volatile(
     "       ldi   %0,8  \n\t"
@@ -263,7 +263,7 @@ void light_ws2812_send_PORTD(const uint8_t *data, uint8_t size, uint8_t mask)
   uint8_t datlen = size;
 
   while (datlen--) {
-    curbyte=*data++;
+    curbyte= data ? *data++ : 0;
     
     asm volatile(
     "       ldi   %0,8  \n\t"

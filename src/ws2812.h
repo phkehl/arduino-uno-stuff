@@ -35,7 +35,7 @@
     \note This will block the system and system ticks may be skipped.
 
     \param[in] pin   pin number for the data signal
-    \param[in] data  data (const uint8_t *)
+    \param[in] data  data (const uint8_t *), NULL to blank
     \param[in] size  data size (uint8_t)
 
     \hideinitializer

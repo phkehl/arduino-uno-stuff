@@ -565,41 +565,61 @@ static void sHardReset(void)
     hwReset(HW_RESET_HARD);
 }
 
-//menu structure
-static const MENU_t skMenu1[] PROGMEM =
-{
-    // main menu
-    { .mid =  1, .pid =  0, .type = MENU_TYPE_STR,  .name = "1 MO (mode)\0",   .wrap = false, .def = MODE_RGB, .strs = skModeMenuStrs, .nStrs = NUMOF(skModeMenuStrs) },
-    { .mid =  2, .pid =  0, .type = MENU_TYPE_STR,  .name = "2 OR (order)\0",  .wrap = false, .def = ORDER_RGB, .strs = skOrderMenuStrs, .nStrs = NUMOF(skOrderMenuStrs) },
-    { .mid =  3, .pid =  0, .type = MENU_TYPE_STR,  .name = "3 DR (driver)\0", .wrap = false, .def = DRIVER_NONE, .strs = skDriverMenuStrs, .nStrs = NUMOF(skDriverMenuStrs) },
+// helper macros to generate consistent MENU_t array and value struct
+#define M_STR(_mid, _pid, _name, _var, _wrap, _def, _strs) \
+    { .type = MENU_TYPE_STR, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .strs = (_strs), .nStrs = NUMOF(_strs) },
+#define M_VAL(_mid, _pid, _name, _var, _wrap, _def, _ind, _min, _max) \
+    { .type = MENU_TYPE_VAL, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .ind = (_ind), .min = (_min), .max = (_max) },
+#define M_HEX(_mid, _pid, _name, _var, _wrap, _def, _ind, _min, _max) \
+    { .type = MENU_TYPE_HEX, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .ind = (_ind), .min = (_min), .max = (_max) },
+#define M_MEN(_mid, _pid, _name, _var) \
+    { .type = MENU_TYPE_MENU, .mid = (_mid), .pid = (_pid), .name = (_name) },
+#define M_JMP(_mid, _pid, _name, _var, _jump) \
+    { .type = MENU_TYPE_JUMP, .mid = (_mid), .pid = (_pid), .name = (_name), .jump = (_jump) },
+#define M_FUN(_mid, _pid, _name, _var, _func) \
+    { .type = MENU_TYPE_JUMP, .mid = (_mid), .pid = (_pid), .name = (_name), .func = (_func) },
+#define M_VAR(_mod, _pid, _name, _var, ...) int16_t _var;
 
-    { .mid =  4, .pid =  0, .type = MENU_TYPE_VAL,  .name = "4 RD (red)\0",    .wrap = false, .ind = 'R', .min = 0, .max = 255, .def =   1 },
-    { .mid =  5, .pid =  0, .type = MENU_TYPE_VAL,  .name = "5 GN (green)\0",  .wrap = false, .ind = 'G', .min = 0, .max = 255, .def =   1 },
-    { .mid =  6, .pid =  0, .type = MENU_TYPE_VAL,  .name = "6 BL (blue)\0",   .wrap = false, .ind = 'B', .min = 0, .max = 255, .def =   1 },
+// our menu structure
+#define MENU1_DEF(_STR, _VAL, _HEX, _MEN, _JMP, _FUN) \
+    /*    mid pid  name            var    STR: wrap   default      strs */ \
+    /*                                VAL/HEX: wrap   default      ind min max */ \
+    /*                                    MEN: -- */ \
+    /*                                    FUN:                     function */ \
+    /*                                    JMP:                     jump */ \
+    _STR(  1,  0, "1 MO (mode)\0",    mode,    false, MODE_RGB,    skModeMenuStrs) \
+    _STR(  2,  0, "2 OR (order)\0",   order,   false, ORDER_RGB,   skOrderMenuStrs ) \
+    _STR(  3,  0, "3 DR (driver)\0",  driver,  false, DRIVER_NONE, skDriverMenuStrs ) \
+    \
+    _VAL(  4,  0, "4 RD (red)\0",     red,     false, 1,           'R', 0, 255 ) \
+    _VAL(  5,  0, "5 GN (green)\0",   green,   false, 1,           'G', 0, 255 ) \
+    _VAL(  6,  0, "6 BL (blue)\0",    blue,    false, 1,           'B', 0, 255 ) \
+    \
+    _VAL(  7,  0, "7 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
+    _VAL(  8,  0, "8 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
+    _VAL(  9,  0, "9 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
+    \
+    _MEN( 10,  0, "A MA (matrix)\0",  matrix ) \
+    _MEN( 11,  0, "B HD (hex-dec)\0", hexdec ) \
+    _STR( 12,  0, "C CH (chars)\0",   chars,   true,  0,           skCharsMenuStrs ) \
+    _FUN( 13,  0, "KILL (reset)\0",   kill,                        sHardReset ) \
+    \
+    /* matrix menu */ \
+    _VAL( 14, 10, "1 N# (total)\0",   nxy,     false, 5,           '#', 0, FF_LEDFX_NUM_LED ) \
+    _VAL( 15, 10, "2 NX (n_x)\0",     nx,      false, 8,           'X', 1, 10 ) \
+    _VAL( 16, 10, "3 NY (n_y)\0",     ny,      false, 8,           'Y', 1, 10 ) \
+    /* TODO: XY arrangement */ \
+    _JMP( 17, 10, "X (- (return)\0",  ret0,                        9 ) \
+    \
+    /* hex-dec menu */ \
+    _HEX( 18, 11, "1HEX (hex)\0",     hex,     true,  0,           'X', 0, 255 ) \
+    _VAL( 19, 11, "2DEC (dec)\0",     dec,     true,  0,           'D', 0, 255 ) \
+    _JMP( 20, 11, "X (- (return)\0",  ret1,                        10 )
 
-    { .mid =  7, .pid =  0, .type = MENU_TYPE_VAL,  .name = "7 HU (hue)\0",    .wrap = true,  .ind = 'H', .min = 0, .max = 255, .def =   0 },
-    { .mid =  8, .pid =  0, .type = MENU_TYPE_VAL,  .name = "8 SA (sat)\0",    .wrap = false, .ind = 'S', .min = 0, .max = 255, .def = 255 },
-    { .mid =  9, .pid =  0, .type = MENU_TYPE_VAL,  .name = "9 VA (val)\0",    .wrap = false, .ind = 'V', .min = 0, .max = 255, .def =   1 },
-
-    { .mid = 10, .pid =  0, .type = MENU_TYPE_MENU, .name = "A MA (matrix)\0" },
-    { .mid = 11, .pid =  0, .type = MENU_TYPE_MENU, .name = "B HD (hex-dec)\0" },
-    { .mid = 12, .pid =  0, .type = MENU_TYPE_STR,  .name = "C CH (chars)\0",  .wrap = true, .def = 0, .strs = skCharsMenuStrs, .nStrs = NUMOF(skCharsMenuStrs) },
-    { .mid = 13, .pid =  0, .type = MENU_TYPE_FUNC, .name = "KILL (reset)\0",  .func = sHardReset },
-
-    // matrix menu
-    { .mid = 14, .pid = 10, .type = MENU_TYPE_VAL,  .name = "1 N# (total)\0",  .wrap = false, .ind = '#', .min = 0, .max = FF_LEDFX_NUM_LED, .def = 5 },
-    { .mid = 15, .pid = 10, .type = MENU_TYPE_VAL,  .name = "2 NX (n_x)\0",    .wrap = false, .ind = 'X', .min = 1, .max = 10, .def = 8 },
-    { .mid = 16, .pid = 10, .type = MENU_TYPE_VAL,  .name = "3 NY (n_y)\0",    .wrap = false, .ind = 'Y', .min = 1, .max = 10, .def = 8 },
-    // TODO: XY arrangement
-    { .mid = 17, .pid = 10, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 9 },
-
-    // hex-dec menu
 #define HEXDEC_MENU_IX 17
-    { .mid = 18, .pid = 11, .type = MENU_TYPE_HEX,  .name = "1HEX (hex)\0",    .wrap = true,  .ind = 'X', .min = 0, .max = 255, .def = 0 },
-    { .mid = 19, .pid = 11, .type = MENU_TYPE_VAL,  .name = "2DEC (dec)\0",    .wrap = true,  .ind = 'D', .min = 0, .max = 255, .def = 0 },
-    { .mid = 20, .pid = 11, .type = MENU_TYPE_JUMP, .name = "X (- (return)\0", .wrap = false, .jump = 10 },
 
-};
+// menu structure
+static const MENU_t skMenu1[] PROGMEM = { MENU1_DEF(M_STR, M_VAL, M_HEX, M_MEN, M_JMP, M_FUN) };
 
 // storage for menu values
 typedef union MENU1_VALUES_u
@@ -607,37 +627,10 @@ typedef union MENU1_VALUES_u
     // this many values
     int16_t values[NUMOF(skMenu1)];
     // and direct, named access (offset must be in sync with the above list)
-    struct
-    {
-        int16_t mode;   //  1
-        int16_t order;  //  2
-        int16_t driver; //  3
-
-        int16_t red;    //  4
-        int16_t green;  //  5
-        int16_t blue;   //  6
-
-        int16_t hue;    //  7
-        int16_t sat;    //  8
-        int16_t val;    //  9
-
-        int16_t _pad0;  // 10
-        int16_t _pad1;  // 11
-        int16_t _pad2;  // 12
-        int16_t _pad3;  // 13
-
-        int16_t nxy;    // 14
-        int16_t nx;     // 15
-        int16_t ny;     // 16
-        int16_t _pad4;  // 17
-
-        int16_t hex;    // 18
-        int16_t dec;    // 19
-        int16_t _pad6;  // 20
-    };
+    struct { MENU1_DEF(M_VAR, M_VAR, M_VAR, M_VAR, M_VAR, M_VAR) };
 
 } MENU1_VALUES_t;
-#define STRIP_PIN _D7
+
 
 // -------------------------------------------------------------------------------------------------
 

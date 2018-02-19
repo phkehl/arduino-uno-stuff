@@ -149,11 +149,58 @@ static void sMenuDumpHelper(const MENU_t *pkMenu, const uint8_t nMenu, const uin
     }
     for (uint8_t ix = 0; ix < nMenu; ix++)
     {
-        const MENU_t *pkEntry = &pkMenu[ix];
+        const __flash MENU_t *pkEntry = &pkMenu[ix];
         if (MENU_PID(pkEntry) == pid)
         {
-            PRINT_W("%s- %S", indentBuf, MENU_NAME(pkEntry));
+            // use LED frame buffer for temp string
+            char *buf = (char *)ledfxGetFrameBuffer();
+            const uint16_t size = ledfxGetFrameBufferSize();
+            buf[0] = '\0';
+            switch (MENU_TYPE(pkEntry))
+            {
+                case MENU_TYPE_VAL:
+                    snprintf_P(buf, size, PSTR(" [%c=%"PRIi16"..%"PRIi16"]"),
+                        MENU_IND(pkEntry), MENU_MIN(pkEntry), MENU_MAX(pkEntry));
+                    break;
+                case MENU_TYPE_HEX:
+                    snprintf_P(buf, size, PSTR(" [%c=0x%"PRIx16"..0x%"PRIx16"]"),
+                        (uint16_t)MENU_IND(pkEntry), (uint16_t)MENU_MIN(pkEntry), MENU_MAX(pkEntry));
+                    break;
+                case MENU_TYPE_STR:
+                {
+                    for (uint8_t sIx = 0; sIx < MENU_NSTRS(pkEntry); sIx++)
+                    {
+                        if (sIx == 0)
+                        {
+                            snprintf_P(buf, size, PSTR(" [%S"), MENU_STR_IX(pkEntry, sIx));
+                        }
+                        else
+                        {
+                            const uint16_t len = strlen(buf);
+                            snprintf_P(&buf[len], size - len, PSTR(", %S"), MENU_STR_IX(pkEntry, sIx));
+                        }
+                    }
+                    uint16_t len = strlen(buf);
+                    if (len < (size - 1))
+                    {
+                        buf[len]     = ']';
+                        buf[len + 1] = '\0';
+                    }
+                    else
+                    {
+                        buf[len - 1] = '\0';
+                    }
+                    break;
+                }
+                case MENU_TYPE_FUNC:
+                case MENU_TYPE_MENU:
+                case MENU_TYPE_JUMP:
+                    break;
+            }
+
+            PRINT_W("%s- %S%s", indentBuf, MENU_NAME(pkEntry), buf);
             sMenuDumpHelper(pkMenu, nMenu, MENU_MID(pkEntry), indent + 2);
+            ledfxClear(0, 0);
         }
     }
 }
@@ -504,11 +551,12 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
 
 const __flash char skModeMenuStr0[] = "MRGB";
 const __flash char skModeMenuStr1[] = "MHSV";
+const __flash char skModeMenuStr2[] = "MPAT";
 const __flash char * const __flash skModeMenuStrs[] =
 {
-    skModeMenuStr0, skModeMenuStr1
+    skModeMenuStr0, skModeMenuStr1, skModeMenuStr2
 };
-typedef enum MODE_e { MODE_RGB = 0, MODE_HSV = 1 } MODE_t;
+typedef enum MODE_e { MODE_RGB = 0, MODE_HSV = 1, MODE_PATTERN = 2 } MODE_t;
 
 const __flash char skOrderMenuStr0[] = "ORGB";
 const __flash char skOrderMenuStr1[] = "ORBG";
@@ -587,36 +635,35 @@ static void sHardReset(void)
     /*                                    MEN: -- */ \
     /*                                    FUN:                     function */ \
     /*                                    JMP:                     jump */ \
-    _STR(  1,  0, "1 MO (mode)\0",    mode,    false, MODE_RGB,    skModeMenuStrs) \
-    _STR(  2,  0, "2 OR (order)\0",   order,   false, ORDER_RGB,   skOrderMenuStrs ) \
-    _STR(  3,  0, "3 DR (driver)\0",  driver,  false, DRIVER_NONE, skDriverMenuStrs ) \
+    _STR( 11,  0, "1 DR (driver)\0",  driver,  false, DRIVER_NONE, skDriverMenuStrs ) \
+    _STR( 12,  0, "2 MO (mode)\0",    mode,    false, MODE_RGB,    skModeMenuStrs) \
+    _STR( 13,  0, "3 OR (order)\0",   order,   false, ORDER_RGB,   skOrderMenuStrs ) \
+    _MEN( 14,  0, "4 MA (matrix)\0",  matrix ) \
+    _MEN( 15,  0, "5 PA (params)\0",  params ) \
+    _MEN( 16,  0, "A HD (hex-dec)\0", hexdec ) \
+    _STR( 17,  0, "B CH (chars)\0",   chars,   true,  0,           skCharsMenuStrs ) \
+    _FUN( 18,  0, "KILL (reset)\0",   kill,                        sHardReset ) \
     \
-    _VAL(  4,  0, "4 RD (red)\0",     red,     false, 1,           'R', 0, 255 ) \
-    _VAL(  5,  0, "5 GN (green)\0",   green,   false, 1,           'G', 0, 255 ) \
-    _VAL(  6,  0, "6 BL (blue)\0",    blue,    false, 1,           'B', 0, 255 ) \
-    \
-    _VAL(  7,  0, "7 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
-    _VAL(  8,  0, "8 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
-    _VAL(  9,  0, "9 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
-    \
-    _MEN( 10,  0, "A MA (matrix)\0",  matrix ) \
-    _MEN( 11,  0, "B HD (hex-dec)\0", hexdec ) \
-    _STR( 12,  0, "C CH (chars)\0",   chars,   true,  0,           skCharsMenuStrs ) \
-    _FUN( 13,  0, "KILL (reset)\0",   kill,                        sHardReset ) \
+    /* params menu */ \
+    _VAL( 51, 15, "1 RD (red)\0",     red,     false, 1,           'R', 0, 255 )   \
+    _VAL( 52, 15, "2 GN (green)\0",   green,   false, 1,           'G', 0, 255 ) \
+    _VAL( 53, 15, "3 BL (blue)\0",    blue,    false, 1,           'B', 0, 255 ) \
+    _VAL( 54, 15, "4 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
+    _VAL( 55, 15, "5 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
+    _VAL( 56, 15, "6 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
+    _JMP( 57, 15, "X (- (return)\0",  ret0,                        15 ) \
     \
     /* matrix menu */ \
-    _VAL( 14, 10, "1 N# (total)\0",   nxy,     false, 5,           '#', 0, FF_LEDFX_NUM_LED ) \
-    _VAL( 15, 10, "2 NX (n_x)\0",     nx,      false, 8,           'X', 1, 10 ) \
-    _VAL( 16, 10, "3 NY (n_y)\0",     ny,      false, 8,           'Y', 1, 10 ) \
+    _VAL( 41, 14, "1 N# (total)\0",   nxy,     false, 5,           '#', 0, FF_LEDFX_NUM_LED ) \
+    _VAL( 42, 14, "2 NX (n_x)\0",     nx,      false, 8,           'X', 1, 10 ) \
+    _VAL( 43, 14, "3 NY (n_y)\0",     ny,      false, 8,           'Y', 1, 10 ) \
     /* TODO: XY arrangement */ \
-    _JMP( 17, 10, "X (- (return)\0",  ret0,                        9 ) \
+    _JMP( 44, 14, "X (- (return)\0",  ret1,                        14 ) \
     \
     /* hex-dec menu */ \
-    _HEX( 18, 11, "1HEX (hex)\0",     hex,     true,  0,           'X', 0, 255 ) \
-    _VAL( 19, 11, "2DEC (dec)\0",     dec,     true,  0,           'D', 0, 255 ) \
-    _JMP( 20, 11, "X (- (return)\0",  ret1,                        10 )
-
-#define HEXDEC_MENU_IX 17
+    _HEX( 61, 16, "1HEX (hex)\0",     hex,     true,  0,           'X', 0, 255 ) \
+    _VAL( 62, 16, "2DEC (dec)\0",     dec,     true,  0,           'D', 0, 255 ) \
+    _JMP( 63, 16, "X (- (return)\0",  ret2,                        16 )
 
 // menu structure
 static const MENU_t skMenu1[] PROGMEM = { MENU1_DEF(M_STR, M_VAL, M_HEX, M_MEN, M_JMP, M_FUN) };
@@ -631,6 +678,8 @@ typedef union MENU1_VALUES_u
 
 } MENU1_VALUES_t;
 
+#define MENU1_HEX_IX (offsetof(MENU1_VALUES_t, hex) / sizeof(int16_t))
+#define MENU1_DEC_IX (offsetof(MENU1_VALUES_t, dec) / sizeof(int16_t))
 
 // -------------------------------------------------------------------------------------------------
 
@@ -770,7 +819,7 @@ static void sAppTask(void *pArg)
         }
 
         // special hex-dec conversion menu
-        if ( (sMenu1State.pkCurr == &skMenu1[HEXDEC_MENU_IX]) || (sMenu1State.pkCurr == &skMenu1[HEXDEC_MENU_IX + 1]) )
+        if ( (sMenu1State.pkCurr == &skMenu1[MENU1_HEX_IX]) || (sMenu1State.pkCurr == &skMenu1[MENU1_DEC_IX]) )
         {
             static int16_t oldHexDec;
             if (sMenu1Values.hex != oldHexDec)

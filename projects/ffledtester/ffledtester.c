@@ -81,6 +81,8 @@ typedef struct MENU_s
     };
 } MENU_t;
 
+typedef const __flash MENU_t MENU_P_t;
+
 #define MENU_MID(pkMenu)         ((uint8_t)pgm_read_byte(&((pkMenu)->mid)))
 #define MENU_PID(pkMenu)         ((uint8_t)pgm_read_byte(&((pkMenu)->pid)))
 #define MENU_TYPE(pkMenu)        ((MENU_TYPE_t)pgm_read_byte(&((pkMenu)->type)))
@@ -99,11 +101,11 @@ typedef struct MENU_s
 
 typedef struct MENU_STATE_s
 {
-    const __flash MENU_t *pkMenu; // list of menu entries
-    uint8_t               nMenu;  // number of menu entries
-    const __flash MENU_t *pkCurr; // current menu
-    bool                  active; // true if entry is active
-    int16_t              *vals;   // storage for the values associated with each entry (must be big enough for nMenu values)
+    MENU_P_t *pkMenu; // list of menu entries
+    uint8_t   nMenu;  // number of menu entries
+    MENU_P_t *pkCurr; // current menu
+    bool      active; // true if entry is active
+    int16_t  *vals;   // storage for the values associated with each entry (must be big enough for nMenu values)
 } MENU_STATE_t;
 
 // forward declarations
@@ -149,7 +151,7 @@ static void sMenuDumpHelper(const MENU_t *pkMenu, const uint8_t nMenu, const uin
     }
     for (uint8_t ix = 0; ix < nMenu; ix++)
     {
-        const __flash MENU_t *pkEntry = &pkMenu[ix];
+        MENU_P_t *pkEntry = &pkMenu[ix];
         if (MENU_PID(pkEntry) == pid)
         {
             // use LED frame buffer for temp string

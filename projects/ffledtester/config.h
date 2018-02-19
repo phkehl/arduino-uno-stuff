@@ -55,6 +55,7 @@
 #define FF_LEDFX_NUM_LED      200
 #define FF_LEDFX_ORDER        123 // must be 123
 
+#define FF_WS2801_SPI_SPEED   1000
 
 
 #define DL_D0_PIN   _D4

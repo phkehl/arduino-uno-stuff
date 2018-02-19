@@ -81,6 +81,7 @@ typedef struct MENU_s
     };
 } MENU_t;
 
+// pointer to MENU_t in flash
 typedef const __flash MENU_t MENU_P_t;
 
 #define MENU_MID(pkMenu)         ((uint8_t)pgm_read_byte(&((pkMenu)->mid)))
@@ -98,6 +99,21 @@ typedef const __flash MENU_t MENU_P_t;
 #define MENU_DEF(pkMenu)         ((int16_t)pgm_read_byte(&((pkMenu)->def)))
 #define MENU_JUMP(pkMenu)        ((uint8_t)pgm_read_byte(&((pkMenu)->jump)))
 #define MENU_FUNC(pkMenu)        ((void (*)(void))pgm_read_word(&((pkMenu)->func)))
+
+// helper macros to generate consistent MENU_t array and value struct
+#define M_STR(_mid, _pid, _name, _var, _wrap, _def, _strs) \
+    { .type = MENU_TYPE_STR, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .strs = (_strs), .nStrs = NUMOF(_strs) },
+#define M_VAL(_mid, _pid, _name, _var, _wrap, _def, _ind, _min, _max) \
+    { .type = MENU_TYPE_VAL, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .ind = (_ind), .min = (_min), .max = (_max) },
+#define M_HEX(_mid, _pid, _name, _var, _wrap, _def, _ind, _min, _max) \
+    { .type = MENU_TYPE_HEX, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .ind = (_ind), .min = (_min), .max = (_max) },
+#define M_MEN(_mid, _pid, _name, _var) \
+    { .type = MENU_TYPE_MENU, .mid = (_mid), .pid = (_pid), .name = (_name) },
+#define M_JMP(_mid, _pid, _name, _var, _jump) \
+    { .type = MENU_TYPE_JUMP, .mid = (_mid), .pid = (_pid), .name = (_name), .jump = (_jump) },
+#define M_FUN(_mid, _pid, _name, _var, _func) \
+    { .type = MENU_TYPE_FUNC, .mid = (_mid), .pid = (_pid), .name = (_name), .func = (_func) },
+#define M_VAR(_mod, _pid, _name, _var, ...) int16_t _var;
 
 typedef struct MENU_STATE_s
 {
@@ -226,10 +242,10 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
     {
         pState->pkCurr = pkMenu;
     }
-    DEBUG("menu: mid=%02"PRIu8" pid=%02"PRIu8" ix=%02"PRIu8" -> %S (%S) %"PRIi16,
-        MENU_MID(pState->pkCurr), MENU_PID(pState->pkCurr), MENU_IX(pState->pkMenu, pState->pkCurr),
-        MENU_NAME(pState->pkCurr), pState->active ? PSTR("active") : PSTR("menu"),
-        pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ]);
+    //DEBUG("menu: mid=%02"PRIu8" pid=%02"PRIu8" ix=%02"PRIu8" -> %S (%S) %"PRIi16,
+    //    MENU_MID(pState->pkCurr), MENU_PID(pState->pkCurr), MENU_IX(pState->pkMenu, pState->pkCurr),
+    //    MENU_NAME(pState->pkCurr), pState->active ? PSTR("active") : PSTR("menu"),
+    //    pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ]);
     if (pState->active)
     {
         switch (MENU_TYPE(pState->pkCurr))
@@ -237,6 +253,7 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
             case MENU_TYPE_VAL:
             {
                 const int16_t min = MENU_MIN(pState->pkCurr);
+                const int16_t max = MENU_MAX(pState->pkCurr);
                 int16_t val = pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ];
                 dl2416tWrite(0, MENU_IND(pState->pkCurr));
                 if (min < 0)
@@ -244,9 +261,13 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
                     dl2416tWrite(1, val < 0 ? '-' : '+');
                     dl2416tUnsigned(ABS(val), 2, 2);
                 }
-                else
+                else if (max > 99)
                 {
                     dl2416tUnsigned(val, 1, 3);
+                }
+                else
+                {
+                    dl2416tUnsigned(val, 2, 2);
                 }
                 break;
             }
@@ -615,21 +636,6 @@ static void sHardReset(void)
     hwReset(HW_RESET_HARD);
 }
 
-// helper macros to generate consistent MENU_t array and value struct
-#define M_STR(_mid, _pid, _name, _var, _wrap, _def, _strs) \
-    { .type = MENU_TYPE_STR, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .strs = (_strs), .nStrs = NUMOF(_strs) },
-#define M_VAL(_mid, _pid, _name, _var, _wrap, _def, _ind, _min, _max) \
-    { .type = MENU_TYPE_VAL, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .ind = (_ind), .min = (_min), .max = (_max) },
-#define M_HEX(_mid, _pid, _name, _var, _wrap, _def, _ind, _min, _max) \
-    { .type = MENU_TYPE_HEX, .mid = (_mid), .pid = (_pid), .name = (_name), .wrap = (_wrap), .def = (_def), .ind = (_ind), .min = (_min), .max = (_max) },
-#define M_MEN(_mid, _pid, _name, _var) \
-    { .type = MENU_TYPE_MENU, .mid = (_mid), .pid = (_pid), .name = (_name) },
-#define M_JMP(_mid, _pid, _name, _var, _jump) \
-    { .type = MENU_TYPE_JUMP, .mid = (_mid), .pid = (_pid), .name = (_name), .jump = (_jump) },
-#define M_FUN(_mid, _pid, _name, _var, _func) \
-    { .type = MENU_TYPE_JUMP, .mid = (_mid), .pid = (_pid), .name = (_name), .func = (_func) },
-#define M_VAR(_mod, _pid, _name, _var, ...) int16_t _var;
-
 // our menu structure
 #define MENU1_DEF(_STR, _VAL, _HEX, _MEN, _JMP, _FUN) \
     /*    mid pid  name            var    STR: wrap   default      strs */ \
@@ -653,6 +659,8 @@ static void sHardReset(void)
     _VAL( 54, 15, "4 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
     _VAL( 55, 15, "5 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
     _VAL( 56, 15, "6 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
+    _VAL( 56, 15, "7 HZ (speed)\0",   hz,      false, 2,           '*', 1,  50 ) \
+    _VAL( 56, 15, "8 PA (pattern)\0", pattern, false, 0,           '+', 1,   3 ) \
     _JMP( 57, 15, "X (- (return)\0",  ret0,                        15 ) \
     \
     /* matrix menu */ \
@@ -685,10 +693,32 @@ typedef union MENU1_VALUES_u
 
 // -------------------------------------------------------------------------------------------------
 
+
+static void sUpdatePattern(const MENU1_VALUES_t *pkVal);
+
+static void sSwapRGB(const ORDER_t order, uint8_t *pR, uint8_t *pG, uint8_t *pB)
+{
+    uint8_t ch1, ch2, ch3;
+    switch (order)
+    {
+        case ORDER_RBG: ch1 = *pR; ch2 = *pB; ch3 = *pG; break;
+        case ORDER_GRB: ch1 = *pG; ch2 = *pR; ch3 = *pB; break;
+        case ORDER_GBR: ch1 = *pG; ch2 = *pB; ch3 = *pR; break;
+        case ORDER_BRG: ch1 = *pB; ch2 = *pR; ch3 = *pG; break;
+        case ORDER_BGR: ch1 = *pB; ch2 = *pG; ch3 = *pR; break;
+        default:
+        case ORDER_RGB: ch1 = *pR; ch2 = *pG; ch3 = *pB; break;
+    }
+    *pR = ch1;
+    *pG = ch2;
+    *pB = ch3;
+}
+
 static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
 {
     uint8_t rd, gr, bl;
-    switch ((MODE_t)pkVal->mode)
+    const MODE_t mode = (MODE_t)pkVal->mode;
+    switch (mode)
     {
         case MODE_RGB:
             rd = pkVal->red;
@@ -698,23 +728,26 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
         case MODE_HSV:
             hsv2rgb(pkVal->hue, pkVal->sat, pkVal->val, &rd, &gr, &bl);
             break;
+        case MODE_PATTERN:
+            break;
     }
-    uint8_t ch1, ch2, ch3;
-    switch ((ORDER_t)pkVal->order)
+
+    if (mode != MODE_PATTERN)
     {
-        case ORDER_RBG: ch1 = rd; ch2 = bl; ch3 = gr; break;
-        case ORDER_GRB: ch1 = gr; ch2 = rd; ch3 = bl; break;
-        case ORDER_GBR: ch1 = gr; ch2 = bl; ch3 = rd; break;
-        case ORDER_BRG: ch1 = bl; ch2 = rd; ch3 = gr; break;
-        case ORDER_BGR: ch1 = bl; ch2 = gr; ch3 = rd; break;
-        default:
-        case ORDER_RGB: ch1 = rd; ch2 = gr; ch3 = bl; break;
+        // adjust for colour ordering
+        sSwapRGB((ORDER_t)pkVal->order, &rd, &gr, &bl);
+        ledfxClear(0, 0);
+        for (int16_t ix = 0; ix < pkVal->nxy; ix++)
+        {
+            ledfxSetIxRGB(ix, rd, gr, bl);
+        }
     }
-    ledfxClear(0, 0);
-    for (int16_t ix = 0; ix < pkVal->nxy; ix++)
+    else
     {
-        ledfxSetIxRGB(ix, ch1, ch2, ch3);
+        sUpdatePattern(pkVal);
     }
+
+    // detect driver switch
     static DRIVER_t oldDriver = DRIVER_NONE;
     const DRIVER_t newDriver = (DRIVER_t)pkVal->driver;
     if (oldDriver != newDriver)
@@ -734,6 +767,7 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
         oldDriver = newDriver;
     }
 
+    // send data
     switch (newDriver)
     {
         case DRIVER_WS2801:
@@ -746,6 +780,36 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
             break;
     }
 }
+
+static void sUpdatePattern(const MENU1_VALUES_t *pkVal)
+{
+    const uint8_t pattern = (uint8_t)pkVal->pattern % 2;
+    static uint16_t iter;
+
+    ledfxClear(0, 0);
+    // walking LED (RGB)
+    if (pattern == 0)
+    {
+        uint8_t rd = pkVal->red, gr = pkVal->green, bl = pkVal->blue;
+        sSwapRGB((ORDER_t)pkVal->order, &rd, &gr, &bl);
+        const uint16_t ix = iter % pkVal->nxy;
+        ledfxSetIxRGB(ix, rd, gr, bl);
+        iter++;
+    }
+    // walking LED (HSV)
+    else if (pattern == 1)
+    {
+        uint8_t rd, gr, bl;
+        hsv2rgb(pkVal->hue, pkVal->sat, pkVal->val, &rd, &gr, &bl);
+        sSwapRGB((ORDER_t)pkVal->order, &rd, &gr, &bl);
+        const uint16_t ix = iter % pkVal->nxy;
+        ledfxSetIxRGB(ix, rd, gr, bl);
+        iter++;
+    }
+}
+
+
+
 
 // -------------------------------------------------------------------------------------------------
 
@@ -801,11 +865,26 @@ static void sAppTask(void *pArg)
     // clear event queue
     rotencClearEvents();
 
+    static uint32_t msss;
+    msss = osTaskGetTicks();
+
     while (ENDLESS)
     {
-        const ROTENC_EVENT_t ev = rotencGetEvent(1000);
-        //if (ev != ROTENC_NONE) { DEBUG("%S", rotencEventStr(ev));  }
-        switch (ev)
+        // calculate time for next LED update given the selected frame rate
+        const uint16_t period = 1000 / sMenu1Values.hz;
+        const uint32_t next = msss + period;
+        const uint32_t now = osTaskGetTicks();
+        msss = next;
+        if (now > next)
+        {
+            WARNING("frame drop!");
+        }
+        const uint32_t delay = now < next ? next - now : 100;
+
+        // wait for event, but not longer than until it's time to update the LEDs
+        const ROTENC_EVENT_t event = rotencGetEvent(delay);
+
+        switch (event)
         {
             case ROTENC_NONE:
                 break;
@@ -815,40 +894,42 @@ static void sAppTask(void *pArg)
             case ROTENC_DEC_DN:
             case ROTENC_BTN:
             case ROTENC_BTN_LONG:
-                sMenuHandle(&sMenu1State, ev);
-                break;
+                sMenuHandle(&sMenu1State, event);
                 break;
         }
 
-        // special hex-dec conversion menu
-        if ( (sMenu1State.pkCurr == &skMenu1[MENU1_HEX_IX]) || (sMenu1State.pkCurr == &skMenu1[MENU1_DEC_IX]) )
+        if (event != ROTENC_NONE)
         {
-            static int16_t oldHexDec;
-            if (sMenu1Values.hex != oldHexDec)
+            // special hex-dec conversion menu
+            if ( (sMenu1State.pkCurr == &skMenu1[MENU1_HEX_IX]) || (sMenu1State.pkCurr == &skMenu1[MENU1_DEC_IX]) )
             {
-                sMenu1Values.dec = sMenu1Values.hex;
-                oldHexDec = sMenu1Values.hex;
+                static int16_t oldHexDec;
+                if (sMenu1Values.hex != oldHexDec)
+                {
+                    sMenu1Values.dec = sMenu1Values.hex;
+                    oldHexDec = sMenu1Values.hex;
+                }
+                else if (sMenu1Values.dec != oldHexDec)
+                {
+                    sMenu1Values.hex = sMenu1Values.dec;
+                    oldHexDec = sMenu1Values.dec;
+                }
+                DEBUG("%03"PRIi16" 0x%02"PRIx16, sMenu1Values.dec, sMenu1Values.hex);
             }
-            else if (sMenu1Values.dec != oldHexDec)
+            // any other menu -> update parameters
+            else
             {
-                sMenu1Values.hex = sMenu1Values.dec;
-                oldHexDec = sMenu1Values.dec;
+                DEBUG("m:%"PRIi16" (%S) o:%"PRIi16" (%S) d:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
+                    sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
+                    sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
+                    sMenu1Values.driver, skDriverMenuStrs[sMenu1Values.driver],
+                    sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
+                    sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
             }
-            DEBUG("%03"PRIi16" 0x%02"PRIx16, sMenu1Values.dec, sMenu1Values.hex);
         }
-        // any other menu -> update LEDs
-        else
-        {
-            hwTic(0);
-            sUpdateLeds(&sMenu1Values);
-            const uint16_t dt = hwToc(0);
-            DEBUG("%03"PRIu16"us m:%"PRIi16" (%S) o:%"PRIi16" (%S) d:%"PRIi16" (%S) n:%02"PRIi16"x%02"PRIi16"/%03"PRIi16" r:%03"PRIi16" g:%03"PRIi16" b:%03"PRIi16" h:%03"PRIi16" s:%03"PRIi16" v:%03"PRIi16,
-                dt, sMenu1Values.mode, skModeMenuStrs[sMenu1Values.mode],
-                sMenu1Values.order, skOrderMenuStrs[sMenu1Values.order],
-                sMenu1Values.driver, skDriverMenuStrs[sMenu1Values.driver],
-                sMenu1Values.nx, sMenu1Values.ny, sMenu1Values.nxy,
-                sMenu1Values.red, sMenu1Values.green, sMenu1Values.blue, sMenu1Values.hue, sMenu1Values.sat, sMenu1Values.val);
-        }
+
+        // always update LEDs
+        sUpdateLeds(&sMenu1Values);
 
     }
 
@@ -890,7 +971,7 @@ void appInit(void)
 void appCreateTask(void)
 {
     static OS_TASK_t task;
-    static uint8_t stack[250];
+    static uint8_t stack[300];
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
 

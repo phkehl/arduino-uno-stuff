@@ -15,6 +15,7 @@
     \todo fireflys http://www.michaelfogleman.com/sync/
     \todo better plasma à la http://lodev.org/cgtutor/plasma.html, http://pastebin.com/MQhR526C, http://www.bidouille.org/prog/plasma
     \todo support LUT for LED arrangement
+    \todo study FastLED library (https://github.com/FastLED/FastLED/wiki/Rgb-calibration, https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering, https://github.com/FastLED/FastLED/wiki/FastLED-Color-Correction, https://github.com/FastLED/FastLED/wiki/Pixel-reference#chsv)
 */
 
 #include <string.h>        // libc: string operations

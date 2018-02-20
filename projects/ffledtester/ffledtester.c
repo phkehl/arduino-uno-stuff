@@ -648,9 +648,17 @@ static void sHardReset(void)
     _STR( 13,  0, "3 OR (order)\0",   order,   false, ORDER_RGB,   skOrderMenuStrs ) \
     _MEN( 14,  0, "4 MA (matrix)\0",  matrix ) \
     _MEN( 15,  0, "5 PA (params)\0",  params ) \
-    _MEN( 16,  0, "A HD (hex-dec)\0", hexdec ) \
-    _STR( 17,  0, "B CH (chars)\0",   chars,   true,  0,           skCharsMenuStrs ) \
-    _FUN( 18,  0, "KILL (reset)\0",   kill,                        sHardReset ) \
+    _MEN( 16,  0, "5 PT (pattern)\0", patmen ) \
+    _MEN( 17,  0, "A HD (hex-dec)\0", hexdec ) \
+    _STR( 18,  0, "B CH (chars)\0",   chars,   true,  0,           skCharsMenuStrs ) \
+    _FUN( 19,  0, "KILL (reset)\0",   kill,                        sHardReset ) \
+    \
+    /* matrix menu */ \
+    _VAL( 41, 14, "1 N# (total)\0",   nxy,     false, 5,           '#', 0, FF_LEDFX_NUM_LED ) \
+    _VAL( 42, 14, "2 NX (n_x)\0",     nx,      false, 8,           'X', 1, 10 ) \
+    _VAL( 43, 14, "3 NY (n_y)\0",     ny,      false, 8,           'Y', 1, 10 ) \
+    /* TODO: XY arrangement */ \
+    _JMP( 44, 14, "X (- (return)\0",  ret2,                        14 ) \
     \
     /* params menu */ \
     _VAL( 51, 15, "1 RD (red)\0",     red,     false, 1,           'R', 0, 255 )   \
@@ -659,21 +667,18 @@ static void sHardReset(void)
     _VAL( 54, 15, "4 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
     _VAL( 55, 15, "5 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
     _VAL( 56, 15, "6 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
-    _VAL( 56, 15, "7 HZ (speed)\0",   hz,      false, 5,           '*', 1,  50 ) \
-    _VAL( 56, 15, "8 PA (pattern)\0", pattern, false, 0,           '+', 1,   3 ) \
     _JMP( 57, 15, "X (- (return)\0",  ret0,                        15 ) \
     \
-    /* matrix menu */ \
-    _VAL( 41, 14, "1 N# (total)\0",   nxy,     false, 5,           '#', 0, FF_LEDFX_NUM_LED ) \
-    _VAL( 42, 14, "2 NX (n_x)\0",     nx,      false, 8,           'X', 1, 10 ) \
-    _VAL( 43, 14, "3 NY (n_y)\0",     ny,      false, 8,           'Y', 1, 10 ) \
-    /* TODO: XY arrangement */ \
-    _JMP( 44, 14, "X (- (return)\0",  ret1,                        14 ) \
+    /* pattern menu */ \
+    _VAL( 61, 16, "1 PA (pattern)\0", pattern, false, 1,           'P', 1,   3 ) \
+    _VAL( 62, 16, "2 HZ (speed)\0",   hz,      false, 5,           'S', 1,  50 ) \
+    _VAL( 63, 16, "3 PE (period)\0",  period,  false, 5,           'R', 2,  2 * FF_LEDFX_NUM_LED ) \
+    _JMP( 64, 16, "X (- (return)\0",  ret1,                        16 ) \
     \
     /* hex-dec menu */ \
-    _HEX( 61, 16, "1HEX (hex)\0",     hex,     true,  0,           'X', 0, 255 ) \
-    _VAL( 62, 16, "2DEC (dec)\0",     dec,     true,  0,           'D', 0, 255 ) \
-    _JMP( 63, 16, "X (- (return)\0",  ret2,                        16 )
+    _HEX( 71, 17, "1HEX (hex)\0",     hex,     true,  0,           'X', 0, 255 ) \
+    _VAL( 72, 17, "2DEC (dec)\0",     dec,     true,  0,           'D', 0, 255 ) \
+    _JMP( 73, 17, "X (- (return)\0",  ret3,                        17 )
 
 // menu structure
 static const MENU_t skMenu1[] PROGMEM = { MENU1_DEF(M_STR, M_VAL, M_HEX, M_MEN, M_JMP, M_FUN) };
@@ -783,28 +788,45 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
 
 static void sUpdatePattern(const MENU1_VALUES_t *pkVal)
 {
-    const uint8_t pattern = (uint8_t)pkVal->pattern % 2;
     static uint16_t iter;
 
     ledfxClear(0, 0);
     // walking LED (RGB)
-    if (pattern == 0)
+    if (pkVal->pattern == 1)
     {
         uint8_t rd = pkVal->red, gr = pkVal->green, bl = pkVal->blue;
         sSwapRGB((ORDER_t)pkVal->order, &rd, &gr, &bl);
-        const uint16_t ix = iter % pkVal->nxy;
-        ledfxSetIxRGB(ix, rd, gr, bl);
+        for (uint16_t ix = iter % pkVal->nxy; ix < (uint16_t)pkVal->nxy; ix += pkVal->period)
+        {
+            ledfxSetIxRGB(ix, rd, gr, bl);
+        }
         iter++;
     }
     // walking LED (HSV)
-    else if (pattern == 1)
+    else if (pkVal->pattern == 2)
     {
         uint8_t rd, gr, bl;
         hsv2rgb(pkVal->hue, pkVal->sat, pkVal->val, &rd, &gr, &bl);
         sSwapRGB((ORDER_t)pkVal->order, &rd, &gr, &bl);
-        const uint16_t ix = iter % pkVal->nxy;
-        ledfxSetIxRGB(ix, rd, gr, bl);
+        for (uint16_t ix = iter % pkVal->nxy; ix < (uint16_t)pkVal->nxy; ix += pkVal->period)
+        {
+            ledfxSetIxRGB(ix, rd, gr, bl);
+        }
         iter++;
+    }
+    // rainbow
+    else if (pkVal->pattern == 3)
+    {
+        const uint8_t dHue = 255 / pkVal->period;
+        for (uint16_t ix = 0; ix < (uint16_t)pkVal->nxy; ix++)
+        {
+            const uint8_t hue = (uint8_t)iter + ((ix % pkVal->period) * dHue);
+            uint8_t rd, gr, bl;
+            hsv2rgb(hue, pkVal->sat, pkVal->val, &rd, &gr, &bl);
+            sSwapRGB((ORDER_t)pkVal->order, &rd, &gr, &bl);
+            ledfxSetIxRGB(ix, rd, gr, bl);
+        }
+        iter += dHue;
     }
 }
 

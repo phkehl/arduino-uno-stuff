@@ -659,7 +659,7 @@ static void sHardReset(void)
     _VAL( 54, 15, "4 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
     _VAL( 55, 15, "5 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
     _VAL( 56, 15, "6 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
-    _VAL( 56, 15, "7 HZ (speed)\0",   hz,      false, 2,           '*', 1,  50 ) \
+    _VAL( 56, 15, "7 HZ (speed)\0",   hz,      false, 5,           '*', 1,  50 ) \
     _VAL( 56, 15, "8 PA (pattern)\0", pattern, false, 0,           '+', 1,   3 ) \
     _JMP( 57, 15, "X (- (return)\0",  ret0,                        15 ) \
     \
@@ -865,29 +865,24 @@ static void sAppTask(void *pArg)
     // clear event queue
     rotencClearEvents();
 
-    static uint32_t msss;
-    msss = osTaskGetTicks();
-
     while (ENDLESS)
     {
         // calculate time for next LED update given the selected frame rate
-        const uint16_t period = 1000 / sMenu1Values.hz;
-        const uint32_t next = msss + period;
+        const uint32_t period = 1000 / sMenu1Values.hz;
         const uint32_t now = osTaskGetTicks();
-        msss = next;
-        if (now > next)
-        {
-            WARNING("frame drop!");
-        }
-        const uint32_t delay = now < next ? next - now : 100;
+        const uint32_t next = (now / period) * period + period;
 
-        // wait for event, but not longer than until it's time to update the LEDs
-        const ROTENC_EVENT_t event = rotencGetEvent(delay);
+        // listen for event while waiting for the next frame
+        const ROTENC_EVENT_t event = now < next ? rotencGetEvent(next - now) : ROTENC_NONE;
 
+        // handle event
         switch (event)
         {
+            // no event, so it must be time for the next frame
             case ROTENC_NONE:
                 break;
+
+            // handle user activity
             case ROTENC_INC:
             case ROTENC_INC_DN:
             case ROTENC_DEC:
@@ -895,6 +890,8 @@ static void sAppTask(void *pArg)
             case ROTENC_BTN:
             case ROTENC_BTN_LONG:
                 sMenuHandle(&sMenu1State, event);
+                // go wait more..
+                continue;
                 break;
         }
 
@@ -930,7 +927,6 @@ static void sAppTask(void *pArg)
 
         // always update LEDs
         sUpdateLeds(&sMenu1Values);
-
     }
 
 }

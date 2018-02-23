@@ -19,7 +19,7 @@
     - D9: \ref FF_HW_LOAD_PIN
     - D10 (SS): needed by \ref WS2801 (FIXME: really?)
     - D11 (MOSI): \ref WS2801 data ("DI")
-    - D12: \ref WS2812 data pin
+    - D12 (MISO): \ref WS2812 data pin ("IN")
     - D13 (SCK): \ref WS2801 clock output ("CI")
     - A0: Siemens DL2416T display: data input (D4)
     - A1: Siemens DL2416T display: data input (D5)

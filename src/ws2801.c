@@ -25,7 +25,7 @@ void ws2801Init(void)
     PIN_OUTPUT(_D13); // SCK
     PIN_OUTPUT(_D11); // MOSI
     PIN_OUTPUT(_D10); // SS
-    PIN_HIGH(_D10);
+    PIN_LOW(_D10);
 
     // enable, master mode
     SPCR = /*BIT(SPE) |*/ BIT(MSTR); // | BIT(CPOL);

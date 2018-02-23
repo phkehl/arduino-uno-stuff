@@ -27,6 +27,7 @@
 #include "ledfx.h"         // ff: LED effects
 #include "hsv2rgb.h"       // ff: HSV to RGV conversion
 #include "rotenc.h"        // ff: rotary encoder input
+#include "tone.h"          // ff: tone and melody generator
 
 #include "ffledtester.h"
 #include "dl2416t.h"
@@ -866,6 +867,15 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+//    static uint16_t melody1[] =
+//    {
+//        TONE_NOTE_C4, 200,  TONE_NOTE_C5, 200,  TONE_NOTE_C6, 200,  TONE_NOTE_C7, 200,
+//        TONE_PAUSE, 100,  TONE_NOTE_C6, 200,  TONE_PAUSE, 100,  TONE_NOTE_C5, 200,  TONE_PAUSE, 100,  TONE_NOTE_C4, 200,
+//        TONE_END
+//    };
+//    toneMelody(melody1, false);
+//    osTaskDelay(2000);
+
     // print menu
     sMenuDump(skMenu1, NUMOF(skMenu1));
 
@@ -911,6 +921,7 @@ static void sAppTask(void *pArg)
             case ROTENC_DEC_DN:
             case ROTENC_BTN:
             case ROTENC_BTN_LONG:
+                toneGenerate(TONE_NOTE_E7, 100);
                 sMenuHandle(&sMenu1State, event);
                 // go wait more..
                 continue;
@@ -970,6 +981,8 @@ void appInit(void)
     DEBUG("ffledtester: init");
 
     rotencInit();
+
+    toneInit();
 
     ws2801Init();
 

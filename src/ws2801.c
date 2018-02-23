@@ -55,7 +55,6 @@ void ws2801Send(const uint8_t *data, const uint16_t size)
 {
     CS_ENTER;
     SETBITS(SPCR, BIT(SPE)); // enable SPI
-    PIN_LOW(_D10);
 
     uint16_t n = size;
     while (n--)
@@ -77,7 +76,6 @@ void ws2801Send(const uint8_t *data, const uint16_t size)
 
     // latch data
     //_delay_us(500);
-    PIN_HIGH(_D10);
     CLRBITS(SPCR, BIT(SPE)); // disable SPI
     CS_LEAVE;
 }

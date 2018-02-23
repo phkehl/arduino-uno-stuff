@@ -161,6 +161,9 @@ ISR(TIMER2_COMPA_vect)
 
 void toneGenerate(const uint16_t freq, const uint16_t dur)
 {
+    PIN_OUTPUT(FF_TONE_PIN);
+    PIN_LOW(FF_TONE_PIN);
+
     pskvToneMelody = NULL;
     svToneIsProgmem = false;
     sToneArm(freq, dur);
@@ -169,6 +172,9 @@ void toneGenerate(const uint16_t freq, const uint16_t dur)
 uint32_t toneMelody(const uint16_t *pkMelody, const bool isProgmem)
 {
     uint32_t totalDuration = 0;
+
+    PIN_OUTPUT(FF_TONE_PIN);
+    PIN_LOW(FF_TONE_PIN);
 
     const uint16_t *pkM = pkMelody;
     while ((isProgmem ? (uint16_t)pgm_read_word(pkM) : *pkM) != TONE_END)

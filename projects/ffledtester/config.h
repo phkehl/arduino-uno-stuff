@@ -17,9 +17,9 @@
     - D7: Siemens DL2416T display: data input (D3)
     - D8: Siemens DL2416T display: display blank (~BL)
     - D9: \ref FF_HW_LOAD_PIN
-    - D10 (SS): needed by \ref WS2801 (FIXME: really?)
+    - D10 (SS): \ref TONE (and unused SS when using \ref WS2801)
     - D11 (MOSI): \ref WS2801 data ("DI")
-    - D12 (MISO): \ref WS2812 data pin ("IN")
+    - D12 (MISO): \ref WS2812 data pin ("IN") (and unused MISO when using \ref WS2801)
     - D13 (SCK): \ref WS2801 clock output ("CI")
     - A0: Siemens DL2416T display: data input (D4)
     - A1: Siemens DL2416T display: data input (D5)
@@ -57,6 +57,8 @@
 
 #define FF_WS2801_SPI_SPEED   1000
 
+#define FF_TONE_ENABLE   1
+#define FF_TONE_PIN  _D10
 
 #define DL_D0_PIN   _D4
 #define DL_D1_PIN   _D5

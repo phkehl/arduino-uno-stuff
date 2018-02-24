@@ -312,6 +312,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
             case ROTENC_INC:
             case ROTENC_INC_DN:
             {
+                toneGenerate(TONE_NOTE_A6, 20);
                 const MENU_t *pkCand = pState->pkCurr + 1;
                 while (pkCand < &pState->pkMenu[pState->nMenu])
                 {
@@ -328,6 +329,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
             case ROTENC_DEC:
             case ROTENC_DEC_DN:
             {
+                toneGenerate(TONE_NOTE_A6, 20);
                 const MENU_t *pkCand = pState->pkCurr - 1;
                 while (pkCand >= pState->pkMenu)
                 {
@@ -342,6 +344,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
             }
             // activate (to change value) or enter sub-menu
             case ROTENC_BTN:
+                toneGenerate(TONE_NOTE_B5, 50);
                 switch (MENU_TYPE(pState->pkCurr))
                 {
                     // enter sub-menu
@@ -408,6 +411,9 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
             // leave sub-menu
             case ROTENC_BTN_LONG:
             {
+                toneGenerate(TONE_NOTE_D5, 25);
+                osTaskDelay(30);
+                toneGenerate(TONE_NOTE_B5, 25);
                 const uint8_t pid = MENU_PID(pState->pkCurr);
                 const MENU_t *pkCand = pState->pkMenu;
                 while (pkCand < &pState->pkMenu[pState->nMenu])
@@ -455,6 +461,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                 switch (event)
                 {
                     case ROTENC_INC:
+                        toneGenerate(TONE_NOTE_A6, 20);
                         if (val < max)
                         {
                             val++;
@@ -465,6 +472,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         }
                         break;
                     case ROTENC_INC_DN:
+                        toneGenerate(TONE_NOTE_E6, 20);
                         if (val < (max - 10))
                         {
                             val += 10;
@@ -476,6 +484,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         }
                         break;
                     case ROTENC_DEC:
+                        toneGenerate(TONE_NOTE_A6, 20);
                         if (val > min)
                         {
                             val--;
@@ -486,6 +495,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         }
                         break;
                     case ROTENC_DEC_DN:
+                        toneGenerate(TONE_NOTE_E6, 20);
                         if (val > (min + 10))
                         {
                             val -= 10;
@@ -498,10 +508,14 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         break;
                     // back to menu
                     case ROTENC_BTN:
+                        toneGenerate(TONE_NOTE_D5, 50);
                         pState->active = false;
                         break;
                     // reset to default
                     case ROTENC_BTN_LONG:
+                        toneGenerate(TONE_NOTE_D5, 25);
+                        osTaskDelay(30);
+                        toneGenerate(TONE_NOTE_B5, 25);
                         val = MENU_DEF(pState->pkCurr);
                         blink = true;
                         break;
@@ -526,6 +540,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                 {
                     case ROTENC_INC:
                     case ROTENC_INC_DN:
+                        toneGenerate(TONE_NOTE_A6, 20);
                         if (val < maxIx)
                         {
                             val++;
@@ -537,6 +552,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         break;
                     case ROTENC_DEC:
                     case ROTENC_DEC_DN:
+                        toneGenerate(TONE_NOTE_A6, 20);
                         if (val > 0)
                         {
                             val--;
@@ -548,6 +564,7 @@ static void sMenuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         break;
                     // back to menu
                     case ROTENC_BTN:
+                        toneGenerate(TONE_NOTE_D5, 50);
                         pState->active = false;
                         break;
                     case ROTENC_BTN_LONG:
@@ -630,9 +647,27 @@ const __flash char * const __flash skCharsMenuStrs[] =
 static void sHardReset(void)
 {
     PRINT_W("RESET");
-    dl2416tBlink(2, 100, 150);
+
+    for (uint8_t n = 0; n < 5; n++)
+    {
+        dl2416tBlank(true);
+        osTaskDelay(100);
+        toneGenerate(TONE_NOTE_D5, 25);
+        dl2416tBlank(false);
+        osTaskDelay(150);
+    }
+
     dl2416tStr_P(PSTR("BOOM"), 0, 4);
-    dl2416tBlink(10, 50, 50);
+
+    for (uint8_t n = 0; n < 10; n++)
+    {
+        dl2416tBlank(true);
+        osTaskDelay(50);
+        toneGenerate(TONE_NOTE_G3, 25);
+        dl2416tBlank(false);
+        osTaskDelay(50);
+    }
+
     dl2416tClear();
     hwReset(HW_RESET_HARD);
 }
@@ -867,14 +902,12 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
-//    static uint16_t melody1[] =
-//    {
-//        TONE_NOTE_C4, 200,  TONE_NOTE_C5, 200,  TONE_NOTE_C6, 200,  TONE_NOTE_C7, 200,
-//        TONE_PAUSE, 100,  TONE_NOTE_C6, 200,  TONE_PAUSE, 100,  TONE_NOTE_C5, 200,  TONE_PAUSE, 100,  TONE_NOTE_C4, 200,
-//        TONE_END
-//    };
-//    toneMelody(melody1, false);
-//    osTaskDelay(2000);
+    static const uint16_t melody1[] PROGMEM =
+    {
+        TONE_NOTE_E5, 80,  TONE_PAUSE, 40,  TONE_NOTE_E5, 80,  TONE_PAUSE, 40,  TONE_NOTE_B5, 50,
+        TONE_END
+    };
+    toneMelody(melody1, true);
 
     // print menu
     sMenuDump(skMenu1, NUMOF(skMenu1));
@@ -888,6 +921,13 @@ static void sAppTask(void *pArg)
     osTaskDelay(500);
     dl2416tStr_P(PSTR(":-)"), 1, 3);
     dl2416tBlink(5, 100, 150);
+
+    static const uint16_t melody2[] PROGMEM =
+    {
+        TONE_NOTE_B5, 80,  TONE_PAUSE, 40,  TONE_NOTE_B5, 80,  TONE_PAUSE, 40,  TONE_NOTE_E5, 50,
+        TONE_END
+    };
+    toneMelody(melody2, true);
 
     // initialise menu
     static MENU_STATE_t sMenu1State;
@@ -921,7 +961,6 @@ static void sAppTask(void *pArg)
             case ROTENC_DEC_DN:
             case ROTENC_BTN:
             case ROTENC_BTN_LONG:
-                toneGenerate(TONE_NOTE_E7, 100);
                 sMenuHandle(&sMenu1State, event);
                 // go wait more..
                 continue;

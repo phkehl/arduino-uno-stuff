@@ -227,9 +227,8 @@ static void sMenuDumpHelper(const MENU_t *pkMenu, const uint8_t nMenu, const uin
 // dump whole menu structure
 static void sMenuDump(const MENU_t *pkMenu, const uint8_t nMenu)
 {
-    NOTICE_W("The menu today:");
+    NOTICE_W("The menu:");
     sMenuDumpHelper(pkMenu, nMenu, 0, 2);
-    NOTICE_W("Make your choice!");
 }
 
 // activate / update menu entry
@@ -909,7 +908,10 @@ static void sAppTask(void *pArg)
     };
     toneMelody(melody1, true);
 
-    // print menu
+    // help and print menu
+    NOTICE_W("Pins: 1 GND  2 VCC  3 NONE  4 CLK  5 MOSI  6 DATA");
+    PRINT_W( "- WS2801: 1, 2, 4, 5");
+    PRINT_W( "- WS2812: 1, 2, 6");
     sMenuDump(skMenu1, NUMOF(skMenu1));
 
     // clear event queue
@@ -936,6 +938,8 @@ static void sAppTask(void *pArg)
 
     // clear event queue
     rotencClearEvents();
+
+    NOTICE_W("Ready!");
 
     while (ENDLESS)
     {

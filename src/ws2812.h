@@ -43,7 +43,7 @@
 #define ws2812Send(pin, data, size) \
     _ws2812Send(&PIN_TO_PORT(pin), &PIN_TO_DDR(pin), PIN_TO_MASK(pin), data, size)
 
-void _ws2812Send(volatile uint8_t *pPort, volatile uint8_t *pDdr, uint8_t mask, const uint8_t *data, const uint8_t size);
+void _ws2812Send(volatile uint8_t *pPort, volatile uint8_t *pDdr, uint8_t mask, const uint8_t *data, const uint16_t size);
 
 
 

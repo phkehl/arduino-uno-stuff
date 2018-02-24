@@ -19,9 +19,9 @@
 
 #include <stdint.h>
 
-void light_ws2812_send_PORTB(const uint8_t *data, const uint8_t size, uint8_t mask);
-void light_ws2812_send_PORTC(const uint8_t *data, const uint8_t size, uint8_t mask);
-void light_ws2812_send_PORTD(const uint8_t *data, const uint8_t size, uint8_t mask);
+void light_ws2812_send_PORTB(const uint8_t *data, const uint16_t size, uint8_t mask);
+void light_ws2812_send_PORTC(const uint8_t *data, const uint16_t size, uint8_t mask);
+void light_ws2812_send_PORTD(const uint8_t *data, const uint16_t size, uint8_t mask);
 
 #endif /* LIGHT_WS2812_H_ */
 

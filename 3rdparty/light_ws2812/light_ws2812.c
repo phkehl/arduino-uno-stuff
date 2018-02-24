@@ -80,7 +80,7 @@
 
 #define maskhi mask
 
-void light_ws2812_send_PORTB(const uint8_t *data, uint8_t size, uint8_t mask)
+void light_ws2812_send_PORTB(const uint8_t *data, uint16_t size, uint8_t mask)
 //void inline ws2812_sendarray_mask(uint8_t *data,uint16_t datlen,uint8_t maskhi)
 {
   uint8_t curbyte,ctr,masklo;
@@ -94,7 +94,7 @@ void light_ws2812_send_PORTB(const uint8_t *data, uint8_t size, uint8_t mask)
 //sreg_prev=SREG;
 //cli();  
 
-  uint8_t datlen = size;
+  uint16_t datlen = size;
 
   while (datlen--) {
     curbyte= data ? *data++ : 0;
@@ -163,7 +163,7 @@ w_nop16
 //SREG=sreg_prev;
 }
 
-void light_ws2812_send_PORTC(const uint8_t *data, const uint8_t size, uint8_t mask)
+void light_ws2812_send_PORTC(const uint8_t *data, const uint16_t size, uint8_t mask)
 //void inline ws2812_sendarray_mask(uint8_t *data,uint16_t datlen,uint8_t maskhi)
 {
   uint8_t curbyte,ctr,masklo;
@@ -177,7 +177,7 @@ void light_ws2812_send_PORTC(const uint8_t *data, const uint8_t size, uint8_t ma
 //sreg_prev=SREG;
 //cli();  
 
-  uint8_t datlen = size;
+  uint16_t datlen = size;
 
   while (datlen--) {
     curbyte= data ? *data++ : 0;
@@ -246,7 +246,7 @@ w_nop16
 //SREG=sreg_prev;
 }
 
-void light_ws2812_send_PORTD(const uint8_t *data, uint8_t size, uint8_t mask)
+void light_ws2812_send_PORTD(const uint8_t *data, uint16_t size, uint8_t mask)
 //void inline ws2812_sendarray_mask(uint8_t *data,uint16_t datlen,uint8_t maskhi)
 {
   uint8_t curbyte,ctr,masklo;
@@ -260,7 +260,7 @@ void light_ws2812_send_PORTD(const uint8_t *data, uint8_t size, uint8_t mask)
 //sreg_prev=SREG;
 //cli();  
 
-  uint8_t datlen = size;
+  uint16_t datlen = size;
 
   while (datlen--) {
     curbyte= data ? *data++ : 0;

@@ -155,7 +155,8 @@ static void sPreset2(int16_t *vals);
     _VAL( 53, 15, "3 BL (blue)\0",    blue,    false, 1,           'B', 0, 255 ) \
     _VAL( 54, 15, "4 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
     _VAL( 55, 15, "5 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
-    _VAL( 56, 15, "6 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
+    _VAL( 56, 15, "6 VA (val)\0",     val,     false, 255,         'V', 0, 255 ) \
+    _VAL( 57, 15, "7 BR (bright)\0",  bright,  false, 20,          'I', 0, 255 ) \
     _JMP( 59, 15, "X (- (return)\0",  ret15,                       15 ) \
     \
     /* 16: pattern menu */ \
@@ -196,7 +197,7 @@ static void sPreset1(int16_t *vals)
     static const MENU1_VALUES_t skPreset PROGMEM =
     {
         .driver = DRIVER_WS2801, .mode = MODE_PATTERN, .order = ORDER_RGB,
-        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 50, .pattern = 3, .hz = 10, .period = 64
+        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 255, .bright = 50, .pattern = 3, .hz = 10, .period = 64,
     };
     memcpy_P(vals, skPreset.values, sizeof(skPreset));
 }
@@ -205,7 +206,7 @@ static void sPreset2(int16_t *vals)
     static const MENU1_VALUES_t skPreset PROGMEM =
     {
         .driver = DRIVER_WS2812, .mode = MODE_PATTERN, .order = ORDER_RGB,
-        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 50, .pattern = 3, .hz = 10, .period = 64
+        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 255, .bright = 50, .pattern = 3, .hz = 10, .period = 64,
     };
     memcpy_P(vals, skPreset.values, sizeof(skPreset));
 }
@@ -250,6 +251,8 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
         case MODE_PATTERN:
             break;
     }
+
+    ledfxSetBrightness(pkVal->bright);
 
     if (mode != MODE_PATTERN)
     {

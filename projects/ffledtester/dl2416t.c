@@ -42,7 +42,7 @@ void dl2416tWrite(const uint8_t pos, const char ch)
     // ASCII 0x20..0x5f=" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_"
     if ( (pos > 3) || (ch < ' ') || (ch > '_') )
     {
-        WARNING("dl2416tWrite(%"PRIu8", 0x%"PRIx8") illegal!", pos, ch);
+        //WARNING("dl2416tWrite(%"PRIu8", 0x%"PRIx8") illegal!", pos, ch);
     }
     //DEBUG("write %"PRIu8" '%c'", pos, ch);
 
@@ -63,7 +63,8 @@ void dl2416tWrite(const uint8_t pos, const char ch)
 
     // write
     PIN_LOW(DL_WR_PIN); // WR ena
-    osTaskDelay(2);
+    //osTaskDelay(2);
+    hwDelay(10);
     PIN_HIGH(DL_WR_PIN); // WR dis
 
     PIN_LOW(DL_D0_PIN);
@@ -120,9 +121,19 @@ void dl2416tStr_P(const char *str, const uint8_t offs, const uint8_t nChars)
     const uint8_t num = nChars > 0 ? MIN(nChars, len) : MIN(4, len);
     //DEBUG("str '%S' offs=%"PRIu8" nChars=%"PRIu8" len=%"PRIu8" num=%"PRIu8, str, offs, nChars, len, num);
     uint8_t ch = 0;
-    for (uint8_t ix = offs; (ch < num) && (ix < 4); ix++, ch++)
+    uint8_t ix;
+    for (ix = offs; (ch < num) && (ix < 4); ix++, ch++)
     {
-        dl2416tWrite(ix, pgm_read_byte(&str[ch]));
+        char c = pgm_read_byte(&str[ch]);
+        if ( (c >= 'a') && (c <= 'z') )
+        {
+            c -= 'a' - 'A';
+        }
+        dl2416tWrite(ix, c);
+    }
+    for (; ix < 4; ix++)
+    {
+        dl2416tWrite(ix, ' ');
     }
     dl2416tBlank(false);
 }

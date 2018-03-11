@@ -15,6 +15,7 @@
 
 
 #include "stdstuff.h"      // ff: useful macros and types
+#include "os.h"            // ff: operating system
 
 
 /* *************************************************************************** */
@@ -103,10 +104,12 @@ typedef const __flash MENU_t MENU_P_t;
 typedef struct MENU_STATE_s
 {
     MENU_P_t *pkMenu; // list of menu entries
-    uint8_t   nMenu;  // number of menu entries
     MENU_P_t *pkCurr; // current menu
+    uint8_t   nMenu;  // number of menu entries
     bool      active; // true if entry is active
     int16_t  *vals;   // storage for the values associated with each entry (must be big enough for nMenu values)
+    OS_TIMER_t scrollTimer; // menu entry scrolling timer
+    uint8_t    scrollPhase;
 } MENU_STATE_t;
 
 

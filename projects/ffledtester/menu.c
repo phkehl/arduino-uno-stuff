@@ -20,10 +20,7 @@
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
-#include "ws2801.h"        // ff: WS2801 LED driver
-#include "ws2812.h"        // ff: WS2812 LED driver
 #include "ledfx.h"         // ff: LED effects
-#include "hsv2rgb.h"       // ff: HSV to RGV conversion
 #include "rotenc.h"        // ff: rotary encoder input
 #include "tone.h"          // ff: tone and melody generator
 
@@ -140,6 +137,39 @@ void menuDump(const MENU_t *pkMenu, const uint8_t nMenu)
     sMenuDumpHelper(pkMenu, nMenu, 0, 2);
 }
 
+// menu entry scrolling
+static void sScrollTimerCb(void *pArg)
+{
+    MENU_STATE_t *pState = (MENU_STATE_t *)pArg;
+
+    // start scrolling after a while
+    const uint8_t waitTicks = 5;
+    if (pState->scrollPhase > waitTicks)
+    {
+        //toneGenerate(TONE_NOTE_D5, 15);
+        const char *pkName = MENU_NAME(pState->pkCurr);
+        const uint8_t len = strlen_P(pkName);
+        const uint8_t offs = pState->scrollPhase - waitTicks;
+        if (offs < len)
+        {
+            dl2416tStr_P(&pkName[offs], 0, 4);
+        }
+        else if (offs <= (len + 4))
+        {
+            if (offs == len)
+            {
+                dl2416tWrite(0, ' ');
+            }
+            dl2416tStr_P(pkName, 4 - (offs - len), 0);
+        }
+        else
+        {
+            pState->scrollPhase = 0;
+        }
+    }
+    pState->scrollPhase++;
+}
+
 // activate / update menu entry
 static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
 {
@@ -157,6 +187,7 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
     //    pState->vals[ MENU_IX(pState->pkMenu, pState->pkCurr) ]);
     if (pState->active)
     {
+        osTimerKill(&pState->scrollTimer);
         switch (MENU_TYPE(pState->pkCurr))
         {
             case MENU_TYPE_VAL:
@@ -205,6 +236,9 @@ static void sMenuUpdate(MENU_STATE_t *pState, const MENU_t *pkMenu)
     else
     {
         dl2416tStr_P(MENU_NAME(pState->pkCurr), 0, 4);
+        osTimerKill(&pState->scrollTimer);
+        pState->scrollPhase = 0;
+        osTimerArm(&pState->scrollTimer, sScrollTimerCb, pState, 300, 300);
     }
 }
 

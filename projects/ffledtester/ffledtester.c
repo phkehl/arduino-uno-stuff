@@ -400,7 +400,7 @@ static void sAppTask(void *pArg)
     rotencClearEvents();
 
     // say hello
-    dl2416tStrScroll_P(PSTR("    FLIPFLIP'S LED TESTER (C) 2018 FFI    "), 200);
+    dl2416tStrScroll_P(PSTR("    FLIPFLIP'S LED TESTER (C) 2018 FFI"), 200);
     dl2416tClear();
     osTaskDelay(500);
     dl2416tStr_P(PSTR(":-)"), 1, 3);

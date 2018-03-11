@@ -34,7 +34,7 @@
 #include "menu.h"
 
 
-/* ***** LED stuff *********************************************************** */
+/* ***** menu stuff ***************************************************************************** */
 
 const __flash char skModeMenuStr0[] = "MRGB";
 const __flash char skModeMenuStr1[] = "MHSV";
@@ -90,8 +90,10 @@ const __flash char * const __flash skCharsMenuStrs[] =
     skCharsMenuStrC, skCharsMenuStrD, skCharsMenuStrE, skCharsMenuStrF
 };
 
-static void sHardReset(void)
+static void sHardReset(int16_t *vals)
 {
+    UNUSED(vals);
+
     PRINT_W("RESET");
 
     for (uint8_t n = 0; n < 5; n++)
@@ -118,6 +120,10 @@ static void sHardReset(void)
     hwReset(HW_RESET_HARD);
 }
 
+// forward declarations
+static void sPreset1(int16_t *vals);
+static void sPreset2(int16_t *vals);
+
 // our menu structure
 #define MENU1_DEF(_STR, _VAL, _HEX, _MEN, _JMP, _FUN) \
     /*    mid pid  name            var    STR: wrap   default      strs */ \
@@ -130,37 +136,43 @@ static void sHardReset(void)
     _STR( 13,  0, "3 OR (order)\0",   order,   false, ORDER_RGB,   skOrderMenuStrs ) \
     _MEN( 14,  0, "4 MA (matrix)\0",  matrix ) \
     _MEN( 15,  0, "5 PA (params)\0",  params ) \
-    _MEN( 16,  0, "5 PT (pattern)\0", patmen ) \
-    _MEN( 17,  0, "A HD (hex-dec)\0", hexdec ) \
-    _STR( 18,  0, "B CH (chars)\0",   chars,   true,  0,           skCharsMenuStrs ) \
-    _FUN( 19,  0, "KILL (reset)\0",   kill,                        sHardReset ) \
+    _MEN( 16,  0, "6 PT (pattern)\0", patmen ) \
+    _MEN( 17,  0, "7 PR (presets)\0", preset ) \
+    _MEN( 18,  0, "A HD (hex-dec)\0", hexdec )                                     \
+    _STR( 19,  0, "B CH (chars)\0",   chars,   true,  0,           skCharsMenuStrs ) \
+    _FUN( 20,  0, "KILL (reset)\0",   kill,                        sHardReset ) \
     \
     /* matrix menu */ \
     _VAL( 41, 14, "1 N# (total)\0",   nxy,     false, 5,           '#', 0, FF_LEDFX_NUM_LED ) \
     _VAL( 42, 14, "2 NX (n_x)\0",     nx,      false, 8,           'X', 1, 10 ) \
     _VAL( 43, 14, "3 NY (n_y)\0",     ny,      false, 8,           'Y', 1, 10 ) \
     /* TODO: XY arrangement */ \
-    _JMP( 44, 14, "X (- (return)\0",  ret2,                        14 ) \
+    _JMP( 49, 14, "X (- (return)\0",  ret14,                       14 ) \
     \
-    /* params menu */ \
+    /* 15: params menu */ \
     _VAL( 51, 15, "1 RD (red)\0",     red,     false, 1,           'R', 0, 255 )   \
     _VAL( 52, 15, "2 GN (green)\0",   green,   false, 1,           'G', 0, 255 ) \
     _VAL( 53, 15, "3 BL (blue)\0",    blue,    false, 1,           'B', 0, 255 ) \
     _VAL( 54, 15, "4 HU (hue)\0",     hue,     true,  0,           'H', 0, 255 ) \
     _VAL( 55, 15, "5 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
     _VAL( 56, 15, "6 VA (val)\0",     val,     false, 1,           'V', 0, 255 ) \
-    _JMP( 57, 15, "X (- (return)\0",  ret0,                        15 ) \
+    _JMP( 59, 15, "X (- (return)\0",  ret15,                       15 ) \
     \
-    /* pattern menu */ \
+    /* 16: pattern menu */ \
     _VAL( 61, 16, "1 PA (pattern)\0", pattern, false, 1,           'P', 1,   3 ) \
     _VAL( 62, 16, "2 HZ (speed)\0",   hz,      false, 5,           'S', 1,  50 ) \
     _VAL( 63, 16, "3 PE (period)\0",  period,  false, 5,           'R', 2,  2 * FF_LEDFX_NUM_LED ) \
-    _JMP( 64, 16, "X (- (return)\0",  ret1,                        16 ) \
+    _JMP( 69, 16, "X (- (return)\0",  ret16,                       16 ) \
     \
-    /* hex-dec menu */ \
-    _HEX( 71, 17, "1HEX (hex)\0",     hex,     true,  0,           'X', 0, 255 ) \
-    _VAL( 72, 17, "2DEC (dec)\0",     dec,     true,  0,           'D', 0, 255 ) \
-    _JMP( 73, 17, "X (- (return)\0",  ret3,                        17 )
+    /* 17: presets */ \
+    _FUN( 71, 17, "PR 1 (preset 1)",  pres1,                       sPreset1) \
+    _FUN( 72, 17, "PR 2 (preset 2)",  pres2,                       sPreset2) \
+    _JMP( 79, 17, "X (- (return)\0",  ret17,                       17 ) \
+    \
+    /* 18: hex-dec menu */ \
+    _HEX( 81, 18, "1HEX (hex)\0",     hex,     true,  0,           'X', 0, 255 ) \
+    _VAL( 82, 18, "2DEC (dec)\0",     dec,     true,  0,           'D', 0, 255 ) \
+    _JMP( 89, 18, "X (- (return)\0",  ret18,                       18 )
 
 // menu structure
 static const MENU_t skMenu1[] PROGMEM = { MENU1_DEF(M_STR, M_VAL, M_HEX, M_MEN, M_JMP, M_FUN) };
@@ -178,8 +190,28 @@ typedef union MENU1_VALUES_u
 #define MENU1_HEX_IX (offsetof(MENU1_VALUES_t, hex) / sizeof(int16_t))
 #define MENU1_DEC_IX (offsetof(MENU1_VALUES_t, dec) / sizeof(int16_t))
 
-// -------------------------------------------------------------------------------------------------
+// presets
+static void sPreset1(int16_t *vals)
+{
+    static const MENU1_VALUES_t skPreset PROGMEM =
+    {
+        .driver = DRIVER_WS2801, .mode = MODE_PATTERN, .order = ORDER_RGB,
+        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 50, .pattern = 3, .hz = 10, .period = 64
+    };
+    memcpy_P(vals, skPreset.values, sizeof(skPreset));
+}
+static void sPreset2(int16_t *vals)
+{
+    static const MENU1_VALUES_t skPreset PROGMEM =
+    {
+        .driver = DRIVER_WS2812, .mode = MODE_PATTERN, .order = ORDER_RGB,
+        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 50, .pattern = 3, .hz = 10, .period = 64
+    };
+    memcpy_P(vals, skPreset.values, sizeof(skPreset));
+}
 
+
+/* ***** LEDs stuff ***************************************************************************** */
 
 static void sUpdatePattern(const MENU1_VALUES_t *pkVal);
 
@@ -340,7 +372,7 @@ static void sUpdatePattern(const MENU1_VALUES_t *pkVal)
 // }
 
 
-/* ***** application task **************************************************** */
+/* ***** application task *********************************************************************** */
 
 // application task
 static void sAppTask(void *pArg)
@@ -455,7 +487,7 @@ static void sAppTask(void *pArg)
 }
 
 
-/* ***** application status ************************************************** */
+/* ***** application status ********************************************************************* */
 
 // make application status string
 static void sAppStatus(char *str, const size_t size)
@@ -463,7 +495,7 @@ static void sAppStatus(char *str, const size_t size)
     /*const int n = */snprintf_P(str, size, PSTR("ffledtester..."));
 }
 
-/* ***** application init **************************************************** */
+/* ***** application init *********************************************************************** */
 
 // initialise the user application
 void appInit(void)
@@ -496,7 +528,6 @@ void appCreateTask(void)
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
 
-//------------------------------------------------------------------------------
 
 //@}
 // eof

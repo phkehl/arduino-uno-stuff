@@ -60,7 +60,7 @@ typedef struct MENU_s
         };
         struct                    // type = MENU_TYPE_FUNC
         {
-            void (*func)(void);   // function to call
+            void (*func)(int16_t *);  // function to call
 
         };
     };
@@ -83,7 +83,7 @@ typedef const __flash MENU_t MENU_P_t;
 #define MENU_IND(pkMenu)         ((char)pgm_read_byte(&((pkMenu)->ind)))
 #define MENU_DEF(pkMenu)         ((int16_t)pgm_read_byte(&((pkMenu)->def)))
 #define MENU_JUMP(pkMenu)        ((uint8_t)pgm_read_byte(&((pkMenu)->jump)))
-#define MENU_FUNC(pkMenu)        ((void (*)(void))pgm_read_word(&((pkMenu)->func)))
+#define MENU_FUNC(pkMenu)        ((void (*)(int16_t *))pgm_read_word(&((pkMenu)->func)))
 
 // helper macros to generate consistent MENU_t array and value struct
 #define M_STR(_mid, _pid, _name, _var, _wrap, _def, _strs) \

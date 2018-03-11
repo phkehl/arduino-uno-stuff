@@ -346,6 +346,7 @@ void menuHandle(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
                         break;
                     // call function
                     case MENU_TYPE_FUNC:
+                        osTimerKill(&pState->scrollTimer);
                         MENU_FUNC(pState->pkCurr)(pState->vals);
                         break;
                 }

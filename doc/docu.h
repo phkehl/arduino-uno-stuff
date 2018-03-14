@@ -45,6 +45,7 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 - \ref HSV2RGB
 - \ref WS2801
 - \ref WS2812
+- \ref SK9822
 - \ref LEDFX
 - \ref FXLOOP
 - \ref UBX

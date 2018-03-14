@@ -1,0 +1,431 @@
+// forward declarations
+typedef struct MENU_s MENU_t;
+typedef struct MENU_ENTRY_s MENU_ENTRY_t;
+static const MENU_t skRootMenu;
+
+// type of menu entry
+typedef enum MENU_TYPE_e
+{
+    MENU_TYPE_STR,  // entry is list of strings to choose from
+    MENU_TYPE_VAL,  // entry is value
+    MENU_TYPE_MENU, // entry is a sub-menu
+
+} MENU_TYPE_t;
+
+// menu entries
+typedef struct MENU_ENTRY_s
+{
+    MENU_TYPE_t type;         // the entry type
+    const char  name[16];     // the name
+    bool        wrap;         // wrap at beginning/end of list/value
+    union
+    {
+        struct
+        {                         // type = MENU_TYPE_STR:
+            const char **strs;    // - strings to choose from
+            uint8_t nStrs;        // - the number of strings
+        };
+        struct
+        {                         // type = MENU_TYPE_NUM
+            int16_t min;          // - minimum value
+            int16_t max;          // - maximum value
+        };
+        struct
+        {                         // type = MENU_TYPE_MENU
+            const MENU_t *pMenu;  // - this menu
+
+        };
+    };
+} MENU_ENTRY_t;
+
+// menu hierarchy
+typedef struct MENU_s
+{
+    const char name[12];
+    const MENU_ENTRY_t *pEntries;
+    uint8_t nEntries;
+
+    const MENU_t *pParent;
+
+} MENU_t;
+
+// -------------------------------------------------------------------------------------------------
+
+static const MENU_ENTRY_t skMatrixMenuEntries[] PROGMEM =
+{
+    { .type = MENU_TYPE_VAL,  .name = "1 NX (n_x)\0", .wrap = false, .min = 1, .max = 10 },
+    { .type = MENU_TYPE_VAL,  .name = "1 NY (n_y)\0", .wrap = false, .min = 1, .max = 10 },
+};
+
+static const MENU_t skMatrixMenu PROGMEM =
+{
+    .name = "matrix\0", .pEntries = skMatrixMenuEntries, .nEntries = NUMOF(skMatrixMenuEntries), .pParent = &skRootMenu
+};
+
+// -------------------------------------------------------------------------------------------------
+
+static const char skModeMenuStrs[][5] PROGMEM =
+{
+    { "MRGB\0" }, { "MHSV\0" }
+};
+static const char skOrderMenuStrs[][5] PROGMEM =
+{
+    { "ORGB\0" }, { "ORBG\0" }, { "OBRG\0" }, { "OBGR\0" }, { "OBRG\0" }, { "OBGR\0" }
+};
+
+static const MENU_ENTRY_t skMainMenuEntries[] PROGMEM =
+{
+    { .type = MENU_TYPE_STR,  .name = "1 MO (Mode)\0",   .wrap = false, .strs = (const char **)skModeMenuStrs , .nStrs = NUMOF(skModeMenuStrs) },
+    { .type = MENU_TYPE_STR,  .name = "2 OR (Order)\0",  .wrap = false, .strs = (const char **)skOrderMenuStrs , .nStrs = NUMOF(skOrderMenuStrs) },
+    { .type = MENU_TYPE_VAL,  .name = "3 RD (red)\0",    .wrap = false, .min = 0, .max = 255 },
+    { .type = MENU_TYPE_VAL,  .name = "3 GN (green)\0",  .wrap = false, .min = 0, .max = 255 },
+    { .type = MENU_TYPE_VAL,  .name = "4 BL (blue)\0",   .wrap = false, .min = 0, .max = 255 },
+    { .type = MENU_TYPE_VAL,  .name = "5 HU (hue)\0",    .wrap = true,  .min = 0, .max = 255 },
+    { .type = MENU_TYPE_VAL,  .name = "6 SA (sat)\0",    .wrap = false, .min = 0, .max = 255 },
+    { .type = MENU_TYPE_VAL,  .name = "7 VA (val)\0",    .wrap = false, .min = 0, .max = 255 },
+    { .type = MENU_TYPE_MENU, .name = "8 MA (matrix)\0", .wrap = false, .pMenu = NULL },
+};
+
+static const MENU_t skRootMenu PROGMEM =
+{
+    .name = "main", .pEntries = skMainMenuEntries, .nEntries = NUMOF(skMainMenuEntries), .pParent = NULL
+};
+
+
+// -------------------------------------------------------------------------------------------------
+
+typedef struct MENU_STATE_s
+{
+    const MENU_t *pMenu;
+
+    uint8_t ix;
+    bool    active;
+    int16_t val;
+} MENU_STATE_t;
+
+
+static void sMenuSet(MENU_STATE_t *pState, const MENU_t *pkMenu)
+{
+    pState->pMenu = pkMenu;
+    pState->ix = 0;
+    pState->active = false;
+}
+
+static void sMenuUpdate(MENU_STATE_t *pState, const ROTENC_EVENT_t event)
+{
+    // change value in currently active menu entry
+    if (pState->active)
+    {
+
+
+    }
+    // change menu entry
+    else
+    {
+        uint8_t ix = pState->ix;
+        switch (event)
+        {
+            case ROTENC_INC:
+            case ROTENC_INC_DN:
+                if (ix < (pState->pMenu->nEntries - 1))
+                {
+                    ix++;
+                }
+                break;
+            case ROTENC_DEC:
+            case ROTENC_DEC_DN:
+                if (ix > 0)
+                {
+                    ix--;
+                }
+                break;
+            default:
+                break;
+        }
+        pState->ix = ix;
+    }
+
+    DEBUG("sMenuUpdate() %S ix=%"PRIu8"/%"PRIu8" active=%c",
+        pState->pMenu->name,
+        pState->ix, pState->pMenu->nEntries - 1,
+        pState->active ? 'Y' : 'N');
+}
+#endif
+
+#else
+typedef enum MENU_e
+{
+    CHOOSE,
+    SET_MODE,
+    SET_ORDER,
+    SET_RED,
+    SET_GREEN,
+    SET_BLUE,
+    SET_HUE,
+    SET_SAT,
+    SET_VAL,
+
+    DEMO,
+
+} MENU_t;
+
+static const char skMenuStrs[][10] PROGMEM =
+{
+    { "CHOOSE\0" }, { "SET_MODE\0" }, { "SET_ORDER\0" },
+    { "SET_RED\0" }, { "SET_GREEN\0" }, { "SET_BLUE\0" },
+    { "SET_HUE\0" }, { "SET_SAT\0" }, { "SET_VAL\0" },
+    { "DEMO\0" },
+};
+
+static const MENU_t skMenuChoices[] PROGMEM =
+{
+    SET_MODE, SET_ORDER, SET_RED, SET_GREEN, SET_BLUE, SET_HUE, SET_SAT, SET_VAL, DEMO
+};
+
+typedef enum MODE_e
+{
+    MODE_RGB,
+    MODE_HSV,
+} MODE_t;
+
+static const MODE_t skModeChoices[] PROGMEM =
+{
+    MODE_RGB, MODE_HSV
+};
+
+typedef enum ORDER_e
+{
+    ORDER_RGB,
+    ORDER_RBG,
+    ORDER_GRB,
+    ORDER_GBR,
+    ORDER_BRG,
+    ORDER_BGR,
+} ORDER_t;
+
+static const ORDER_t skOrderChoices[] PROGMEM =
+{
+    ORDER_RGB, ORDER_RBG, ORDER_GRB, ORDER_GBR, ORDER_BRG, ORDER_BGR
+};
+
+typedef enum DEMO_e
+{
+    DEMO_DISP,
+} DEMO_t;
+
+static const DEMO_t skDemoChoices[] PROGMEM =
+{
+    DEMO_DISP
+};
+
+static const char skDemoStrs[][10] PROGMEM =
+{
+    { "DEMO_DISP\0" }
+};
+
+
+typedef struct STATE_s
+{
+    MENU_t  menu;
+
+    uint8_t choice; // menu = CHOOSE
+
+    uint8_t mode;   // menu = SET_MODE
+
+    uint8_t order;  // menu = SET_ORDER
+
+    uint8_t demo;   // menu = DEMO
+
+    uint8_t red;    // menu = SET_RED
+    uint8_t green;  // menu = SET_GREEN
+    uint8_t blue;   // menu = SET_BLUE
+
+    uint8_t hue;    // menu = SET_RED
+    uint8_t sat;    // menu = SET_SAT
+    uint8_t val;    // menu = SET_VAL
+
+} STATE_t;
+
+static void sInitState(STATE_t *pState)
+{
+    DEBUG("init state");
+    memset(pState, 0, sizeof(*pState));
+    pState->menu = CHOOSE;
+    pState->mode = MODE_HSV;
+    pState->order = ORDER_RGB;
+    pState->sat = 255;
+    dl2416tStr_P(PSTR("****"), 0, 0);
+    dl2416tBlink(3, 100, 200);
+    dl2416tClear();
+}
+
+static void sUpdateDisplay(const STATE_t *pkState)
+{
+    switch (pkState->menu)
+    {
+        case CHOOSE:
+            switch ((MENU_t)pgm_read_byte(&skMenuChoices[ pkState->choice ]))
+            {
+                case SET_MODE:  dl2416tStr_P(PSTR("1 MO"), 0, 0); break;
+                case SET_ORDER: dl2416tStr_P(PSTR("2 OR"), 0, 0); break;
+                case SET_RED:   dl2416tStr_P(PSTR("3 RD"), 0, 0); break;
+                case SET_GREEN: dl2416tStr_P(PSTR("4 GN"), 0, 0); break;
+                case SET_BLUE:  dl2416tStr_P(PSTR("5 BL"), 0, 0); break;
+                case SET_HUE:   dl2416tStr_P(PSTR("6 HU"), 0, 0); break;
+                case SET_SAT:   dl2416tStr_P(PSTR("7 SA"), 0, 0); break;
+                case SET_VAL:   dl2416tStr_P(PSTR("8 VA"), 0, 0); break;
+                case DEMO:      dl2416tStr_P(PSTR("DEMO"), 0, 0); break;
+                default:        dl2416tStr_P(PSTR("????"), 0, 0); break;
+            }
+            break;
+        case SET_MODE:
+            dl2416tWrite(0, 'M');
+            switch ((MODE_t)pgm_read_byte(&skModeChoices[ pkState->mode ]))
+            {
+                case MODE_RGB:  dl2416tStr_P(PSTR("RGB"), 1, 0); break;
+                case MODE_HSV:  dl2416tStr_P(PSTR("HSV"), 1, 0); break;
+            }
+            break;
+        case SET_ORDER:
+            dl2416tWrite(0, 'O');
+            switch ((ORDER_t)pgm_read_byte(&skOrderChoices[ pkState->order ]))
+            {
+                case ORDER_RGB:  dl2416tStr_P(PSTR("RGB"), 1, 0); break;
+                case ORDER_RBG:  dl2416tStr_P(PSTR("RBG"), 1, 0); break;
+                case ORDER_GRB:  dl2416tStr_P(PSTR("GRB"), 1, 0); break;
+                case ORDER_GBR:  dl2416tStr_P(PSTR("GBR"), 1, 0); break;
+                case ORDER_BRG:  dl2416tStr_P(PSTR("BRG"), 1, 0); break;
+                case ORDER_BGR:  dl2416tStr_P(PSTR("BGR"), 1, 0); break;
+            }
+            break;
+        case DEMO:
+            switch ((DEMO_t)pgm_read_byte(&skDemoChoices[ pkState->demo ]))
+            {
+                case DEMO_DISP:  dl2416tStr_P(PSTR("DISP"), 0, 0); break;
+            }
+            break;
+        case SET_RED:   dl2416tWrite(0, 'R'); dl2416tUnsigned(pkState->red,   0, 3); break;
+        case SET_GREEN: dl2416tWrite(0, 'G'); dl2416tUnsigned(pkState->green, 0, 3); break;
+        case SET_BLUE:  dl2416tWrite(0, 'B'); dl2416tUnsigned(pkState->blue,  0, 3); break;
+        case SET_HUE:   dl2416tWrite(0, 'H'); dl2416tUnsigned(pkState->hue,   0, 3); break;
+        case SET_SAT:   dl2416tWrite(0, 'S'); dl2416tUnsigned(pkState->sat,   0, 3); break;
+        case SET_VAL:   dl2416tWrite(0, 'V'); dl2416tUnsigned(pkState->val,   0, 3); break;
+    }
+}
+
+static int16_t sUpdateMenu(STATE_t *pState, const int16_t inVal)
+{
+    int16_t val = inVal;
+    switch (pState->menu)
+    {
+        case CHOOSE:
+            val = CLIP(val, 0, (int16_t)NUMOF(skMenuChoices) - 1);
+            pState->choice = val;
+            break;
+        case SET_MODE:
+            val = CLIP(val, 0, (int16_t)NUMOF(skModeChoices) - 1);
+            pState->mode = val;
+            break;
+        case SET_ORDER:
+            val = CLIP(val, 0, (int16_t)NUMOF(skOrderChoices) - 1);
+            pState->order = val;
+            break;
+        case DEMO:
+            val = CLIP(val, 0, (int16_t)NUMOF(skDemoChoices) - 1);
+            pState->demo = val;
+            break;
+        case SET_RED:   val = CLIP(val, 0, 255); pState->red   = val; break;
+        case SET_GREEN: val = CLIP(val, 0, 255); pState->green = val; break;
+        case SET_BLUE:  val = CLIP(val, 0, 255); pState->blue  = val; break;
+        case SET_SAT:   val = CLIP(val, 0, 255); pState->sat   = val; break;
+        case SET_VAL:   val = CLIP(val, 0, 255); pState->val   = val; break;
+        case SET_HUE:
+            while (val < 0)
+            {
+                val += 256;
+            }
+            while (val > 255)
+            {
+                val -= 256;
+            }
+            pState->hue   = val;
+            break;
+    }
+
+    DEBUG("upd %S %"PRIi16" -> %"PRIi16, skMenuStrs[pState->menu], inVal, val);
+    return val;
+}
+
+// forward declaration
+static void sRunDemo(const STATE_t *pkState, const DEMO_t which);
+
+// short press
+static int16_t sApplyMenu(STATE_t *pState)
+{
+    int16_t val = 0;
+    switch (pState->menu)
+    {
+        case CHOOSE:
+            switch ((MENU_t)pgm_read_byte(&skMenuChoices[pState->choice]))
+            {
+                case CHOOSE:
+                case SET_MODE:  pState->menu = SET_MODE;  val = pState->mode;  break;
+                case SET_ORDER: pState->menu = SET_ORDER; val = pState->order; break;
+                case SET_RED:   pState->menu = SET_RED;   val = pState->red;   break;
+                case SET_GREEN: pState->menu = SET_GREEN; val = pState->green; break;
+                case SET_BLUE:  pState->menu = SET_BLUE;  val = pState->blue;  break;
+                case SET_HUE:   pState->menu = SET_HUE;   val = pState->hue;   break;
+                case SET_SAT:   pState->menu = SET_SAT;   val = pState->sat;   break;
+                case SET_VAL:   pState->menu = SET_VAL;   val = pState->val;   break;
+                case DEMO:      pState->menu = DEMO;      val = pState->demo;  break;
+            }
+            break;
+        default:
+            pState->menu = CHOOSE;
+            val = pState->choice;
+            break;
+    }
+    DEBUG("menu %S %"PRIi16, skMenuStrs[pState->menu], val);
+    return val;
+}
+
+// long press
+static int16_t sApplyValue(STATE_t *pState, const uint8_t inVal)
+{
+    int16_t val = inVal;
+    switch (pState->menu)
+    {
+        case CHOOSE:
+            sInitState(pState);
+            val = 0;
+            break;
+        case SET_MODE:
+            // nothing
+            break;
+        case SET_ORDER:
+            // nothing
+            break;
+        case DEMO:
+            sRunDemo(pState, (DEMO_t)pState->demo);
+            pState->menu = CHOOSE;
+            val = pState->choice;
+            rotencClearEvents();
+            break;
+        case SET_HUE:
+            val += 255/6;
+            break;
+        case SET_RED:
+        case SET_GREEN:
+        case SET_BLUE:
+        case SET_SAT:
+        case SET_VAL:
+            if      (val ==   0) { val = 128; }
+            else if (val == 128) { val = 255; }
+            else if (val == 255) { val = 127; }
+            else if (val  < 128) { val =   0; }
+            else     /* > 128 */ { val = 255; }
+            break;
+    }
+    DEBUG("value %S %"PRIi16, skMenuStrs[pState->menu], val);
+    return val;
+}

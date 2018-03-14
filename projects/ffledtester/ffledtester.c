@@ -24,6 +24,7 @@
 #include "sys.h"           // ff: system task
 #include "ws2801.h"        // ff: WS2801 LED driver
 #include "ws2812.h"        // ff: WS2812 LED driver
+#include "sk9822.h"        // ff: SK9822 LED driver
 #include "ledfx.h"         // ff: LED effects
 #include "hsv2rgb.h"       // ff: HSV to RGV conversion
 #include "rotenc.h"        // ff: rotary encoder input
@@ -60,11 +61,12 @@ typedef enum ORDER_e { ORDER_RGB = 0, ORDER_RBG = 1, ORDER_GRB = 2, ORDER_GBR = 
 const __flash char skDriverMenuStr0[] = "NONE";
 const __flash char skDriverMenuStr1[] = "2801";
 const __flash char skDriverMenuStr2[] = "2812";
+const __flash char skDriverMenuStr3[] = "9822";
 const __flash char * const __flash skDriverMenuStrs[] =
 {
-    skDriverMenuStr0, skDriverMenuStr1, skDriverMenuStr2
+    skDriverMenuStr0, skDriverMenuStr1, skDriverMenuStr2, skDriverMenuStr3
 };
-typedef enum DRIVER_e { DRIVER_NONE = 0, DRIVER_WS2801 = 1, DRIVER_WS2812 = 2 } DRIVER_t;
+typedef enum DRIVER_e { DRIVER_NONE = 0, DRIVER_WS2801 = 1, DRIVER_WS2812 = 2, DRIVER_SK9822 = 3 } DRIVER_t;
 
 const __flash char skCharsMenuStr0[] = " !\"#";
 const __flash char skCharsMenuStr1[] = "$%&'";
@@ -123,6 +125,7 @@ static void sHardReset(int16_t *vals)
 // forward declarations
 static void sPreset1(int16_t *vals);
 static void sPreset2(int16_t *vals);
+static void sPreset3(int16_t *vals);
 
 // our menu structure
 #define MENU1_DEF(_STR, _VAL, _HEX, _MEN, _JMP, _FUN) \
@@ -157,6 +160,7 @@ static void sPreset2(int16_t *vals);
     _VAL( 55, 15, "5 SA (sat)\0",     sat,     false, 255,         'S', 0, 255 ) \
     _VAL( 56, 15, "6 VA (val)\0",     val,     false, 255,         'V', 0, 255 ) \
     _VAL( 57, 15, "7 BR (bright)\0",  bright,  false, 20,          'I', 0, 255 ) \
+    _VAL( 57, 15, "8 GL (global br.)\0",  global, false, 5,        'L', 0, 31 ) \
     _JMP( 59, 15, "X (- (return)\0",  ret15,                       15 ) \
     \
     /* 16: pattern menu */ \
@@ -166,8 +170,9 @@ static void sPreset2(int16_t *vals);
     _JMP( 69, 16, "X (- (return)\0",  ret16,                       16 ) \
     \
     /* 17: presets */ \
-    _FUN( 71, 17, "PR 1 (preset 1)",  pres1,                       sPreset1) \
-    _FUN( 72, 17, "PR 2 (preset 2)",  pres2,                       sPreset2) \
+    _FUN( 71, 17, "PR 1 (preset 1 - WS2801)",  pres1,              sPreset1) \
+    _FUN( 72, 17, "PR 2 (preset 2 - WS2812)",  pres2,              sPreset2) \
+    _FUN( 73, 17, "PR 3 (preset 3 - SK9822)",  pres3,              sPreset3) \
     _JMP( 79, 17, "X (- (return)\0",  ret17,                       17 ) \
     \
     /* 18: hex-dec menu */ \
@@ -197,7 +202,7 @@ static void sPreset1(int16_t *vals)
     static const MENU1_VALUES_t skPreset PROGMEM =
     {
         .driver = DRIVER_WS2801, .mode = MODE_PATTERN, .order = ORDER_RGB,
-        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 255, .bright = 50, .pattern = 3, .hz = 10, .period = 64,
+        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 255, .bright = 50, .global = 5,.pattern = 3, .hz = 10, .period = 64,
     };
     memcpy_P(vals, skPreset.values, sizeof(skPreset));
 }
@@ -206,7 +211,16 @@ static void sPreset2(int16_t *vals)
     static const MENU1_VALUES_t skPreset PROGMEM =
     {
         .driver = DRIVER_WS2812, .mode = MODE_PATTERN, .order = ORDER_RGB,
-        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 255, .bright = 50, .pattern = 3, .hz = 10, .period = 64,
+        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 255, .bright = 50, .global = 5, .pattern = 3, .hz = 10, .period = 64,
+    };
+    memcpy_P(vals, skPreset.values, sizeof(skPreset));
+}
+static void sPreset3(int16_t *vals)
+{
+    static const MENU1_VALUES_t skPreset PROGMEM =
+    {
+        .driver = DRIVER_SK9822, .mode = MODE_PATTERN, .order = ORDER_BGR,
+        .nxy = 64, .nx = 8, .ny = 8, .sat = 255, .val = 255, .bright = 50, .global = 5, .pattern = 3, .hz = 10, .period = 64,
     };
     memcpy_P(vals, skPreset.values, sizeof(skPreset));
 }
@@ -253,6 +267,7 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
     }
 
     ledfxSetBrightness(pkVal->bright);
+    sk9822SetBrightness(pkVal->global);
 
     if (mode != MODE_PATTERN)
     {
@@ -283,6 +298,9 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
             case DRIVER_WS2812:
                 ws2812Send(WS2812_PIN, NULL, ledfxGetFrameBufferSize());
                 break;
+            case DRIVER_SK9822:
+                sk9822Send(NULL, ledfxGetFrameBufferSize());
+                break;
             default:
                 break;
         }
@@ -297,6 +315,9 @@ static void sUpdateLeds(const MENU1_VALUES_t *pkVal)
             break;
         case DRIVER_WS2812:
             ws2812Send(WS2812_PIN, ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
+            break;
+        case DRIVER_SK9822:
+            sk9822Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
             break;
         default:
             break;
@@ -392,7 +413,7 @@ static void sAppTask(void *pArg)
 
     // help and print menu
     NOTICE_W("Pins: 1 GND  2 VCC  3 NONE  4 CLK  5 MOSI  6 DATA");
-    PRINT_W( "- WS2801: 1, 2, 4, 5");
+    PRINT_W( "- WS2801/SK9822: 1, 2, 4, 5");
     PRINT_W( "- WS2812: 1, 2, 6");
     menuDump(skMenu1, NUMOF(skMenu1));
 
@@ -510,12 +531,14 @@ void appInit(void)
     toneInit();
 
     ws2801Init();
+    sk9822Init();
 
     PIN_OUTPUT(WS2812_PIN); PIN_LOW(WS2812_PIN);
 
     dl2416tInit();
 
     ledfxClear(0, 0);
+    sk9822Send(NULL, ledfxGetFrameBufferSize());
     ws2801Send(NULL, ledfxGetFrameBufferSize());
     ws2812Send(WS2812_PIN, NULL, ledfxGetFrameBufferSize());
 

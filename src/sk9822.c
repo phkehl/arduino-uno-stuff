@@ -48,7 +48,7 @@ void sk9822Init(void)
 #  error Illegal value for FF_SK9822_SPI_SPEED!
 #endif
 
-    sk9822SetBrightness(5);
+    sk9822SetBrightness(31);
 
     DEBUG("sk9822: %"PRIu16"kHz", (uint16_t)FF_SK9822_SPI_SPEED);
 }

@@ -39,7 +39,7 @@ typedef struct MENU_s
     uint8_t  pid;  // parent menu ID (or 0 for main menu entries)
 
     MENU_TYPE_t type;         // the entry type
-    const char  name[16];     // the name
+    const char  name[32];     // the name
     bool        wrap;         // wrap at beginning/end of list/value (only for MENU_TYPE_STR/MENU_TYPE_NUM)
     union
     {

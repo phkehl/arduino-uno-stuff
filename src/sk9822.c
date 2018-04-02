@@ -88,7 +88,7 @@ void sk9822Send(const uint8_t *data, const uint16_t size)
     while (n--)
     {
         // global brightness
-        //SPDR = 0xe0 || 0x1f;
+        //SPDR = 0xe0 | 0x1f;
         SPDR = sSk9822bBrightness;
         loop_until_bit_is_set(SPSR, SPIF);
 

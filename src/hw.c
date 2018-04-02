@@ -864,6 +864,8 @@ uint16_t hwReadVcc(void)
 {
     uint16_t res = 0;
 
+    // TODO: https://cpldcpu.wordpress.com/2014/11/16/ws2812_length/
+
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168P__)
     // save previous ADC peripheral state
     const uint8_t admux  = ADMUX & (BIT(REFS0) | BIT(REFS1) | BIT(ADLAR));

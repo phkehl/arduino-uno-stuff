@@ -6,6 +6,8 @@
 
     \addtogroup DEBUG
     @{
+
+    \todo https://sites.google.com/site/wayneholder/debugwire
 */
 
 #include <stdio.h>         // libc: standard buffered input/output

@@ -18,8 +18,9 @@
 #endif
 
 typedef void (*SDL_CANVAS_CB_t)(SDL_Renderer *);
+typedef void (*SDL_EVENT_CB_t)(const SDL_Event *);
 
-bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb);
+bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb, SDL_EVENT_CB_t eventCb);
 
 bool sdlHandle(void);
 
@@ -28,6 +29,7 @@ bool sdlUpdate(void);
 bool sdlShutdown(void);
 
 void sdlSetFramerate(const int fps);
+int sdlGetFramerate(void);
 
 
 /* *************************************************************************** */

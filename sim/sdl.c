@@ -47,6 +47,7 @@ typedef struct SDL_STATE_s
     SDL_Rect        cRect;
     FPSmanager      fpsMgr;
     SDL_CANVAS_CB_t canvasCb;
+    SDL_EVENT_CB_t  eventCb;
 } SDL_STATE_t;
 
 static SDL_STATE_t sSdlState;
@@ -75,7 +76,7 @@ static const char *sSdlGetVersionStr(void)
 
 static void sSdlUpdateWindowSize(void);
 
-bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb)
+bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb, SDL_EVENT_CB_t  eventCb)
 {
     DEBUG("SDL init: %s", sSdlGetVersionStr());
 
@@ -84,6 +85,7 @@ bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb)
 
     snprintf(sSdlState.title, sizeof(sSdlState.title), "%s", title);
     sSdlState.canvasCb = canvasCb;
+    sSdlState.eventCb = eventCb;
 
     // font
     if (TTF_Init() == -1)
@@ -145,6 +147,11 @@ void sdlSetFramerate(const int fps)
     SDL_setFramerate(&sSdlState.fpsMgr, CLIP(fps, FPS_LOWER_LIMIT, FPS_UPPER_LIMIT));
 }
 
+int sdlGetFramerate(void)
+{
+    return SDL_getFramerate(&sSdlState.fpsMgr);
+}
+
 bool sdlShutdown(void)
 {
     DEBUG("SDL: shutdown");
@@ -176,6 +183,10 @@ bool sdlHandle(void)
     while (SDL_PollEvent(&event) != 0)
     {
         //DEBUG("%08.3f event %d", (double)event.common.timestamp * 1e-3, event.type);
+        if (sSdlState.eventCb != NULL)
+        {
+            sSdlState.eventCb(&event);
+        }
         switch (event.type)
         {
             // window close

@@ -115,7 +115,7 @@ INCFLAGS    := -I. -I../src
 
 ###############################################################################
 
-SIMULATORS := ffmatrix8x8
+SIMULATORS := ffmatrix7x8 ffmatrix8x8 ffmatrix20x20
 
 .PHONY: all
 all: $(SIMULATORS)
@@ -127,8 +127,17 @@ clean:
 
 ffmatrix8x8: ffmatrix.c Makefile $(wildcard *.c) $(wildcard *.h) $(wildcard ../src/*.c) $(wildcard ../src/*.h)
 	$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
-		-DFF_LEDFX_NUM_X=8 -DFF_LEDFX_NUM_Y=8 -DFF_LEDFX_NUM_LED=64 -DFF_LEDFX_XY_ARR=4 \
+		-DFF_LEDFX_NUM_X=8 -DFF_LEDFX_NUM_Y=8 -DFF_LEDFX_NUM_LED=64 \
 		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf -lSDL2_gfx
 
+ffmatrix7x8: ffmatrix.c Makefile $(wildcard *.c) $(wildcard *.h) $(wildcard ../src/*.c) $(wildcard ../src/*.h)
+	$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
+		-DFF_LEDFX_NUM_X=7 -DFF_LEDFX_NUM_Y=8 -DFF_LEDFX_NUM_LED=56 \
+		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf -lSDL2_gfx
+
+ffmatrix20x20: ffmatrix.c Makefile $(wildcard *.c) $(wildcard *.h) $(wildcard ../src/*.c) $(wildcard ../src/*.h)
+	$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
+		-DFF_LEDFX_NUM_X=20 -DFF_LEDFX_NUM_Y=20 -DFF_LEDFX_NUM_LED=400 \
+		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf -lSDL2_gfx
 
 # eof

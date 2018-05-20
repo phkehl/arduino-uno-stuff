@@ -22,7 +22,12 @@
 /* *************************************************************************** */
 
 #include <stdio.h>         // libc: standard buffered input/output
-#include <avr/pgmspace.h>  // avr-libc: program Space Utilities
+#ifdef __AVR__
+#  include <avr/pgmspace.h>// avr-libc: program Space Utilities
+#else
+#  define PSTR(foo) foo
+#  define printf_P(args...) fprintf(stderr, ## args)
+#endif
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration

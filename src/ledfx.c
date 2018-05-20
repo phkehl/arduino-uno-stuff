@@ -23,8 +23,12 @@
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
-#include "hw.h"            // ff: hardware
-#include "debug.h"         // ff: debugging
+#ifdef __AVR__
+#  include "hw.h"          // ff: hardware
+#  include "debug.h"       // ff: debugging
+#else
+#  include "sim.h"         // ff: simulator mocks
+#endif
 #include "hsv2rgb.h"       // ff: HSV to RGV conversion
 #include "ledfx.h"         // ff: LED effects
 
@@ -63,6 +67,8 @@ enum { _B_ = 0, _G_ = 1, _R_ = 2 };
 #  define XY_TO_IX(x, y) ( (y) % 2 ? ( ((y) * (FF_LEDFX_NUM_X)) + (x) ) : ( (((y) + 1) * (FF_LEDFX_NUM_X)) - 1 - (x) ) )
 #elif (FF_LEDFX_XY_ARR == 4)
 #  define XY_TO_IX(x, y) ( ((y) * (FF_LEDFX_NUM_X)) + (FF_LEDFX_NUM_X - 1 - (x)) )
+#elif (FF_LEDFX_XY_ARR == 5)
+#  define XY_TO_IX(x, y) ( ( ((FF_LEDFX_NUM_Y) - (y) - 1) * (FF_LEDFX_NUM_X) ) + (x) )
 #else
 #  error Illegal value for FF_LEDFX_XY_ARR
 #endif
@@ -204,6 +210,16 @@ void ledfxSetMatrixRGB(const uint16_t x, const uint16_t y, const uint8_t red, co
     {
         const uint16_t ix = XY_TO_IX(x, y);
         sLedfxSetRGB(ix, red, green, blue);
+    }
+}
+void ledfxGetMatrixRGB(const uint16_t x, const uint16_t y, uint8_t *red, uint8_t *green, uint8_t *blue)
+{
+    if ( (x < FF_LEDFX_NUM_X) && (y < FF_LEDFX_NUM_Y) )
+    {
+        const uint16_t ix = XY_TO_IX(x, y);
+        *red   = sLedfxFrameBuf.ix[ix][_R_];
+        *green = sLedfxFrameBuf.ix[ix][_G_];
+        *blue  = sLedfxFrameBuf.ix[ix][_B_];
     }
 }
 

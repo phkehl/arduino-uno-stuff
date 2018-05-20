@@ -13,7 +13,7 @@
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
-#include "hsv2rgb.h"       // ff: template
+#include "hsv2rgb.h"       // ff: HSV to RGB conversion
 
 /* ************************************************************************** */
 

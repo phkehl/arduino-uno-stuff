@@ -23,10 +23,10 @@ Supported LED matrix arrangements for LED electrically connected as 0-1-2-3-4-5-
 the bottom left, values for #FF_LEDFX_XY_ARR):
 
 \verbatim
-   y          (1)     (2)     (3)     (4)
-   ^         6 7 8   6 7 8   8 7 6   8 7 6
-   |         3 4 5   5 4 3   3 4 5   5 4 3
-   |         0 1 2   0 1 2   2 1 0   2 1 0
+   y          (1)     (2)     (3)     (4)    (5)
+   ^         6 7 8   6 7 8   8 7 6   8 7 6  0 1 2
+   |         3 4 5   5 4 3   3 4 5   5 4 3  3 4 5
+   |         0 1 2   0 1 2   2 1 0   2 1 0  6 7 8
    +---->x
 (0,0)
 \endverbatim
@@ -38,6 +38,11 @@ the bottom left, values for #FF_LEDFX_XY_ARR):
 #define __LEDFX_H__
 
 #include "stdstuff.h"      // ff: useful macros and types
+
+#ifndef __AVR__
+#  define PROGMEM
+#  define pgm_read_byte(foo) *(foo)
+#endif
 
 
 /* *************************************************************************** */
@@ -63,6 +68,16 @@ const uint8_t *ledfxGetFrameBuffer(void);
 
 //! get size of frame buffer
 uint16_t ledfxGetFrameBufferSize(void);
+
+//! get matrix pixel red, green abd blue values at given coordinate
+/*!
+    \param[in]  x      LED column index (0..(#FF_LEDFX_NUM_X-1))
+    \param[in]  y      LED row index (0..(#FF_LEDFX_NUM_Y-1))
+    \param[out] red    red value (0..255)
+    \param[out] green  green value (0..255)
+    \param[out] blue   blue value (0..255)
+*/
+void ledfxGetMatrixRGB(const uint16_t x, const uint16_t y, uint8_t *red, uint8_t *green, uint8_t *blue);
 
 //! set global maximum brightness
 /*!

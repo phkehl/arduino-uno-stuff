@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: LED FX Simulator
 
-    - Copyright (c) 2014-2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
+    - Copyright (c) 2014-2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 */
 
 #include <stdio.h>         // libc: standard buffered input/output
@@ -16,19 +16,35 @@
 #include <assert.h>        // libc: verify program assertions
 #include <signal.h>        // libc: signals
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
+#include <SDL2/SDL2_framerate.h>
 
 #include "stdstuff.h"      // ff: useful macros and types
-#include "sim.h"
+
+#include "sdl.h"           // ff: sdl stuff
+#include "sim.h"           // ff: simulator mocks
+
 
 int main(int argc, char **argv)
 {
     UNUSED(argc);
     UNUSED(argv);
-
     NOTICE("Hoihoi!");
 
+    if (!sdlInit())
+    {
+        ERROR("Ouch!");
+        return EXIT_FAILURE;
+    }
+
+    while (sdlHandle())
+    {
+        sdlUpdate();
+    }
 
 
-    return(EXIT_SUCCESS);
+    sdlShutdown();
+
+    return EXIT_SUCCESS;
 }

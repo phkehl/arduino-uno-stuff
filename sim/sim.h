@@ -2,7 +2,7 @@
     \file
     \brief flipflip's Arduino Uno stuff: simulator mocks
 
-    - Copyright (c) 2017 Philippe Kehl (flipflip at oinkzwurgl dot org)
+    - Copyright (c) 2017-2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
 */
 

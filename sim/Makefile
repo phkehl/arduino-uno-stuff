@@ -2,7 +2,7 @@
 #
 # flipflip's Arduino Uno stuff: offline (Linux) simulator
 #
-# Copyright (c) 2017 Philippe Kehl <flipflip at oinkzwurgl dot org>
+# Copyright (c) 2017-2018 Philippe Kehl <flipflip at oinkzwurgl dot org>
 #
 ###############################################################################
 
@@ -108,9 +108,27 @@ CFLAGS      += -Wnested-externs -Winline -Wlong-long -Wcast-align
 #CFLAGS      += -Wa,--gstabs
 #CFLAGS      += -ffunction-sections -fdata-sections
 
-FFDIR      := ../../..
-
 # linker flags
 LDLIBS      += -lm
+
+INCFLAGS    := -I. -I../src
+
+###############################################################################
+
+SIMULATORS := ffmatrix8x8
+
+.PHONY: all
+all: $(SIMULATORS)
+
+.PHONY: clean
+clean:
+	$(V)$(RM) -f $(SIMULATORS)
+
+
+ffmatrix8x8: ffmatrix.c Makefile $(wildcard *.c) $(wildcard *.h) $(wildcard ../src/*.c) $(wildcard ../src/*.h)
+	$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
+		-DFF_LEDFX_NUM_X=8 -DFF_LEDFX_NUM_Y=8 -DFF_LEDFX_NUM_LED=64 -DFF_LEDFX_XY_ARR=4 \
+		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf
+
 
 # eof

@@ -21,19 +21,32 @@
 #include "sim.h"           // ff: simulator mocks
 #include "sdl.h"           // ff: sdl stuff
 
+#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+#  define SDL_RMASK 0xff000000
+#  define SDL_GMASK 0x00ff0000
+#  define SDL_BMASK 0x0000ff00
+#  define SDL_AMASK 0x000000ff
+#else
+#  define SDL_RMASK 0x000000ff
+#  define SDL_GMASK 0x0000ff00
+#  define SDL_BMASK 0x00ff0000
+#  define SDL_AMASK 0xff000000
+#endif
+
 typedef struct SDL_STATE_s
 {
-    SDL_Window    *pWindow;
-    SDL_Renderer  *pRenderer;
-    TTF_Font      *pFont;
-    uint32_t       frameCount;
-    int            fontSize;
-    int            fontHeight;
-    int            padding;
-    int            rWidth;
-    int            rHeight;
-    SDL_Rect       cRect;
-
+    char            title[100];
+    SDL_Window     *pWindow;
+    SDL_Renderer   *pRenderer;
+    TTF_Font       *pFont;
+    int             fontSize;
+    int             fontHeight;
+    int             padding;
+    int             rWidth;
+    int             rHeight;
+    SDL_Rect        cRect;
+    FPSmanager      fpsMgr;
+    SDL_CANVAS_CB_t canvasCb;
 } SDL_STATE_t;
 
 static SDL_STATE_t sSdlState;
@@ -62,12 +75,15 @@ static const char *sSdlGetVersionStr(void)
 
 static void sSdlUpdateWindowSize(void);
 
-bool sdlInit(void)
+bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb)
 {
     DEBUG("SDL init: %s", sSdlGetVersionStr());
 
     // initialise state
     memset(&sSdlState, 0, sizeof(sSdlState));
+
+    snprintf(sSdlState.title, sizeof(sSdlState.title), "%s", title);
+    sSdlState.canvasCb = canvasCb;
 
     // font
     if (TTF_Init() == -1)
@@ -95,7 +111,7 @@ bool sdlInit(void)
 	}
 
     // window
-    sSdlState.pWindow = SDL_CreateWindow(SDL_WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    sSdlState.pWindow = SDL_CreateWindow(sSdlState.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (sSdlState.pWindow == NULL)
     {
@@ -114,9 +130,19 @@ bool sdlInit(void)
         return false;
     }
 
+    // framerate manager
+    SDL_initFramerate(&sSdlState.fpsMgr);
+    SDL_setFramerate(&sSdlState.fpsMgr, FPS_DEFAULT);
+
+    // re-calculate padding and such based on window size
     sSdlUpdateWindowSize();
 
     return true;
+}
+
+void sdlSetFramerate(const int fps)
+{
+    SDL_setFramerate(&sSdlState.fpsMgr, CLIP(fps, FPS_LOWER_LIMIT, FPS_UPPER_LIMIT));
 }
 
 bool sdlShutdown(void)
@@ -197,7 +223,6 @@ bool sdlUpdate(void)
 {
     SDL_Renderer *pRenderer = sSdlState.pRenderer;
     SDL_RenderClear(pRenderer);
-    sSdlState.frameCount++;
 
     // fill background
     SDL_SetRenderDrawBlendMode(pRenderer, SDL_BLENDMODE_BLEND);
@@ -208,16 +233,49 @@ bool sdlUpdate(void)
     SDL_SetRenderDrawColor(pRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(pRenderer, &sSdlState.cRect);
 
+    // call user canvas function
+    if (sSdlState.canvasCb)
+    {
+        SDL_Surface *pSurface = SDL_CreateRGBSurface(0,
+            sSdlState.cRect.w, sSdlState.cRect.h, 32, 0, 0, 0, 0 /*SDL_RMASK, SDL_GMASK, SDL_BMASK, SDL_AMASK*/);
+        if (pSurface != NULL)
+        {
+            SDL_Renderer *pCanvasRenderer = SDL_CreateSoftwareRenderer(pSurface);
+            if (pCanvasRenderer != NULL)
+            {
+                SDL_SetRenderDrawBlendMode(pCanvasRenderer, SDL_BLENDMODE_BLEND);
+                sSdlState.canvasCb(pCanvasRenderer);
+                SDL_Texture *pTexture = SDL_CreateTextureFromSurface(pRenderer, pSurface);
+                if (pTexture != NULL)
+                {
+                    SDL_RenderCopy(pRenderer, pTexture, NULL, &sSdlState.cRect);
+                    SDL_DestroyTexture(pTexture);
+                }
+                SDL_DestroyRenderer(pCanvasRenderer);
+            }
+            SDL_FreeSurface(pSurface);
+        }
+    }
+
     // render info strings
-    sSdlRenderInfoString(SDL_INFOSTR_NW, "northwest...");
-    sSdlRenderInfoString(SDL_INFOSTR_NE, "northeast...");
-    sSdlRenderInfoString(SDL_INFOSTR_SW, "frame %08u", sSdlState.frameCount);
-    sSdlRenderInfoString(SDL_INFOSTR_SE, "time %08.3f", (double)SDL_GetTicks() * 1e-3);
-    sSdlRenderInfoString(SDL_INFOSTR_N, "north...");
-    sSdlRenderInfoString(SDL_INFOSTR_S, "south...");
+    //sSdlRenderInfoString(SDL_INFOSTR_NW, "northwest...");
+    sSdlRenderInfoString(SDL_INFOSTR_N, sSdlState.title);
+    //sSdlRenderInfoString(SDL_INFOSTR_NE, "northeast...");
+
+    sSdlRenderInfoString(SDL_INFOSTR_SW, "frame %i", SDL_getFramecount(&sSdlState.fpsMgr));
+    const int fps = SDL_getFramerate(&sSdlState.fpsMgr);
+    sSdlRenderInfoString(SDL_INFOSTR_S, "%i fps", fps);
+    sSdlRenderInfoString(SDL_INFOSTR_SE, "time %.3f", (double)SDL_GetTicks() * 1e-3);
+
+    const int dt = SDL_framerateDelay(&sSdlState.fpsMgr);
+
+    if (dt > (1999 / fps))
+    {
+        WARNING("frame drop! %d > %d", dt, (1000 / fps));
+    }
 
     SDL_RenderPresent(pRenderer);
-    SDL_Delay(10);
+
     return true;
 }
 

@@ -128,7 +128,7 @@ clean:
 ffmatrix8x8: ffmatrix.c Makefile $(wildcard *.c) $(wildcard *.h) $(wildcard ../src/*.c) $(wildcard ../src/*.h)
 	$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
 		-DFF_LEDFX_NUM_X=8 -DFF_LEDFX_NUM_Y=8 -DFF_LEDFX_NUM_LED=64 -DFF_LEDFX_XY_ARR=4 \
-		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf
+		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf -lSDL2_gfx
 
 
 # eof

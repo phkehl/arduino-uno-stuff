@@ -16,17 +16,18 @@
 #ifndef SDL_FONT
 #  define SDL_FONT "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 #endif
-#ifndef SDL_WINDOW_TITLE
-#  define SDL_WINDOW_TITLE "ffstuff"
-#endif
 
-bool sdlInit(void);
+typedef void (*SDL_CANVAS_CB_t)(SDL_Renderer *);
+
+bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb);
 
 bool sdlHandle(void);
 
 bool sdlUpdate(void);
 
 bool sdlShutdown(void);
+
+void sdlSetFramerate(const int fps);
 
 
 /* *************************************************************************** */

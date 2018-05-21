@@ -81,6 +81,12 @@ bool fxloopWait(uint8_t speed);
 */
 uint8_t fxloopCurrentlyPlaying(void);
 
+//! get currently playing effect remaining time in percent
+/*!
+    \returns the remaining time in percent of the playing effect
+*/
+uint8_t fxloopCurrentlyRemaining(void);
+
 //! get effects loop status
 /*!
     \param[in] str   string buffer

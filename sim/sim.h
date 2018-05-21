@@ -16,6 +16,14 @@
 void simInit(void);
 
 
+// avr
+#define PROGMEM /* nothing */
+#define PSTR(x) x
+#define snprintf_P snprintf
+#define pgm_read_byte(x) (*(x))
+#define pgm_read_word(x) (*(x))
+#define pgm_read_dword(x) (*(x))
+
 // debug.h
 #define NOTICE(fmt, args...)    fprintf(stderr, "\e[1mN: "  fmt "\e[m\n", ## args)
 #define PRINT(fmt, args...)     fprintf(stderr, "\e[mP: "   fmt "\e[m\n", ## args)

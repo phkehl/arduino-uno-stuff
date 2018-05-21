@@ -115,7 +115,7 @@ bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb, SDL_EVENT_CB_t  eventC
 
     // window
     sSdlState.pWindow = SDL_CreateWindow(sSdlState.title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+        800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (sSdlState.pWindow == NULL)
     {
         ERROR("SDL window: %s", SDL_GetError());
@@ -233,6 +233,8 @@ typedef enum SDL_INFOSTR_e
 
 static void sSdlRenderInfoString(SDL_INFOSTR_t where, const char *fmt, ...) __attribute__((format(printf,2,3)));
 
+static void sSdlGetAverageDtAndFps(int *dt, double *fps);
+
 bool sdlUpdate(void)
 {
     SDL_Renderer *pRenderer = sSdlState.pRenderer;
@@ -281,9 +283,11 @@ bool sdlUpdate(void)
     {
         sSdlRenderInfoString(SDL_INFOSTR_NE, sSdlState.infoNe);
     }
-
     sSdlRenderInfoString(SDL_INFOSTR_SW, "frame %i", sSdlState.frameCount);
-    sSdlRenderInfoString(SDL_INFOSTR_S, "??? fps");
+    int dt = 0;
+    double fps = 0.0;
+    sSdlGetAverageDtAndFps(&dt, &fps);
+    sSdlRenderInfoString(SDL_INFOSTR_S, "avg dt=%dms (%.1f fps)", dt, fps);
     //sSdlRenderInfoString(SDL_INFOSTR_SE, "time %.3f", (double)SDL_GetTicks() * 1e-3);
     sSdlRenderInfoString(SDL_INFOSTR_SE, "time %.3f", (double)osTaskGetMsss() * 1e-3);
 
@@ -307,7 +311,7 @@ static void sSdlUpdateWindowSize(void)
     sSdlState.padding = MAX(5, rHeight /100);
 
     // calculate new font size
-    const int fontSize = MAX(10, rHeight / 25);
+    const int fontSize = MAX(10, rHeight / 30);
     TTF_Font *pNewFont = TTF_OpenFont(SDL_FONT, fontSize);
     if (pNewFont != NULL)
     {
@@ -389,5 +393,31 @@ static void sSdlRenderInfoString(SDL_INFOSTR_t where, const char *fmt, ...)
     SDL_DestroyTexture(pTexture);
 }
 
+static void sSdlGetAverageDtAndFps(int *dt, double *fps)
+{
+    static uint32_t lastMsss;
+    const uint32_t nowMsss = osTaskGetMsss();
+    const int thisDt = (lastMsss != 0) && (nowMsss > lastMsss) ? nowMsss - lastMsss : 0;
+    const double thisFps = thisDt != 0 ? 1000.0 / (double)thisDt : 0.0;
+    lastMsss = nowMsss;
+
+    static int vDts[20];
+    static double vFps[20];
+    static int vIx;
+    vDts[vIx] = thisDt;
+    vFps[vIx] = thisFps;
+    vIx++;
+    vIx %= NUMOF(vDts);
+
+    int sDts = 0;
+    double sFps = 0.0;
+    for (int ix = 0; ix < (int)NUMOF(vDts); ix++)
+    {
+        sDts += vDts[ix];
+        sFps += vFps[ix];
+    }
+    *dt = sDts / (int)NUMOF(vDts);
+    *fps = sFps / (double)NUMOF(vFps);
+}
 
 // eof

@@ -88,6 +88,13 @@
 #define GET_FLAG(name, ix) (name[(ix) / 8] & BIT((ix) % 8))
 //@}
 
+
+#ifdef __AVR__
+#  define PRIpstr "S"
+#else
+#  define PRIpstr "s"
+#endif
+
 #endif // __STDSTUFF_H__
 
 //@}

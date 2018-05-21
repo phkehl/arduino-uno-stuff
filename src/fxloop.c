@@ -11,13 +11,19 @@
 */
 
 #include <string.h>        // libc: string operations
+#include <stdio.h>         // libc: standard buffered input/output
 
-#include <avr/pgmspace.h>  // avr: program space utilities
-
+#ifdef __AVR__
+#  include <avr/pgmspace.h>// avr: program space utilities
+#endif
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
-#include "debug.h"         // ff: debugging output facility
-#include "os.h"            // ff: operating system abstractions
+#ifdef __AVR__
+#  include "debug.h"       // ff: debugging output facility
+#  include "os.h"          // ff: operating system abstractions
+#else
+#  include "sim.h"
+#endif
 #include "fxloop.h"        // ff: effects loops
 
 
@@ -40,7 +46,11 @@ typedef struct STATUS_s
 
 static STATUS_t sStatus;
 
-#define INFO_NAME(ix)       (/* STFU */const wchar_t *)&sStatus.fxInfo[ix].fxName
+#ifdef __AVR__
+#  define INFO_NAME(ix)     (/* STFU */const wchar_t *)&sStatus.fxInfo[ix].fxName
+#else
+#  define INFO_NAME(ix)     (/* STFU */const char *)&sStatus.fxInfo[ix].fxName
+#endif
 #define INFO_FUNC(ix)       (FXLOOP_FUNC_t)pgm_read_word(&sStatus.fxInfo[ix].fxFunc)
 #define INFO_PERIOD_MIN(ix) (uint32_t)pgm_read_word(&sStatus.fxInfo[ix].fxPeriodMin)
 #define INFO_PERIOD_MAX(ix) (uint32_t)pgm_read_word(&sStatus.fxInfo[ix].fxPeriodMax)
@@ -64,7 +74,7 @@ void fxloopInit(const FXLOOP_INFO_t *pkFxInfo, const uint16_t nFxInfo, const boo
             const uint16_t periodMax = INFO_PERIOD_MAX(ix);
             const uint8_t hzMin = periodMin ? 1000 / periodMin : 0;
             const uint8_t hzMax = periodMax ? 1000 / periodMax : 0;
-            PRINT_W("fxloop: %2"PRIu16" %-16S %5"PRIu32"ms @ %3"PRIu16"ms/%3"PRIu8"Hz .. %3"PRIu16"ms/%3"PRIu8"Hz",
+            PRINT_W("fxloop: %2"PRIu16" %-16"PRIpstr" %5"PRIu32"ms @ %3"PRIu16"ms/%3"PRIu8"Hz .. %3"PRIu16"ms/%3"PRIu8"Hz",
                 ix + 1, INFO_NAME(ix), INFO_DURATION(ix), periodMin, hzMin, periodMax, hzMax);
         }
     }
@@ -88,7 +98,7 @@ uint16_t fxloopRun(const bool forceNext)
         sStatus.frameDrop = 0;
         sStatus.duration  = INFO_DURATION(sStatus.loopIx);
 
-        PRINT("fxloop: %"PRIu8"/%"PRIu8" %S %"PRIu32"ms",
+        PRINT("fxloop: %"PRIu8"/%"PRIu8" %"PRIpstr" %"PRIu32"ms",
             sStatus.loopIx + 1, sStatus.numFx, INFO_NAME(sStatus.loopIx), sStatus.duration);
     }
 
@@ -132,7 +142,7 @@ bool fxloopWait(uint8_t speed)
     {
         const uint32_t dt = (msssNow - sStatus.msss);
         const uint16_t numDropped = (dt / period) + 1;
-        WARNING("fxloop: %S %"PRIu16" frames dropped! %"PRIu16"+%"PRIu16"ms",
+        WARNING("fxloop: %"PRIpstr" %"PRIu16" frames dropped! %"PRIu16"+%"PRIu16"ms",
             INFO_NAME(sStatus.loopIx), numDropped, period, dt);
         sStatus.frameDrop += numDropped;
         sStatus.frame     += numDropped;
@@ -156,13 +166,24 @@ uint8_t fxloopCurrentlyPlaying(void)
     return sStatus.loopIx + 1;
 }
 
+uint8_t fxloopCurrentlyRemaining(void)
+{
+    return 100 - (uint8_t)(sStatus.duration != 0 ?
+        (double)sStatus.runtime / (double)sStatus.duration * 1e2 + 0.5 : 0);
+}
+
 void fxloopStatus(char *str, const size_t size)
 {
     const uint8_t hz = sStatus.period ? 1000 / sStatus.period : 0;
-    snprintf_P(str, size, PSTR("fx#%"PRIu8" %S %"PRIu32"/%"PRIu32" %"PRIu16"/%"PRIu16" %"PRIu16"ms/%"PRIu8"Hz"),
+    snprintf_P(str, size, PSTR("fx#%"PRIu8" %"PRIpstr" %"PRIu32"/%"PRIu32" %"PRIu16"/%"PRIu16" %"PRIu16"ms/%"PRIu8"Hz"),
         sStatus.loopIx + 1,
         (sStatus.loopIx == UINT8_MAX) || (sStatus.fxInfo == NULL) ?
-            (/* STFU */const wchar_t *)PSTR("---") : INFO_NAME(sStatus.loopIx),
+#ifdef __AVR__
+        (/* STFU */const wchar_t *)PSTR("---")
+#else
+        PSTR("---")
+#endif
+        : INFO_NAME(sStatus.loopIx),
         sStatus.runtime, sStatus.duration,
         sStatus.frameDrop, sStatus.frame,
         sStatus.period, hz);

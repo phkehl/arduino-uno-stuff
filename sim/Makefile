@@ -117,7 +117,7 @@ INCFLAGS    := -I. -I../src
 
 OBJDIR := obj
 
-SIMULATORS := ffmatrix7x8 ffmatrix8x8 ffmatrix20x20
+SIMULATORS := ledfx_matrix7x8 ledfx_matrix8x8 ledfx_matrix20x20
 
 .PHONY: all
 all: $(OBJDIR) $(addprefix $(OBJDIR)/, $(SIMULATORS))
@@ -131,22 +131,25 @@ clean:
 
 DEPS := Makefile $(wildcard *.c) $(wildcard *.h) $(wildcard ../src/*.c) $(wildcard ../src/*.h)
 
-$(OBJDIR)/ffmatrix8x8: ffmatrix.c $(DEPS) | $(OBJDIR)
+SRC_LEDFXMATRIX := sim.c sdl.c ../src/ledfx.c ../src/fxloop.c ../src/hsv2rgb.c
+LIB_LEDFXMATRIX := -lSDL2 -lSDL2_ttf -lSDL2_gfx
+
+$(OBJDIR)/ledfx_matrix8x8: ledfx_matrix.c $(DEPS) | $(OBJDIR)
 	@echo "$(HLM)$@$(HLO)"
 	$(V)$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
 		-DFF_LEDFX_NUM_X=8 -DFF_LEDFX_NUM_Y=8 -DFF_LEDFX_NUM_LED=64 \
-		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf -lSDL2_gfx
+		$< $(SRC_LEDFXMATRIX) $(LDLIBS) $(LIB_LEDFXMATRIX)
 
-$(OBJDIR)/ffmatrix7x8: ffmatrix.c $(DEPS) | $(OBJDIR)
+$(OBJDIR)/ledfx_matrix7x8: ledfx_matrix.c $(DEPS) | $(OBJDIR)
 	@echo "$(HLM)$@$(HLO)"
 	$(V)$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
 		-DFF_LEDFX_NUM_X=7 -DFF_LEDFX_NUM_Y=8 -DFF_LEDFX_NUM_LED=56 \
-		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf -lSDL2_gfx
+		$< $(SRC_LEDFXMATRIX) $(LDLIBS) $(LIB_LEDFXMATRIX)
 
-$(OBJDIR)/ffmatrix20x20: ffmatrix.c $(DEPS) | $(OBJDIR)
+$(OBJDIR)/ledfx_matrix20x20: ledfx_matrix.c $(DEPS) | $(OBJDIR)
 	@echo "$(HLM)$@$(HLO)"
 	$(V)$(CC) -o $@ $(CFLAGS) $(DEFS) $(INCFLAGS) \
 		-DFF_LEDFX_NUM_X=20 -DFF_LEDFX_NUM_Y=20 -DFF_LEDFX_NUM_LED=400 \
-		$<  sim.c sdl.c ../src/ledfx.c ../src/hsv2rgb.c $(LDLIBS) -lSDL2 -lSDL2_ttf -lSDL2_gfx
+		$< $(SRC_LEDFXMATRIX) $(LDLIBS) $(LIB_LEDFXMATRIX)
 
 # eof

@@ -14,7 +14,6 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
-#include <SDL2/SDL2_framerate.h>
 #include <SDL2/SDL_ttf.h>
 
 #include "stdstuff.h"      // ff: useful macros and types
@@ -36,6 +35,8 @@
 typedef struct SDL_STATE_s
 {
     char            title[100];
+    char            infoNw[100];
+    char            infoNe[100];
     SDL_Window     *pWindow;
     SDL_Renderer   *pRenderer;
     TTF_Font       *pFont;
@@ -45,9 +46,9 @@ typedef struct SDL_STATE_s
     int             rWidth;
     int             rHeight;
     SDL_Rect        cRect;
-    FPSmanager      fpsMgr;
     SDL_CANVAS_CB_t canvasCb;
     SDL_EVENT_CB_t  eventCb;
+    uint32_t        frameCount;
 } SDL_STATE_t;
 
 static SDL_STATE_t sSdlState;
@@ -132,24 +133,26 @@ bool sdlInit(const char *title, SDL_CANVAS_CB_t canvasCb, SDL_EVENT_CB_t  eventC
         return false;
     }
 
-    // framerate manager
-    SDL_initFramerate(&sSdlState.fpsMgr);
-    SDL_setFramerate(&sSdlState.fpsMgr, FPS_DEFAULT);
-
     // re-calculate padding and such based on window size
     sSdlUpdateWindowSize();
 
     return true;
 }
 
-void sdlSetFramerate(const int fps)
+void sdlSetInfoNw(const char *fmt, ...)
 {
-    SDL_setFramerate(&sSdlState.fpsMgr, CLIP(fps, FPS_LOWER_LIMIT, FPS_UPPER_LIMIT));
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(sSdlState.infoNw, sizeof(sSdlState.infoNw), fmt, args);
+    va_end(args);
 }
 
-int sdlGetFramerate(void)
+void sdlSetInfoNe(const char *fmt, ...)
 {
-    return SDL_getFramerate(&sSdlState.fpsMgr);
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(sSdlState.infoNe, sizeof(sSdlState.infoNe), fmt, args);
+    va_end(args);
 }
 
 bool sdlShutdown(void)
@@ -269,22 +272,22 @@ bool sdlUpdate(void)
     }
 
     // render info strings
-    //sSdlRenderInfoString(SDL_INFOSTR_NW, "northwest...");
-    sSdlRenderInfoString(SDL_INFOSTR_N, sSdlState.title);
-    //sSdlRenderInfoString(SDL_INFOSTR_NE, "northeast...");
-
-    sSdlRenderInfoString(SDL_INFOSTR_SW, "frame %i", SDL_getFramecount(&sSdlState.fpsMgr));
-    const int fps = SDL_getFramerate(&sSdlState.fpsMgr);
-    sSdlRenderInfoString(SDL_INFOSTR_S, "%i fps", fps);
-    sSdlRenderInfoString(SDL_INFOSTR_SE, "time %.3f", (double)SDL_GetTicks() * 1e-3);
-
-    const int dt = SDL_framerateDelay(&sSdlState.fpsMgr);
-
-    if (dt > (1999 / fps))
+    if (sSdlState.infoNw[0] != '\0')
     {
-        WARNING("frame drop! %d > %d", dt, (1000 / fps));
+        sSdlRenderInfoString(SDL_INFOSTR_NW, sSdlState.infoNw);
+    }
+    sSdlRenderInfoString(SDL_INFOSTR_N, sSdlState.title);
+    if (sSdlState.infoNe[0] != '\0')
+    {
+        sSdlRenderInfoString(SDL_INFOSTR_NE, sSdlState.infoNe);
     }
 
+    sSdlRenderInfoString(SDL_INFOSTR_SW, "frame %i", sSdlState.frameCount);
+    sSdlRenderInfoString(SDL_INFOSTR_S, "??? fps");
+    //sSdlRenderInfoString(SDL_INFOSTR_SE, "time %.3f", (double)SDL_GetTicks() * 1e-3);
+    sSdlRenderInfoString(SDL_INFOSTR_SE, "time %.3f", (double)osTaskGetMsss() * 1e-3);
+
+    sSdlState.frameCount++;
     SDL_RenderPresent(pRenderer);
 
     return true;
@@ -339,6 +342,7 @@ static void sSdlRenderInfoString(SDL_INFOSTR_t where, const char *fmt, ...)
         va_list args;
         va_start(args, fmt);
         vsnprintf(str, sizeof(str), fmt, args);
+        va_end(args);
         SDL_Color color = { 255, 255, 255, 255 };
         SDL_Surface *pSurface = TTF_RenderText_Blended(sSdlState.pFont, str, color);
         if (pSurface == NULL)

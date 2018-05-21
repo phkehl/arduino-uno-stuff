@@ -20,7 +20,6 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 #include "stdstuff.h"      // ff: useful macros and types
-
 #include "sdl.h"           // ff: sdl stuff
 #include "sim.h"           // ff: simulator mocks
 #include "hsv2rgb.h"       // ff: HSV to RGB conversion
@@ -48,11 +47,11 @@ static void sHandleEvent(const SDL_Event *pkEvent)
                     break;
                 case SDLK_PLUS:
                 case SDLK_UP:
-                    sdlSetFramerate(sdlGetFramerate() + 1);
+//                    sdlSetFramerate(sdlGetFramerate() + 1);
                     break;
                 case SDLK_MINUS:
                 case SDLK_DOWN:
-                    sdlSetFramerate(sdlGetFramerate() - 1);
+//                    sdlSetFramerate(sdlGetFramerate() - 1);
                     break;
                 default:
                     break;
@@ -127,6 +126,9 @@ int main(int argc, char **argv)
 {
     UNUSED(argc);
     UNUSED(argv);
+
+    simInit();
+
     NOTICE(WINDOW_TITLE);
 
     if (!sdlInit(WINDOW_TITLE, sDrawCanvas, sHandleEvent))
@@ -142,15 +144,18 @@ int main(int argc, char **argv)
 
     static float r0;
     ledfxPlasma(true, &r0);
+    static uint32_t frame;
 
     while (sdlHandle())
     {
+        frame++;
         ledfxClear(0, 0);
         ledfxPlasma(false, &r0);
-
+        sdlSetInfoNw("#%06u", frame);
+        sdlSetInfoNe("%g", r0);
         sdlUpdate();
+        osTaskDelay(100);
     }
-
 
     sdlShutdown();
 

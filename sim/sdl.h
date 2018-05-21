@@ -31,6 +31,9 @@ bool sdlShutdown(void);
 void sdlSetFramerate(const int fps);
 int sdlGetFramerate(void);
 
+void sdlSetInfoNw(const char *fmt, ...) __attribute__((format(printf,1,2)));
+void sdlSetInfoNe(const char *fmt, ...) __attribute__((format(printf,1,2)));
+
 
 /* *************************************************************************** */
 

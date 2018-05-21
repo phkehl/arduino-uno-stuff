@@ -13,6 +13,9 @@
 
 /* *************************************************************************** */
 
+void simInit(void);
+
+
 // debug.h
 #define NOTICE(fmt, args...)    fprintf(stderr, "\e[1mN: "  fmt "\e[m\n", ## args)
 #define PRINT(fmt, args...)     fprintf(stderr, "\e[mP: "   fmt "\e[m\n", ## args)
@@ -34,6 +37,11 @@ void hwMathSeedRandom(const uint32_t seed);
 void hwTic(const uint8_t reg);
 uint16_t hwToc(const uint8_t reg);
 
+// os.h
+void osTaskDelay(const uint32_t timeout);
+bool osTaskDelayUntil(uint32_t *pPrevTick, const uint32_t incrTicks);
+uint32_t osTaskGetMsss(void);
+uint32_t osTaskGetTicks(void);
 
 /* *************************************************************************** */
 

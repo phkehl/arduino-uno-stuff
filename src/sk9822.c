@@ -157,7 +157,7 @@ void sk9822SendRaw(const uint8_t *data, const uint16_t size)
     loop_until_bit_is_set(SPSR, SPIF);
 
     // 4. end frame
-    n = size / 3 + 1;
+    n = (size / 3) + 1;
     while (n--)
     {
         SPDR = 0x00;

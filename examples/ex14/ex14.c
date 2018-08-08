@@ -1,10 +1,10 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: fourth example application (see \ref EXAMPLES_EX13)
+    \brief flipflip's Arduino Uno stuff: fourteenth example application (see \ref EXAMPLES_EX14)
 
     - Copyright (c) 2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
-    \addtogroup EXAMPLES_EX13
+    \addtogroup EXAMPLES_EX14
     @{
 */
 
@@ -16,11 +16,9 @@
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
-#include "hsv2rgb.h"       // ff: HSV to RGV conversion
-#include "sk9822.h"        // ff: SK9822 LED driver
-#include "ledfx.h"         // ff: LED effects
+#include "i2c.h"           // ff: i2c driver
 
-#include "ex13.h"
+#include "ex14.h"
 
 
 /* ***** application init **************************************************** */
@@ -32,9 +30,9 @@ static void sAppTask(void *pArg);
 // initialise the user application
 void appInit(void)
 {
-    DEBUG("ex13: init");
+    DEBUG("ex14: init");
 
-    sk9822Init();
+    i2cInit();
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
@@ -56,39 +54,29 @@ void appCreateTask(void)
 
 static uint32_t sAppCnt = 0;
 
+
+#define SI7021_I2C_ADDR   0x40  // 7bit address of the Si7021 chip
+#define SI7021_CMD_RESET  0xfe  // reset command
+
 // application task
 static void sAppTask(void *pArg)
 {
     // not using the task argument
     UNUSED(pArg);
 
-    static uint8_t sHue = 0;
-    //ledfxSetBrightness(50);
-    sk9822SetBrightness(1);
-
+    const bool resStart = i2cStart(SI7021_I2C_ADDR, I2C_WRITE, 1000);
+    const bool resWrite = i2cWrite(SI7021_CMD_RESET);
+    i2cStop();
+    DEBUG("start=%"PRIi8" write=%"PRIi8, resStart, resWrite);
 
     // keep running...
     while (ENDLESS)
     {
         sAppCnt++;
 
-        // sweep hue value
-        ledfxFillHSV(0, 0, sHue, 255, 20);
-        sHue += 7;
+        DEBUG("bla..");
 
-        for (uint8_t brightness = 1; brightness < 32; brightness++)
-        {
-            sk9822SetBrightness(brightness);
-            sk9822Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
-            osTaskDelay(50);
-        }
-        for (uint8_t brightness = 32; brightness > 0; brightness--)
-        {
-            sk9822SetBrightness(brightness);
-            sk9822Send(ledfxGetFrameBuffer(), ledfxGetFrameBufferSize());
-            osTaskDelay(50);
-        }
-        osTaskDelay(250);
+        osTaskDelay(987);
     }
 }
 

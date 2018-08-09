@@ -26,12 +26,19 @@
 
 void i2cInit(void)
 {
-    DEBUG("i2c: init");
+    static bool sInitDone = false;
 
-    // initialise to 100kHz
-    // - F_SCL = F_CPU / (16 + (2 * TWBR) * prescaler);
-    TWSR = 0; // prescaler = 1 (TWPS1 = 0, TWPS0 = 0)
-    TWBR = ((F_CPU / 100000) - 16) / (2 * 1);
+    if (!sInitDone)
+    {
+        DEBUG("i2c: init");
+
+        // initialise to 100kHz
+        // - F_SCL = F_CPU / (16 + (2 * TWBR) * prescaler);
+        TWSR = 0; // prescaler = 1 (TWPS1 = 0, TWPS0 = 0)
+        TWBR = ((F_CPU / 100000) - 16) / (2 * 1);
+
+        sInitDone = true;
+    }
 }
 
 bool i2cStart(const uint8_t addr, const I2C_DIR_t dir, uint32_t timeout)
@@ -188,6 +195,7 @@ bool i2cRead(const uint8_t num, uint8_t *pData)
                 {
                     res = false;
                 }
+                break;
             default: // FIXME: good idea?
                 res = false;
                 break;

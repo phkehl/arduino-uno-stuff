@@ -2,6 +2,9 @@
 # path to stuff
 FFDIR       := ../..
 
+PRINTF      := float
+
+
 # Nano
 #PROGSPEED   := 57600
 #DEBUGPORT   := /dev/ttyUSB0

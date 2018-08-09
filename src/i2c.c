@@ -7,8 +7,11 @@
     \addtogroup I2C
     @{
 
-    \todo make clock speed configurable
+    \todo make clock speed configurable?
+    \todo use interrupts?
 */
+
+#include <string.h>        // libc: string operations
 
 #include <util/twi.h>      // avr-libc: TWI bit mask definitions
 
@@ -35,13 +38,13 @@ bool i2cStart(const uint8_t addr, const I2C_DIR_t dir, uint32_t timeout)
 {
     bool res = false;
 
-    if (osTaskIsSchedulerRunning())
-    {
-        timeout += osTaskGetMsss();
-    }
-
     while (ENDLESS)
     {
+        if (res)
+        {
+            break;
+        }
+
         // send start condition
         TWCR = BIT(TWINT) | BIT(TWSTA) | BIT(TWEN);
 
@@ -49,8 +52,7 @@ bool i2cStart(const uint8_t addr, const I2C_DIR_t dir, uint32_t timeout)
         loop_until_bit_is_set(TWCR, TWINT);
 
         // check status
-        const uint8_t twst1 = TW_STATUS;
-        switch (twst1)
+        switch (TW_STATUS)
         {
             // success: (repeated) start condition transmitted
             case TW_REP_START:
@@ -61,20 +63,18 @@ bool i2cStart(const uint8_t addr, const I2C_DIR_t dir, uint32_t timeout)
             case TW_MT_ARB_LOST:
                 // not in start condition (must not send stop condition)
             default:
-                continue; // try again
+                goto wait; // try again
         }
 
         // send target device address and transfer direction
-        const uint8_t sla = (addr << 1) | (dir == I2C_WRITE ? TW_WRITE : TW_READ);
-        TWDR = sla;                     // load
+        TWDR = (addr << 1) | (dir == I2C_WRITE ? TW_WRITE : TW_READ); // load
         TWCR = BIT(TWINT) | BIT(TWEN);  // initiate
 
         // wait for transmission to complete
         loop_until_bit_is_set(TWCR, TWINT);
 
         // check status
-        const uint8_t twst2 = TW_STATUS;
-        switch (twst2)
+        switch (TW_STATUS)
         {
             // SLA+W transmitted, ACK received 
             case TW_MT_SLA_ACK:
@@ -86,14 +86,16 @@ bool i2cStart(const uint8_t addr, const I2C_DIR_t dir, uint32_t timeout)
             case TW_MR_SLA_NACK:
                 i2cStop();
                 // retry
-                continue;
+                goto wait;
 
                 // lost arbitration, cease talking
             case TW_MT_ARB_LOST:
                 // error (but must send stop condition)
             default:
-                continue;
+                goto wait;
         }
+
+    wait:
 
         // success?
         if (res)
@@ -101,32 +103,25 @@ bool i2cStart(const uint8_t addr, const I2C_DIR_t dir, uint32_t timeout)
             break;
         }
 
-        // wait a bit and consider timeout to give up
-        if (osTaskIsSchedulerRunning())
+        // timeout is approximate only
+        if (timeout > 0)
         {
-            osTaskDelay(1);
-            if (timeout != 0)
+            timeout--;
+            if (timeout == 0)
             {
-                if (osTaskGetMsss() >= timeout)
-                {
-                    break;
-                }
+                break;
+            }
+            if (osTaskIsSchedulerRunning())
+            {
+                osTaskDelay(1);
+            }
+            else
+            {
+                hwDelay(1000);
             }
         }
-        else
-        {
-            hwDelay(1000);
-            if (timeout != 0)
-            {
-                timeout--;
-                if (timeout == 0)
-                {
-                    break;
-                }
-            }
-        }
-
     }
+
     return res;
 }
 
@@ -163,6 +158,44 @@ bool i2cWrite(const uint8_t data)
         default:
             break;
     }
+    return res;
+}
+
+bool i2cRead(const uint8_t num, uint8_t *pData)
+{
+    if (num < 1)
+    {
+        return false;
+    }
+    memset(pData, 0, num);
+
+    const uint8_t maxIx = num - 1;
+    bool res = true;
+    for (uint8_t ix = 0; res && (ix <= maxIx); ix++)
+    {
+        //DEBUG("read %"PRIu8"/%"PRIu8, ix, maxIx);
+        TWCR = BIT(TWINT) | BIT(TWEN) | ( ix < maxIx ? BIT(TWEA) : 0);
+        // wait for transmission to complete
+        loop_until_bit_is_set(TWCR, TWINT); // FIXME: can loop forever if no response?
+        switch (TW_STATUS)
+        {
+            // data received, ACK returned
+            case TW_MR_DATA_ACK:
+                break;
+            // data received, NACK returned
+            case TW_MR_DATA_NACK:
+                if (ix != maxIx)
+                {
+                    res = false;
+                }
+            default: // FIXME: good idea?
+                res = false;
+                break;
+        }
+
+        pData[ix] = TWDR;
+    }
+
     return res;
 }
 

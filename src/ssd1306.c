@@ -18,6 +18,8 @@
 
 #include <util/twi.h>      // avr-libc: TWI bit mask definitions
 
+#include <ada-gfx-font.h>  // 3rd-party: Adafruit GFX font
+
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
 #include "os.h"            // ff: operating system abstractions
@@ -32,9 +34,9 @@
 #if ( (FF_SSD1306_DISPLAY_ADDR != 0x3c) && (FF_SSD1306_DISPLAY_ADDR != 0x3d) )
 #  error Illegal value for FF_SSD1306_DISPLAY_ADDR!
 #endif
-#if ( (FF_SSD1306_DISPLAY_ORIENT < 0) || (FF_SSD1306_DISPLAY_ORIENT > 3) )
-#  error Illegal value for FF_SSD1306_DISPLAY_ORIENT!
-#endif
+//#if ( (FF_SSD1306_DISPLAY_ORIENT < 0) || (FF_SSD1306_DISPLAY_ORIENT > 3) )
+//#  error Illegal value for FF_SSD1306_DISPLAY_ORIENT!
+//#endif
 
 /* ************************************************************************** */
 
@@ -131,23 +133,23 @@ void ssd1306SetPixel(uint16_t x, uint16_t y, const bool colour)
         return;
     }
 
-#if   (FF_SSD1306_DISPLAY_ORIENT == 0)
-    // nothing
-#elif   (FF_SSD1306_DISPLAY_ORIENT == 1)
-    const uint16_t t = x;
-    x = y;
-    y = t;
-    x = SSD1306_WIDTH - 1 - x;
-#elif (FF_SSD1306_DISPLAY_ORIENT == 2)
-    x = SSD1306_WIDTH - 1 - x;
-    y = SSD1306_HEIGHT - 1 - y;
-#elif (FF_SSD1306_DISPLAY_ORIENT == 3)
-    const uint16_t t = x;
-    x = y;
-    y = SSD1306_HEIGHT - 1 - y;
-#else
-#  error WTF?!
-#endif
+//#if   (FF_SSD1306_DISPLAY_ORIENT == 0)
+//    // nothing
+//#elif   (FF_SSD1306_DISPLAY_ORIENT == 1)
+//    const uint16_t t = x;
+//    x = y;
+//    y = t;
+//    x = SSD1306_WIDTH - 1 - x;
+//#elif (FF_SSD1306_DISPLAY_ORIENT == 2)
+//    x = SSD1306_WIDTH - 1 - x;
+//    y = SSD1306_HEIGHT - 1 - y;
+//#elif (FF_SSD1306_DISPLAY_ORIENT == 3)
+//    const uint16_t t = x;
+//    x = y;
+//    y = SSD1306_HEIGHT - 1 - y;
+//#else
+//#  error WTF?!
+//#endif
 
     if (colour)
     {
@@ -158,6 +160,108 @@ void ssd1306SetPixel(uint16_t x, uint16_t y, const bool colour)
         CLRBITS(sSsd1306FrameBuffer[x + (y / 8) * SSD1306_WIDTH], BIT(y & 7));
     }
 }
+
+void ssd1306Print(uint16_t x, uint16_t y, const uint8_t size, const char *str)
+{
+    // skip early, ssd1306SetPixel() will take care of the precise bounds
+    if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
+    {
+        return;
+    }
+    if ( (size < 1) || (size > 3) )
+    {
+        return;
+    }
+    const int iLen = strlen(str);
+    if ( (iLen > 255) || (iLen < 1) )
+    {
+        return;
+    }
+    const uint8_t len = (uint8_t)iLen;
+    for (uint8_t strIx = 0; strIx < len; strIx++)
+    {
+        uint8_t *bitmap = adaGfxFontChar(str[strIx]);
+        for (uint8_t bitmapIx = 0; bitmapIx < 5; bitmapIx++)
+        {
+            uint8_t row = bitmap[bitmapIx];
+            for (uint8_t oy = 0; oy < 8; oy++)
+            {
+                ssd1306SetPixel(x, y + oy, (row & 0x01) ? true : false);
+                row >>= 1;
+            }
+            x++;
+        }
+        x += size;
+    }
+}
+
+void ssd1306LineH(uint16_t x, uint16_t y, uint16_t w, const bool colour)
+{
+    if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
+    {
+        return;
+    }
+    uint16_t x1 = x + w;
+    if (x1 >= SSD1306_WIDTH)
+    {
+        x1 = SSD1306_WIDTH - 1;
+    }
+    for (; x <= x1; x++)
+    {
+        ssd1306SetPixel(x, y, colour);
+    }
+}
+
+void ssd1306LineV(uint16_t x, uint16_t y, uint16_t h, const bool colour)
+{
+    if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
+    {
+        return;
+    }
+    uint16_t y1 = y + h;
+    if (y1 >= SSD1306_HEIGHT)
+    {
+        y1 = SSD1306_HEIGHT - 1;
+    }
+    for (; y <= y1; y++)
+    {
+        ssd1306SetPixel(x, y, colour);
+    }
+}
+
+void ssd1306Line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour)
+{
+    // TODO
+}
+
+void ssd1306Rect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour)
+{
+    if ( (x1 <= x0) || (y1 <= y0) )
+    {
+        return;
+    }
+    ssd1306LineV(x0, y0, y1 - y0, colour);
+    ssd1306LineV(x1, y0, y1 - y0, colour);
+    ssd1306LineH(x0, y0, x1 - x0, colour);
+    ssd1306LineH(x0, y1, x1 - x0, colour);
+}
+
+void ssd1306Fill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour)
+{
+    if ( (x1 <= x0) || (y1 <= y0) )
+    {
+        return;
+    }
+    for (uint16_t x = x0; x <= x1; x++)
+    {
+        for (uint16_t y = y0; y <= y1; y++)
+        {
+            ssd1306SetPixel(x, y, colour);
+        }
+    }
+}
+
+
 
 void ssd1306Clear(void)
 {
@@ -263,11 +367,10 @@ void ssd1306Init(void)
 
     // hardware configuration
     sSsd1306Command(2, SSD1306_CMD_SET_MULTIPLEX, SSD1306_HEIGHT - 1); // FIXME: not sure why this works...
-
-    sSsd1306Command(1, SSD1306_CMD_SET_SEG_REMAP_1);
     sSsd1306Command(2, SSD1306_CMD_SET_DISP_OFFS, 0x00);
-    sSsd1306Command(1, SSD1306_CMD_START_LINE | 0x00); // start line at 0
-    sSsd1306Command(1, SSD1306_CMD_SET_SCAN_DIR_NORM);
+    sSsd1306Command(1, SSD1306_CMD_START_LINE | 0x00);
+    sSsd1306Command(1, SSD1306_CMD_SET_SEG_REMAP_1);
+    sSsd1306Command(1, SSD1306_CMD_SET_SCAN_DIR_REM);
 #if   (FF_SSD1306_DISPLAY_SIZE == 6448)
     sSsd1306Command(2, SSD1306_CMD_SET_COM_PINS, 0x12); // 0b00010010 = alternative com pins, disable remap
 #elif (FF_SSD1306_DISPLAY_SIZE == 12864)

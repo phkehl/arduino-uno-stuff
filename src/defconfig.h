@@ -383,10 +383,10 @@
 #  define FF_SSD1306_DISPLAY_ADDR 0x3c
 #endif
 
-//! SSD1306 display orientation for \ref SSD1306 (0, 1, 2, 3)
-#if !defined (FF_SSD1306_DISPLAY_ORIENT) || defined(__DOXYGEN__)
-#  define FF_SSD1306_DISPLAY_ORIENT 0
-#endif
+// SSD1306 display orientation for \ref SSD1306 (0, 1, 2, 3)
+//#if !defined (FF_SSD1306_DISPLAY_ORIENT) || defined(__DOXYGEN__)
+//#  define FF_SSD1306_DISPLAY_ORIENT 0
+//#endif
 
 
 /* *************************************************************************** */

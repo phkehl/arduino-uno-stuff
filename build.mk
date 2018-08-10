@@ -147,6 +147,7 @@ LC_ALL      := C
 ATOMDIR     := $(FFDIR)/3rdparty/atomthreads
 LIGHTDIR    := $(FFDIR)/3rdparty/light_ws2812
 AVRHD44780  := $(FFDIR)/3rdparty/avr-hd44780
+ADAFRUITGFX := $(FFDIR)/3rdparty/adafruit-gfx
 
 # target platform
 ATMEGANR    ?= 328p
@@ -233,6 +234,7 @@ endif
 SRCFILES    += $(wildcard $(ATOMDIR)/*.c) $(wildcard $(ATOMDIR)/*.s)
 SRCFILES    += $(wildcard $(LIGHTDIR)/*.c)
 SRCFILES    += $(wildcard $(AVRHD44780)/*.c)
+SRCFILES    += $(wildcard $(ADAFRUITGFX)/*.c)
 SRCFILES    += $(wildcard $(FFDIR)/src/*.c)
 SRCFILES    += $(PROJFILES)
 

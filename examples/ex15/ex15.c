@@ -64,14 +64,19 @@ static void sAppTask(void *pArg)
 
     ssd1306Clear();
 
-    for (uint16_t xy = 0; xy < 100; xy += 2)
+    for (uint16_t xy = 0; xy < 20; xy += 2)
     {
         ssd1306SetPixel(xy, xy, true);
     }
     ssd1306SetPixel(ssd1306Width() - 1, 0, true);
     ssd1306SetPixel(0, ssd1306Height() - 1, true);
     ssd1306SetPixel(ssd1306Width() - 1, ssd1306Height() - 1, true);
-
+    ssd1306Print(20, 5, 1, "Abcde");
+    ssd1306LineH(20, 5 + 7 + 1, 5 * 5 + 4 * 1, true);
+    ssd1306LineV(ssd1306Width() - 2, 5, 30, true);
+    ssd1306LineV(ssd1306Width() - 4, 5, 20, true);
+    ssd1306Rect(0, 10, 5, 20, true);
+    ssd1306Fill(2, 24, 15, 30, true);
     ssd1306Update();
 
     // keep running...
@@ -87,7 +92,6 @@ static void sAppTask(void *pArg)
             ssd1306Dim(dim);
             dim = !dim;
         }
-
         osTaskDelay(987);
     }
 }

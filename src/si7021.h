@@ -8,10 +8,7 @@
     \ingroup FF
 
     This implements a driver for the Silicon Labs Si 7021 A20 I2C humidity and temperature sensor
-    driver. It uses the \ref I2C driver.
-
-    pins:
-
+    driver. It uses the \ref I2C driver, which uses the following pins:
     - pin A4 is SDA (serial data)
     - pin A5 is SCL (serial clock)
 

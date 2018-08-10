@@ -13,7 +13,11 @@
 
 /* *************************************************************************** */
 
-#define FF_HW_LOAD_PIN        _D13
+#define FF_HW_LOAD_PIN            _D13
+
+#define FF_SSD1306_DISPLAY_SIZE   6448
+
+#define FF_I2C_MASTER_SPEED       400
 
 
 // complete configuration by including the defaults

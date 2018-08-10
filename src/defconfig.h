@@ -365,6 +365,32 @@
 
 /* *************************************************************************** */
 
+//! I2C master speed \ref I2C in kHz (100..400)
+#if !defined (FF_I2C_MASTER_SPEED) || defined(__DOXYGEN__)
+#  define FF_I2C_MASTER_SPEED 100
+#endif
+
+
+/* *************************************************************************** */
+
+//! SSD1306 display size for \ref SSD1306 (64x84, 120x64, 128x32, 96x16)
+#if !defined (FF_SSD1306_DISPLAY_SIZE) || defined(__DOXYGEN__)
+#  define FF_SSD1306_DISPLAY_SIZE 6448
+#endif
+
+//! SSD1306 display address for \ref SSD1306 (0x3c or 0x3d)
+#if !defined (FF_SSD1306_DISPLAY_ADDR) || defined(__DOXYGEN__)
+#  define FF_SSD1306_DISPLAY_ADDR 0x3c
+#endif
+
+//! SSD1306 display orientation for \ref SSD1306 (0, 1, 2, 3)
+#if !defined (FF_SSD1306_DISPLAY_ORIENT) || defined(__DOXYGEN__)
+#  define FF_SSD1306_DISPLAY_ORIENT 0
+#endif
+
+
+/* *************************************************************************** */
+
 #endif // __DEFCONFIG_H__
 
 //@}

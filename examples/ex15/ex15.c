@@ -62,11 +62,32 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+    ssd1306Clear();
+
+    for (uint16_t xy = 0; xy < 100; xy += 2)
+    {
+        ssd1306SetPixel(xy, xy, true);
+    }
+    ssd1306SetPixel(ssd1306Width() - 1, 0, true);
+    ssd1306SetPixel(0, ssd1306Height() - 1, true);
+    ssd1306SetPixel(ssd1306Width() - 1, ssd1306Height() - 1, true);
+
+    ssd1306Update();
+
     // keep running...
     while (ENDLESS)
     {
         sAppCnt++;
         DEBUG("app...");
+        ssd1306Invert((sAppCnt % 2) == 0);
+
+        if ((sAppCnt % 10 == 0))
+        {
+            static bool dim = true;
+            ssd1306Dim(dim);
+            dim = !dim;
+        }
+
         osTaskDelay(987);
     }
 }

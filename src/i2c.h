@@ -13,6 +13,9 @@
     - pin A4 is SDA (serial data)
     - pin A5 is SCL (serial clock)
 
+    Configuration:
+    - #FF_I2C_MASTER_SPEED
+
     See \ref EXAMPLES_EX14 (and \ref SI7021) for a demonstration.
 
     @{

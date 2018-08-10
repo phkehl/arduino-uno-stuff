@@ -15,6 +15,7 @@
 
 #define FF_HW_LOAD_PIN        _D13
 
+#define FF_I2C_MASTER_SPEED   100
 
 // complete configuration by including the defaults
 #include "defconfig.h"

@@ -7,7 +7,6 @@
     \addtogroup I2C
     @{
 
-    \todo make clock speed configurable?
     \todo use interrupts?
 */
 
@@ -21,6 +20,10 @@
 #include "debug.h"         // ff: debugging
 #include "i2c.h"           // ff: i2c driver
 
+// check configuration
+#if ( (FF_I2C_MASTER_SPEED < 100) || (FF_I2C_MASTER_SPEED > 400) )
+#  error Illegal value for FF_I2C_MASTER_SPEED!
+#endif
 
 /* ************************************************************************** */
 
@@ -30,12 +33,12 @@ void i2cInit(void)
 
     if (!sInitDone)
     {
-        DEBUG("i2c: init");
+        DEBUG("i2c: init (%"PRIu16"kHz)", (uint16_t)FF_I2C_MASTER_SPEED);
 
         // initialise to 100kHz
         // - F_SCL = F_CPU / (16 + (2 * TWBR) * prescaler);
         TWSR = 0; // prescaler = 1 (TWPS1 = 0, TWPS0 = 0)
-        TWBR = ((F_CPU / 100000) - 16) / (2 * 1);
+        TWBR = (((uint32_t)F_CPU / ((uint32_t)(FF_I2C_MASTER_SPEED) * 1000)) - 16) / (2 * 1);
 
         sInitDone = true;
     }

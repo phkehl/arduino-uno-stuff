@@ -40,15 +40,39 @@
 //! initialise things
 void ssd1306Init(void);
 
+//! physical width of the display
+/*!
+    \returns the physical width of the display in [px]
+*/
 uint16_t ssd1306Width(void);
+
+//! physical height of the display
+/*!
+    \returns the physical height of the display in [px]
+*/
 uint16_t ssd1306Height(void);
 
+//! set one pixel in frame buffer
+/*!
+    Coordinates are zero based. The origin (x/y = 0/0) is the top left corner of the display. X is
+    horizontal (right), y vertical (down).
+
+    \param[in] x       x coordinate of the pixel
+    \param[in] y       y coordinate of the pixel
+    \param[in] colour  colour to change the pixel to
+*/
 void ssd1306Pixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour);
 
+//! clear display frame buffer
 void ssd1306Clear(void);
+
+//! write frame buffer to display
 void ssd1306Update(void);
 
+//! invert display
 void ssd1306Invert(const bool invert);
+
+//! dim display
 void ssd1306Dim(const bool dim);
 
 

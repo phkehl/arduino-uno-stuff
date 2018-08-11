@@ -26,46 +26,135 @@
 
 /* *************************************************************************** */
 
+//! colours
 typedef enum GFX_COLOUR_e
 {
-    GFX_WHITE, GFX_BLACK, GFX_INVERT, GFX_TRANS,
-
+    GFX_WHITE,  //!< white (foreground colour, pixel set for monochrome displays)
+    GFX_BLACK,  //!< black (background colour, pixel clear for monochrome displays)
+    GFX_INVERT, //!< invert existing colour (#GFX_WHITE <--> #GFX_BLACK)
+    GFX_TRANS,  //!< transparent (leave pixel as it is)
 } GFX_COLOUR_t;
 
 
+//! function that clears the physical display
 typedef void (* GFX_DRV_CLEAR_FUNC_t)(void);
+
+//! function that updates the physical display (writes the frame buffer to the display)
 typedef void (* GFX_DRV_UPDATE_FUNC_t)(void);
+
+//! function that sets a pixel on the physical display frame buffer
 typedef void (* GFX_DRV_PIXEL_FUNC_t)(uint16_t, uint16_t, GFX_COLOUR_t);
 
+//! gfx driver (information on what controls the physical display)
 typedef struct GFX_DRV_s
 {
-    GFX_DRV_CLEAR_FUNC_t  clearFunc;
-    GFX_DRV_UPDATE_FUNC_t updateFunc;
-    GFX_DRV_PIXEL_FUNC_t  pixelFunc;
-    int16_t               rawWidth;
-    int16_t               rawHeight;
+    GFX_DRV_CLEAR_FUNC_t  clearFunc;  //!< function that clears the physical display
+    GFX_DRV_UPDATE_FUNC_t updateFunc; //!< function that updates the physical display (writes the frame buffer to the display)
+    GFX_DRV_PIXEL_FUNC_t  pixelFunc;  //!< function that sets a pixel on the physical display frame buffer
+    int16_t               rawWidth;   //!< width in [px] of the physical display
+    int16_t               rawHeight;  //!< height in [px] of the physical display
 } GFX_DRV_t;
 
+//! creates an initialiser for a #GFX_DRV_t structure
 #define GFX_DRV(_clearFunc, _updateFunc, _pixelFunc, _rawWidth, _rawHeight) \
     { .clearFunc = (_clearFunc), .updateFunc = (_updateFunc), .pixelFunc = (_pixelFunc), .rawWidth = (_rawWidth), .rawHeight = (_rawHeight) }
 
 //! initialise things
+/*!
+    \param[in] pDrv  pointer to the driver structure
+
+    \note This must be called before any of the other functions may be called.
+*/
 void gfxInit(const GFX_DRV_t *pDrv);
 
+//! clear frame buffer
 void gfxClear(void);
+
+//! write frame buffer to the display
 void gfxUpdate(void);
 
+//! width of the canvas
+/*!
+    \returns the width in [px] of the canvas
+*/
 int16_t gfxWidth(void);
+
+//! height of the canvas
+/*!
+    \returns the height in [px] of the canvas
+*/
 int16_t gfxHeight(void);
 
+//! write a pixel
+/*!
+    Coordinates are zero based. The origin (x/y = 0/0) is the top left corner of the display. X is
+    horizontal (right), y vertical (down).
+
+    \param[in] x       x coordinate of the pixel
+    \param[in] y       y coordinate of the pixel
+    \param[in] colour  colour to change the pixel to
+*/
 void gfxPixel(int16_t x, int16_t y, GFX_COLOUR_t colour);
 
+//! draw a horizontal line
+/*!
+    \param[in] x       start of line x coordinate
+    \param[in] y       start of line y coordinate
+    \param[in] w       width of line [px], must be > 0
+    \param[in] colour  colour to draw the line with
+*/
 void gfxLineH(int16_t x, int16_t y, int16_t w, GFX_COLOUR_t colour);
+
+//! draw a vertical line
+/*!
+    \param[in] x       start of line x coordinate
+    \param[in] y       start of line y coordinate
+    \param[in] h       height of line [px], must be > 0
+    \param[in] colour  colour to draw the line with
+*/
 void gfxLineV(int16_t x, int16_t y, int16_t h, GFX_COLOUR_t colour);
+
+//! draw a line (from to anywhere)
+/*!
+    \param[in] x0      start of line x coordinate
+    \param[in] y0      start of line y coordinate
+    \param[in] x1      end of line x coordinate
+    \param[in] y1      end of line y coordinate
+    \param[in] colour  colour to draw the line with
+*/
 void gfxLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour);
+
+//! draw a rectangle (outline)
+/*!
+    \param[in] x0      x coordinate of top left corner
+    \param[in] y0      y coordinate of top left corner
+    \param[in] x1      x coordinate of bottom right corner, must be >= \c x0
+    \param[in] y1      y coordinate of bottom right corner, must be >= \c y0
+    \param[in] colour  colour to draw the lines with
+*/
 void gfxRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour);
+
+//! draw a filled rectangle
+/*!
+    \param[in] x0      x coordinate of top left corner
+    \param[in] y0      y coordinate of top left corner
+    \param[in] x1      x coordinate of bottom right corner, must be >= \c x0
+    \param[in] y1      y coordinate of bottom right corner, must be >= \c y0
+    \param[in] colour  colour to fille the rectangle with
+*/
 void gfxFill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour);
 
+//! print a string
+/*!
+    Characters are 5 [px] wide and 7 [px] tall. Individual characters are separated by 1 [px].
+    The \c size will scales these accordingly.
+
+    \param[in] x       x coordinate of top left corner of the first letter
+    \param[in] y       y coordinate of top left corner of the first letter
+    \param[in] size    size (scale factor) (1, 2 or 3)
+    \param[in] colour  the colour to draw the letters in
+    \param[in] str     the string
+*/
 void gfxPrint(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t colour, const char *str);
 
 /* *************************************************************************** */

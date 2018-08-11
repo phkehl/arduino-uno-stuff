@@ -12,6 +12,8 @@
     @{
 
     \todo implement display orientation
+    \todo add gfxPrint_P()
+
 */
 
 #include <string.h>        // libc: string operations

@@ -99,6 +99,7 @@ static void sSysTask(void *pArg)
                 PRINT_W("mon: hw: %s", str);
                 if (sSysMonFunc)
                 {
+                    str[0] = '\0';
                     sSysMonFunc(str, sizeof(str));
                     PRINT_W("mon: app: %s", str);
                 }

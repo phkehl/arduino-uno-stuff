@@ -10,6 +10,8 @@
     \todo implement precise task runtime statistics, incl. IRQ load statistics (if that's even possible...)
 
     \todo look into http://mark3os.com/docs/html/index.html
+
+    \todo osTaskDelayUntil() should take ms as input and consider tick not 1ms
 */
 
 #include <stdio.h>         // libc: standard buffered input/output

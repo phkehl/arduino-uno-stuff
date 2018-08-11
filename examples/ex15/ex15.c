@@ -117,7 +117,7 @@ static void sAppTask(void *pArg)
 
         gfxUpdate();
 
-        if ((sAppCnt % 4 == 0) && false)
+        if ((sAppCnt % 4 == 0))
         {
             static bool invert = true;
             ssd1306Invert(invert);

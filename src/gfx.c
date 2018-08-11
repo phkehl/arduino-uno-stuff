@@ -4,6 +4,10 @@
 
     - Copyright (c) 2018 Philippe Kehl (flipflip at oinkzwurgl dot org)
 
+    Some functions based on Adafruit's SSD1306 library for the Arduine (https://github.com/adafruit/Adafruit_SSD1306)
+
+    - Copyright (c) Limor Fried/Ladyada, Adafruit Industries.
+
     \addtogroup GFX
     @{
 
@@ -36,12 +40,12 @@ inline void gfxClear(void)
     sGfxDrv.clearFunc();
 }
 
-inline uint16_t gfxWidth(void)
+inline int16_t gfxWidth(void)
 {
     return sGfxDrv.rawWidth;
 }
 
-inline uint16_t gfxHeight(void)
+inline int16_t gfxHeight(void)
 {
     return sGfxDrv.rawHeight;
 }
@@ -51,111 +55,50 @@ inline void gfxUpdate(void)
     sGfxDrv.updateFunc();
 }
 
-inline void gfxSetPixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour)
+inline void gfxPixel(int16_t x, int16_t y, GFX_COLOUR_t colour)
 {
-    sGfxDrv.setpixelFunc(x, y, colour);
+    sGfxDrv.pixelFunc((uint16_t)x, (uint16_t)y, colour);
 }
 
 /* ************************************************************************** */
 
-void gfxLineH(uint16_t x, uint16_t y, uint16_t w, GFX_COLOUR_t colour)
+void gfxLineH(int16_t x, int16_t y, int16_t w, GFX_COLOUR_t colour)
 {
-    if ( (x >= gfxWidth()) || (y >= gfxHeight()) )
+    if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) || (w < 0) )
     {
         return;
     }
-    uint16_t x1 = x + w;
+    int16_t x1 = x + w;
     if (x1 >= gfxWidth())
     {
         x1 = gfxWidth() - 1;
     }
     for (; x <= x1; x++)
     {
-        gfxSetPixel(x, y, colour);
+        gfxPixel(x, y, colour);
     }
 }
 
-void gfxLineV(uint16_t x, uint16_t y, uint16_t h, GFX_COLOUR_t colour)
+void gfxLineV(int16_t x, int16_t y, int16_t h, GFX_COLOUR_t colour)
 {
-    if ( (x >= gfxWidth()) || (y >= gfxHeight()) )
+    if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) || (h < 0) )
     {
         return;
     }
-    uint16_t y1 = y + h;
+    int16_t y1 = y + h;
     if (y1 >= gfxHeight())
     {
         y1 = gfxHeight() - 1;
     }
     for (; y <= y1; y++)
     {
-        gfxSetPixel(x, y, colour);
+        gfxPixel(x, y, colour);
     }
 }
 
-void gfxLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, GFX_COLOUR_t colour)
+void gfxRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour)
 {
-    UNUSED(x0); UNUSED(y0); UNUSED(x1); UNUSED(y1); UNUSED(colour);
-    // TODO: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-    /*
-plotLineLow(x0,y0, x1,y1)
-  dx = x1 - x0
-  dy = y1 - y0
-  yi = 1
-  if dy < 0
-    yi = -1
-    dy = -dy
-  end if
-  D = 2*dy - dx
-  y = y0
-
-  for x from x0 to x1
-    plot(x,y)
-    if D > 0
-       y = y + yi
-       D = D - 2*dx
-    end if
-    D = D + 2*dy
-
-plotLineHigh(x0,y0, x1,y1)
-  dx = x1 - x0
-  dy = y1 - y0
-  xi = 1
-  if dx < 0
-    xi = -1
-    dx = -dx
-  end if
-  D = 2*dx - dy
-  x = x0
-
-  for y from y0 to y1
-    plot(x,y)
-    if D > 0
-       x = x + xi
-       D = D - 2*dy
-    end if
-    D = D + 2*dx
-
-plotLine(x0,y0, x1,y1)
-  if abs(y1 - y0) < abs(x1 - x0)
-    if x0 > x1
-      plotLineLow(x1, y1, x0, y0)
-    else
-      plotLineLow(x0, y0, x1, y1)
-    end if
-  else
-    if y0 > y1
-      plotLineHigh(x1, y1, x0, y0)
-    else
-      plotLineHigh(x0, y0, x1, y1)
-    end if
-  end if
-
-     */
-}
-
-void gfxRect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, GFX_COLOUR_t colour)
-{
-    if ( (x1 <= x0) || (y1 <= y0) )
+    if ( (x0 < 0) || (y0 < 0) || (x1 <= x0) || (y1 <= y0) )
     {
         return;
     }
@@ -165,25 +108,99 @@ void gfxRect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, GFX_COLOUR_t co
     gfxLineH(x0, y1, x1 - x0, colour);
 }
 
-void gfxFill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, GFX_COLOUR_t colour)
+void gfxFill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour)
 {
-    if ( (x1 <= x0) || (y1 <= y0) )
+    if ( (x0 < 0) || (y0 < 0) || (x1 <= x0) || (y1 <= y0) )
     {
         return;
     }
-    for (uint16_t x = x0; x <= x1; x++)
+    for (int16_t x = x0; x <= x1; x++)
     {
-        for (uint16_t y = y0; y <= y1; y++)
+        for (int16_t y = y0; y <= y1; y++)
         {
-            gfxSetPixel(x, y, colour);
+            gfxPixel(x, y, colour);
         }
     }
 }
 
-void gfxPrint(uint16_t x, uint16_t y, uint8_t size, GFX_COLOUR_t colour, const char *str)
+#define _SWAP(a, b) { typeof(a) t = a; a = b; b = t; }
+
+// based on https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+// modified code from Adafruit_GFX::writeLine(), (c) Adafruit (see header)
+void gfxLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour)
 {
-    // skip early, gfxSetPixel() will take care of the precise bounds
-    if ( (x >= gfxWidth()) || (y >= gfxHeight()) )
+    if ( (x0 < 0) || (x0 >= gfxWidth())  || (x1 < 0) || (x1 >= gfxWidth()) ||
+         (y0 < 0) || (y0 >= gfxHeight()) || (y1 < 0) || (y1 >= gfxHeight()) )
+    {
+        return;
+    }
+    int16_t dx = x1 - x0;
+    int16_t dy = y1 - y0;
+    if ( (dx < 1) || (dy < 1) )
+    {
+        return;
+    }
+    if (dx == 1)
+    {
+        gfxLineV(x0, y0, dy, colour);
+        return;
+    }
+    if (dy == 1)
+    {
+        gfxLineH(x0, y0, y1, colour);
+        return;
+    }
+
+    dy = ABS(dy);
+
+    bool steep = dy > ABS(dx);
+    if (steep)
+    {
+        _SWAP(x0, y0);
+        _SWAP(x1, y1);
+    }
+
+    if (x0 > x1)
+    {
+        _SWAP(x0, x1);
+        _SWAP(y0, y1);
+    }
+
+    int16_t err = dx / 2;
+    int16_t ystep;
+
+    if (y0 < y1)
+    {
+        ystep = 1;
+    }
+    else
+    {
+        ystep = -1;
+    }
+    for (; x0 <= x1; x0++)
+    {
+        if (steep)
+        {
+            gfxPixel(y0, x0, colour);
+        }
+        else
+        {
+            gfxPixel(x0, y0, colour);
+        }
+        err -= dy;
+        if (err < 0)
+        {
+            y0 += ystep;
+            err += dx;
+        }
+    }
+}
+
+
+void gfxPrint(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t colour, const char *str)
+{
+    // skip early, gfxPixel() will take care of the precise bounds
+    if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) )
     {
         return;
     }
@@ -209,18 +226,18 @@ void gfxPrint(uint16_t x, uint16_t y, uint8_t size, GFX_COLOUR_t colour, const c
                 switch (colour)
                 {
                     case GFX_BLACK:
-                        gfxSetPixel(x, y + oy, isSet ? GFX_BLACK : GFX_WHITE);
+                        gfxPixel(x, y + oy, isSet ? GFX_BLACK : GFX_WHITE);
                         break;
                     case GFX_WHITE:
-                        gfxSetPixel(x, y + oy, isSet ? GFX_WHITE : GFX_BLACK);
+                        gfxPixel(x, y + oy, isSet ? GFX_WHITE : GFX_BLACK);
                         break;
                     case GFX_INVERT:
-                        gfxSetPixel(x, y + oy, GFX_INVERT);
+                        gfxPixel(x, y + oy, GFX_INVERT);
                         break;
                     case GFX_TRANS:
                         if (isSet)
                         {
-                            gfxSetPixel(x, y + oy, GFX_INVERT);
+                            gfxPixel(x, y + oy, GFX_INVERT);
                         }
                         break;
                 }

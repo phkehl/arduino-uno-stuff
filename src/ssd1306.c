@@ -124,7 +124,7 @@ inline uint16_t ssd1306Height(void)
 
 static uint8_t sSsd1306FrameBuffer[(SSD1306_WIDTH) * (SSD1306_HEIGHT) / 8];
 
-void ssd1306SetPixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour)
+void ssd1306Pixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour)
 {
     if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
     {

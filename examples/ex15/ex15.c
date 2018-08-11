@@ -37,7 +37,8 @@ void appInit(void)
 
     ssd1306Init();
 
-    const GFX_DRV_t gfxDrv = GFX_DRV(ssd1306Clear, ssd1306Update, ssd1306SetPixel, ssd1306Width(), ssd1306Height());
+    const GFX_DRV_t gfxDrv =
+        GFX_DRV(ssd1306Clear, ssd1306Update, ssd1306Pixel, ssd1306Width(), ssd1306Height());
     gfxInit(&gfxDrv);
 
     // register status function for the system task
@@ -70,18 +71,18 @@ static void sAppTask(void *pArg)
     while (ENDLESS)
     {
         sAppCnt++;
-        DEBUG("app...");
+        DEBUG("app... %"PRIu32, sAppCnt);
 
         gfxClear();
 
         for (uint16_t xy = 0; xy < 20; xy += 2)
         {
-            gfxSetPixel(xy, xy, GFX_BLACK);
+            gfxPixel(xy, xy, GFX_BLACK);
         }
 
-        gfxSetPixel(gfxWidth() - 1, 0, GFX_BLACK);
-        gfxSetPixel(0, gfxHeight() - 1, GFX_BLACK);
-        gfxSetPixel(gfxWidth() - 1, gfxHeight() - 1, GFX_BLACK);
+        gfxPixel(gfxWidth() - 1, 0, GFX_BLACK);
+        gfxPixel(0, gfxHeight() - 1, GFX_BLACK);
+        gfxPixel(gfxWidth() - 1, gfxHeight() - 1, GFX_BLACK);
 
         gfxPrint(17, 2, 1, GFX_BLACK, "Hallo!");
         gfxLineH(17, 2 + 7 + 1, 6 * 5 + 5 * 1, GFX_BLACK);
@@ -95,6 +96,10 @@ static void sAppTask(void *pArg)
         char str[10];
         snprintf(str, sizeof(str), "%4"PRIu32, sAppCnt);
         gfxPrint(27, 14, 1, GFX_WHITE, str);
+
+        gfxLine(10, 24, 55, 30, GFX_BLACK);
+        gfxLine(10, 26, 55, 35, GFX_BLACK);
+        gfxLine(10, 28, 59, 43, GFX_BLACK);
 
         gfxUpdate();
 

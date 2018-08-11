@@ -43,7 +43,7 @@ void ssd1306Init(void);
 uint16_t ssd1306Width(void);
 uint16_t ssd1306Height(void);
 
-void ssd1306SetPixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour);
+void ssd1306Pixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour);
 
 void ssd1306Clear(void);
 void ssd1306Update(void);

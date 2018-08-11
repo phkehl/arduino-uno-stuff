@@ -19,7 +19,6 @@
     Configuration:
     - #FF_SSD1306_DISPLAY_SIZE
     - #FF_SSD1306_DISPLAY_ADDR
-    - #FF_SSD1306_DISPLAY_ORIENT
 
     See \ref EXAMPLES_EX15 for a demonstration.
 
@@ -33,6 +32,7 @@
 #define __SSD1306_H__
 
 #include "stdstuff.h"      // ff: useful macros and types
+#include "gfx.h"           // ff: graphics primitives
 
 
 /* *************************************************************************** */
@@ -43,7 +43,7 @@ void ssd1306Init(void);
 uint16_t ssd1306Width(void);
 uint16_t ssd1306Height(void);
 
-void ssd1306SetPixel(uint16_t x, uint16_t y, const bool colour);
+void ssd1306SetPixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour);
 
 void ssd1306Clear(void);
 void ssd1306Update(void);
@@ -51,13 +51,6 @@ void ssd1306Update(void);
 void ssd1306Invert(const bool invert);
 void ssd1306Dim(const bool dim);
 
-void ssd1306Print(uint16_t x, uint16_t y, const uint8_t size, const char *str);
-
-void ssd1306LineH(uint16_t x, uint16_t y, uint16_t w, const bool colour);
-void ssd1306LineV(uint16_t x, uint16_t y, uint16_t h, const bool colour);
-void ssd1306Line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour);
-void ssd1306Rect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour);
-void ssd1306Fill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour);
 
 /* *************************************************************************** */
 

@@ -19,6 +19,7 @@
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
 #include "ssd1306.h"       // ff: SSD1306 driver
+#include "gfx.h"           // ff: graphics primitives
 
 #include "ex15.h"
 
@@ -35,6 +36,9 @@ void appInit(void)
     DEBUG("ex15: init");
 
     ssd1306Init();
+
+    const GFX_DRV_t gfxDrv = GFX_DRV(ssd1306Clear, ssd1306Update, ssd1306SetPixel, ssd1306Width(), ssd1306Height());
+    gfxInit(&gfxDrv);
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
@@ -62,30 +66,44 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
-    ssd1306Clear();
-
-    for (uint16_t xy = 0; xy < 20; xy += 2)
-    {
-        ssd1306SetPixel(xy, xy, true);
-    }
-    ssd1306SetPixel(ssd1306Width() - 1, 0, true);
-    ssd1306SetPixel(0, ssd1306Height() - 1, true);
-    ssd1306SetPixel(ssd1306Width() - 1, ssd1306Height() - 1, true);
-    ssd1306Print(20, 5, 1, "Abcde");
-    ssd1306LineH(20, 5 + 7 + 1, 5 * 5 + 4 * 1, true);
-    ssd1306LineV(ssd1306Width() - 2, 5, 30, true);
-    ssd1306LineV(ssd1306Width() - 4, 5, 20, true);
-    ssd1306Rect(0, 10, 5, 20, true);
-    ssd1306Fill(2, 24, 15, 30, true);
-    ssd1306Update();
-
     // keep running...
     while (ENDLESS)
     {
         sAppCnt++;
         DEBUG("app...");
-        ssd1306Invert((sAppCnt % 2) == 0);
 
+        gfxClear();
+
+        for (uint16_t xy = 0; xy < 20; xy += 2)
+        {
+            gfxSetPixel(xy, xy, GFX_BLACK);
+        }
+
+        gfxSetPixel(gfxWidth() - 1, 0, GFX_BLACK);
+        gfxSetPixel(0, gfxHeight() - 1, GFX_BLACK);
+        gfxSetPixel(gfxWidth() - 1, gfxHeight() - 1, GFX_BLACK);
+
+        gfxPrint(17, 2, 1, GFX_BLACK, "Hallo!");
+        gfxLineH(17, 2 + 7 + 1, 6 * 5 + 5 * 1, GFX_BLACK);
+
+        gfxLineV(gfxWidth() - 2, 5, 30, GFX_BLACK);
+        gfxLineV(gfxWidth() - 4, 5, 20, GFX_BLACK);
+
+        gfxRect(0, 10, 5, 20, GFX_BLACK);
+
+        gfxFill(25, 13, 51, 22, GFX_BLACK);
+        char str[10];
+        snprintf(str, sizeof(str), "%4"PRIu32, sAppCnt);
+        gfxPrint(27, 14, 1, GFX_WHITE, str);
+
+        gfxUpdate();
+
+        if ((sAppCnt % 4 == 0))
+        {
+            static bool invert = true;
+            ssd1306Invert(invert);
+            invert = !invert;
+        }
         if ((sAppCnt % 10 == 0))
         {
             static bool dim = true;

@@ -18,8 +18,6 @@
 
 #include <util/twi.h>      // avr-libc: TWI bit mask definitions
 
-#include <ada-gfx-font.h>  // 3rd-party: Adafruit GFX font
-
 #include "stdstuff.h"      // ff: useful macros and types
 #include "config.h"        // ff: configuration
 #include "os.h"            // ff: operating system abstractions
@@ -126,7 +124,7 @@ inline uint16_t ssd1306Height(void)
 
 static uint8_t sSsd1306FrameBuffer[(SSD1306_WIDTH) * (SSD1306_HEIGHT) / 8];
 
-void ssd1306SetPixel(uint16_t x, uint16_t y, const bool colour)
+void ssd1306SetPixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour)
 {
     if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
     {
@@ -151,172 +149,21 @@ void ssd1306SetPixel(uint16_t x, uint16_t y, const bool colour)
 //#  error WTF?!
 //#endif
 
-    if (colour)
+    switch (colour)
     {
-        SETBITS(sSsd1306FrameBuffer[x + (y / 8) * SSD1306_WIDTH], BIT(y & 7));
-    }
-    else
-    {
-        CLRBITS(sSsd1306FrameBuffer[x + (y / 8) * SSD1306_WIDTH], BIT(y & 7));
-    }
-}
-
-void ssd1306Print(uint16_t x, uint16_t y, const uint8_t size, const char *str)
-{
-    // skip early, ssd1306SetPixel() will take care of the precise bounds
-    if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
-    {
-        return;
-    }
-    if ( (size < 1) || (size > 3) )
-    {
-        return;
-    }
-    const int iLen = strlen(str);
-    if ( (iLen > 255) || (iLen < 1) )
-    {
-        return;
-    }
-    const uint8_t len = (uint8_t)iLen;
-    for (uint8_t strIx = 0; strIx < len; strIx++)
-    {
-        uint8_t *bitmap = adaGfxFontChar(str[strIx]);
-        for (uint8_t bitmapIx = 0; bitmapIx < 5; bitmapIx++)
-        {
-            uint8_t row = bitmap[bitmapIx];
-            for (uint8_t oy = 0; oy < 8; oy++)
-            {
-                ssd1306SetPixel(x, y + oy, (row & 0x01) ? true : false);
-                row >>= 1;
-            }
-            x++;
-        }
-        x += size;
+        case GFX_WHITE:
+            CLRBITS(sSsd1306FrameBuffer[x + (y / 8) * SSD1306_WIDTH], BIT(y & 7));
+            break;
+        case GFX_BLACK:
+            SETBITS(sSsd1306FrameBuffer[x + (y / 8) * SSD1306_WIDTH], BIT(y & 7));
+            break;
+        case GFX_INVERT:
+            TOGBITS(sSsd1306FrameBuffer[x + (y / 8) * SSD1306_WIDTH], BIT(y & 7));
+            break;
+        case GFX_TRANS:
+            break;
     }
 }
-
-void ssd1306LineH(uint16_t x, uint16_t y, uint16_t w, const bool colour)
-{
-    if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
-    {
-        return;
-    }
-    uint16_t x1 = x + w;
-    if (x1 >= SSD1306_WIDTH)
-    {
-        x1 = SSD1306_WIDTH - 1;
-    }
-    for (; x <= x1; x++)
-    {
-        ssd1306SetPixel(x, y, colour);
-    }
-}
-
-void ssd1306LineV(uint16_t x, uint16_t y, uint16_t h, const bool colour)
-{
-    if ( (x >= SSD1306_WIDTH) || (y >= SSD1306_HEIGHT) )
-    {
-        return;
-    }
-    uint16_t y1 = y + h;
-    if (y1 >= SSD1306_HEIGHT)
-    {
-        y1 = SSD1306_HEIGHT - 1;
-    }
-    for (; y <= y1; y++)
-    {
-        ssd1306SetPixel(x, y, colour);
-    }
-}
-
-void ssd1306Line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour)
-{
-    // TODO: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-    /*
-plotLineLow(x0,y0, x1,y1)
-  dx = x1 - x0
-  dy = y1 - y0
-  yi = 1
-  if dy < 0
-    yi = -1
-    dy = -dy
-  end if
-  D = 2*dy - dx
-  y = y0
-
-  for x from x0 to x1
-    plot(x,y)
-    if D > 0
-       y = y + yi
-       D = D - 2*dx
-    end if
-    D = D + 2*dy
-
-plotLineHigh(x0,y0, x1,y1)
-  dx = x1 - x0
-  dy = y1 - y0
-  xi = 1
-  if dx < 0
-    xi = -1
-    dx = -dx
-  end if
-  D = 2*dx - dy
-  x = x0
-
-  for y from y0 to y1
-    plot(x,y)
-    if D > 0
-       x = x + xi
-       D = D - 2*dy
-    end if
-    D = D + 2*dx
-
-plotLine(x0,y0, x1,y1)
-  if abs(y1 - y0) < abs(x1 - x0)
-    if x0 > x1
-      plotLineLow(x1, y1, x0, y0)
-    else
-      plotLineLow(x0, y0, x1, y1)
-    end if
-  else
-    if y0 > y1
-      plotLineHigh(x1, y1, x0, y0)
-    else
-      plotLineHigh(x0, y0, x1, y1)
-    end if
-  end if
-
-     */
-}
-
-void ssd1306Rect(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour)
-{
-    if ( (x1 <= x0) || (y1 <= y0) )
-    {
-        return;
-    }
-    ssd1306LineV(x0, y0, y1 - y0, colour);
-    ssd1306LineV(x1, y0, y1 - y0, colour);
-    ssd1306LineH(x0, y0, x1 - x0, colour);
-    ssd1306LineH(x0, y1, x1 - x0, colour);
-}
-
-void ssd1306Fill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, const bool colour)
-{
-    if ( (x1 <= x0) || (y1 <= y0) )
-    {
-        return;
-    }
-    for (uint16_t x = x0; x <= x1; x++)
-    {
-        for (uint16_t y = y0; y <= y1; y++)
-        {
-            ssd1306SetPixel(x, y, colour);
-        }
-    }
-}
-
-
 
 void ssd1306Clear(void)
 {

@@ -57,6 +57,7 @@ See https://oinkzwurgl.org/projaeggd/arduino-uno-stuff/ for the latest version.
 - \ref I2C
 - \ref SI7021
 - \ref SSD1306
+- \ref GFX
 - See also the [source code](files.html), the \ref P_REFERENCES below, the \ref EXAMPLES, the \ref PROJECTS
   and the [AVR libc docu](../avr-libc/html/index.html).
 

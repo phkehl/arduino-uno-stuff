@@ -161,6 +161,7 @@ void ssd1306Pixel(uint16_t x, uint16_t y, GFX_COLOUR_t colour)
             TOGBITS(sSsd1306FrameBuffer[x + (y / 8) * SSD1306_WIDTH], BIT(y & 7));
             break;
         case GFX_TRANS:
+            // do nothing, leave pixel as is
             break;
     }
 }

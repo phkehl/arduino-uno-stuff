@@ -144,18 +144,26 @@ void gfxRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour
 */
 void gfxFill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour);
 
+//! fonts
+typedef enum GFX_FONT_e
+{
+    GFX_FONT_5X7, //!< 5x7 px fixed-width font
+} GFX_FONT_t;
+
 //! print a string
 /*!
     Characters are 5 [px] wide and 7 [px] tall. Individual characters are separated by 1 [px].
     The \c size will scales these accordingly.
 
+    \param[in] font    the font to use
     \param[in] x       x coordinate of top left corner of the first letter
     \param[in] y       y coordinate of top left corner of the first letter
     \param[in] size    size (scale factor) (1, 2 or 3)
-    \param[in] colour  the colour to draw the letters in
+    \param[in] fg      foreground colour (letter outlines)
+    \param[in] bg      background colour
     \param[in] str     the string
 */
-void gfxPrint(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t colour, const char *str);
+void gfxPrint(GFX_FONT_t font, int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str);
 
 /* *************************************************************************** */
 

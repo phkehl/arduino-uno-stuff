@@ -196,8 +196,7 @@ void gfxLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour
     }
 }
 
-
-void gfxPrint(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t colour, const char *str)
+static void sGfxPrint5x7(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
 {
     // skip early, gfxPixel() will take care of the precise bounds
     if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) )
@@ -216,36 +215,44 @@ void gfxPrint(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t colour, const cha
     const uint8_t len = (uint8_t)iLen;
     for (uint8_t strIx = 0; strIx < len; strIx++)
     {
+        // draw character...
         uint8_t *bitmap = adaGfxFontChar(str[strIx]);
         for (uint8_t bitmapIx = 0; bitmapIx < 5; bitmapIx++)
         {
+            // ...row by row
             uint8_t row = bitmap[bitmapIx];
-            for (uint8_t oy = 0; oy < 8; oy++)
+            uint8_t moy = 8 * size;
+            for (uint8_t oy = 0; oy < moy; oy += size)
             {
                 const bool isSet = (row & 0x01) == 0x01;
-                switch (colour)
+                if (size == 1)
                 {
-                    case GFX_BLACK:
-                        gfxPixel(x, y + oy, isSet ? GFX_BLACK : GFX_WHITE);
-                        break;
-                    case GFX_WHITE:
-                        gfxPixel(x, y + oy, isSet ? GFX_WHITE : GFX_BLACK);
-                        break;
-                    case GFX_INVERT:
-                        gfxPixel(x, y + oy, GFX_INVERT);
-                        break;
-                    case GFX_TRANS:
-                        if (isSet)
-                        {
-                            gfxPixel(x, y + oy, GFX_INVERT);
-                        }
-                        break;
+                    gfxPixel(x, y + oy, isSet ? fg : bg);
+                }
+                else
+                {
+                    gfxFill(x, y + oy, x + size - 1, y + oy + size - 1, isSet ? fg : bg);
                 }
                 row >>= 1;
             }
-            x++;
+            x += size;
         }
-        x += size;
+        // draw padding
+        if (strIx < (len - 1))
+        {
+            gfxLineV(x, y, 8, bg);
+            x += size;
+        }
+    }
+}
+
+void gfxPrint(GFX_FONT_t font, int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
+{
+    switch (font)
+    {
+        case GFX_FONT_5X7:
+            sGfxPrint5x7(x, y, size, fg, bg, str);
+            break;
     }
 }
 

@@ -523,6 +523,9 @@ static void sAppTask(void *pArg)
     // keep running...
     while (ENDLESS)
     {
+        // FIXME: need to use sw watchdog as sometimes the i2c stuff hangs :-(
+        sysAssertSwWatchdog();
+
         if (!osTaskDelayUntil(&sTime, MEAS_PERIOD))
         {
             WARNING("meas miss");

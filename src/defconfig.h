@@ -129,6 +129,11 @@
 #  define FF_SYS_MON_STRLEN 64
 #endif
 
+//! software watchdog period [#SYS_TASK_PERIOD]
+#if !defined(FF_SYS_SW_WATCHDOG) || defined(__DOXYGEN__)
+#  define FF_SYS_SW_WATCHDOG 0
+#endif
+
 
 /* *************************************************************************** */
 

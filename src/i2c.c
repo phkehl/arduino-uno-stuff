@@ -7,7 +7,7 @@
     \addtogroup I2C
     @{
 
-    \todo use interrupts?
+    \todo use interrupts? http://www.chrisherring.net/all/tutorial-interrupt-driven-twi-interface-for-avr-part1/
 */
 
 #include <string.h>        // libc: string operations

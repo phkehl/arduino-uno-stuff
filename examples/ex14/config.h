@@ -17,6 +17,8 @@
 
 #define FF_I2C_MASTER_SPEED   100
 
+//#define FF_SYS_SW_WATCHDOG  10
+
 // complete configuration by including the defaults
 #include "defconfig.h"
 

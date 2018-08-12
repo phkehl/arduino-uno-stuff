@@ -46,7 +46,7 @@ void appCreateTask(void)
 {
     static uint8_t stack[250];
     static OS_TASK_t task;
-    osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
+    osTaskCreate("app", 7, &task, stack, sizeof(stack), sAppTask, NULL);
 }
 
 /* ***** application functions *********************************************** */

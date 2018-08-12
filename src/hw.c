@@ -403,7 +403,7 @@ __FORCEINLINE void hwLedLoadOff(void) { }
 #ifndef __DOXYGEN__ // STFU
 const const char skHwPanicStr[][6] PROGMEM =
 {
-    { "NONE\0" }, { "HW\0" }, { "OS\0" }, { "OTHER\0" }
+    { "NONE\0" }, { "HW\0" }, { "OS\0" }, { "SYS\0" }, { "OTHER\0" }
 };
 #endif
 
@@ -427,8 +427,12 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
             n = 3;
             time = 10000;
             break;
-        case HW_PANIC_OTHER:
+        case HW_PANIC_SYS:
             n = 4;
+            time = 10000;
+            break;
+        case HW_PANIC_OTHER:
+            n = 5;
             time = 10000;
             break;
         default:

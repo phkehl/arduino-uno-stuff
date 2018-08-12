@@ -22,6 +22,9 @@
 #define FF_SYS_TASK_STACK 260
 #define FF_OS_IDLE_STACK  80
 
+// software watchdog
+#define FF_SYS_SW_WATCHDOG  16
+
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0
 

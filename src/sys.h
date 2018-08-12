@@ -14,6 +14,7 @@
     - #FF_SYS_MON_VERBOSE
     - #FF_SYS_TASK_PRIO
     - #FF_SYS_TASK_STACK
+    - #FF_SYS_SW_WATCHDOG
 
     @{
 */
@@ -45,6 +46,12 @@ typedef void (* SYS_MON_FUNC_t)(char *, size_t);
     \param[in] func  function that creates the string to output in the monitor task
 */
 void sysRegisterMonFunc(SYS_MON_FUNC_t func);
+
+//! assert software watchdog
+/*!
+    Asserts the software watchdog. Active only if compiled in by setting #FF_SYS_SW_WATCHDOG > 0.
+*/
+void sysAssertSwWatchdog(void);
 
 
 /* *************************************************************************** */

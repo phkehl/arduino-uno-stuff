@@ -14,6 +14,10 @@
 #include "hw.h"            // ff: hardware
 #include "sys.h"           // ff: system task
 
+#if ( (FF_SYS_SW_WATCHDOG < 0) || (FF_SYS_SW_WATCHDOG > 255) )
+#  error Illegal value for FF_SYS_SW_WATCHDOG!
+#endif
+
 /* ************************************************************************** */
 
 static uint8_t sSysTaskStack[FF_SYS_TASK_STACK];
@@ -22,7 +26,9 @@ static void sSysTask(void *pArg);
 
 void sysInit(void)
 {
-    DEBUG("sys: init (stack %"PRIu16", mon %"PRIu16")", (uint16_t)sizeof(sSysTaskStack), (uint16_t)FF_SYS_MON_PERIOD);
+    DEBUG("sys: init (stack %"PRIu16", mon %"PRIu16", prio "PRIu8")",
+        (uint16_t)sizeof(sSysTaskStack), (uint16_t)FF_SYS_MON_PERIOD,
+        (uint8_t)FF_SYS_TASK_PRIO);
 }
 
 void sysCreateSystemTask(void)
@@ -56,6 +62,14 @@ void sysRegisterMonFunc(SYS_MON_FUNC_t func) { UNUSED(func); }
 
 #define SYS_TASK_PERIOD 1000
 
+#if (FF_SYS_SW_WATCHDOG > 0)
+static uint8_t sSysSwWatchdogCount;
+void sysAssertSwWatchdog(void)
+{
+    sSysSwWatchdogCount = 0;
+}
+#endif
+
 static void sSysTask(void *pArg)
 {
     UNUSED(pArg);
@@ -71,6 +85,16 @@ static void sSysTask(void *pArg)
 
         hwAssertWatchdog();
         period++;
+
+#if (FF_SYS_SW_WATCHDOG > 0)
+        sSysSwWatchdogCount++;
+        if (sSysSwWatchdogCount >= FF_SYS_SW_WATCHDOG)
+        {
+            ERROR("sys: sw watchdog");
+            osTaskDelay(100);
+            hwPanic(HW_PANIC_SYS, 0x01, 0x00);
+        }
+#endif
 
         /* ***** stuff to be done every FF_SYS_MON_PERIOD seconds ***** */
 

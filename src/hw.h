@@ -117,7 +117,8 @@ typedef enum HW_PANIC_e
     HW_PANIC_NONE           = 0,  //!< null problemo
     HW_PANIC_HW             = 1,  //!< \ref HW problem (blinks two times)
     HW_PANIC_OS             = 2,  //!< \ref OS problem (blinks three times)
-    HW_PANIC_OTHER          = 3,  //!< other problem (blinks four times)
+    HW_PANIC_SYS            = 3,  //!< \ref SYS problem (blinks four times)
+    HW_PANIC_OTHER          = 4,  //!< other problem (blinks four times)
 } HW_PANIC_t;
 
 //! panic! (and display load LED blink code)

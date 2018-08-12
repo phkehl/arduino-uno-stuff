@@ -29,6 +29,9 @@
 
 /* ************************************************************************** */
 
+//#define GFX_CHECK_BOUNDS
+
+
 static GFX_DRV_t sGfxDrv;
 
 void gfxInit(const GFX_DRV_t *pDrv)
@@ -66,15 +69,19 @@ inline void gfxPixel(int16_t x, int16_t y, GFX_COLOUR_t colour)
 
 void gfxLineH(int16_t x, int16_t y, int16_t w, GFX_COLOUR_t colour)
 {
+#ifndef GFX_CHECK_BOUNDS
     if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) || (w < 0) )
     {
         return;
     }
+#endif
     int16_t x1 = x + w;
+#ifndef GFX_CHECK_BOUNDS
     if (x1 >= gfxWidth())
     {
         x1 = gfxWidth() - 1;
     }
+#endif
     for (; x <= x1; x++)
     {
         gfxPixel(x, y, colour);
@@ -83,15 +90,19 @@ void gfxLineH(int16_t x, int16_t y, int16_t w, GFX_COLOUR_t colour)
 
 void gfxLineV(int16_t x, int16_t y, int16_t h, GFX_COLOUR_t colour)
 {
+#ifndef GFX_CHECK_BOUNDS
     if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) || (h < 0) )
     {
         return;
     }
+#endif
     int16_t y1 = y + h;
+#ifndef GFX_CHECK_BOUNDS
     if (y1 >= gfxHeight())
     {
         y1 = gfxHeight() - 1;
     }
+#endif
     for (; y <= y1; y++)
     {
         gfxPixel(x, y, colour);
@@ -100,10 +111,12 @@ void gfxLineV(int16_t x, int16_t y, int16_t h, GFX_COLOUR_t colour)
 
 void gfxRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour)
 {
+#ifndef GFX_CHECK_BOUNDS
     if ( (x0 < 0) || (y0 < 0) || (x1 <= x0) || (y1 <= y0) )
     {
         return;
     }
+#endif
     gfxLineV(x0, y0, y1 - y0, colour);
     gfxLineV(x1, y0, y1 - y0, colour);
     gfxLineH(x0, y0, x1 - x0, colour);
@@ -112,10 +125,12 @@ void gfxRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour
 
 void gfxFill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour)
 {
+#ifndef GFX_CHECK_BOUNDS
     if ( (x0 < 0) || (y0 < 0) || (x1 <= x0) || (y1 <= y0) )
     {
         return;
     }
+#endif
     for (int16_t x = x0; x <= x1; x++)
     {
         for (int16_t y = y0; y <= y1; y++)
@@ -131,17 +146,21 @@ void gfxFill(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour
 // modified code from Adafruit_GFX::writeLine(), (c) Adafruit (see header)
 void gfxLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour)
 {
+#ifndef GFX_CHECK_BOUNDS
     if ( (x0 < 0) || (x0 >= gfxWidth())  || (x1 < 0) || (x1 >= gfxWidth()) ||
          (y0 < 0) || (y0 >= gfxHeight()) || (y1 < 0) || (y1 >= gfxHeight()) )
     {
         return;
     }
+#endif
     int16_t dx = x1 - x0;
     int16_t dy = y1 - y0;
+#ifndef GFX_CHECK_BOUNDS
     if ( (dx < 1) || (dy < 1) )
     {
         return;
     }
+#endif
     if (dx == 1)
     {
         gfxLineV(x0, y0, dy, colour);
@@ -200,6 +219,7 @@ void gfxLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour
 
 static void sGfxPrint5x7(uint8_t size, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
 {
+#ifndef GFX_CHECK_BOUNDS
     // skip early, gfxPixel() will take care of the precise bounds
     if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) )
     {
@@ -209,6 +229,7 @@ static void sGfxPrint5x7(uint8_t size, int16_t x, int16_t y, GFX_COLOUR_t fg, GF
     {
         return;
     }
+#endif
     const int iLen = strlen(str);
     if ( (iLen > 255) || (iLen < 1) )
     {

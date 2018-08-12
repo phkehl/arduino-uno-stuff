@@ -64,6 +64,9 @@ typedef struct GFX_DRV_s
     \param[in] pDrv  pointer to the driver structure
 
     \note This must be called before any of the other functions may be called.
+
+    \note None of the gfx functions check coordinate bounds. Make sure that the
+          \ref GFX_DRV_PIXEL_FUNC_t does check bounds if necessary.
 */
 void gfxInit(const GFX_DRV_t *pDrv);
 

@@ -40,6 +40,9 @@ void i2cInit(void)
         TWSR = 0; // prescaler = 1 (TWPS1 = 0, TWPS0 = 0)
         TWBR = (((uint32_t)F_CPU / ((uint32_t)(FF_I2C_MASTER_SPEED) * 1000)) - 16) / (2 * 1);
 
+        PIN_PULLUP_ON(_A4);
+        PIN_PULLUP_ON(_A5);
+
         sInitDone = true;
     }
 }

@@ -68,7 +68,7 @@ void si7021Init(void)
     uint8_t reg;
     i2cRead(1, &reg);
     i2cStop();
-    DEBUG("reg=0x%"PRIx8" 0x%"PRIx8, reg, reg & 0xc5);
+    //DEBUG("reg=0x%"PRIx8" 0x%"PRIx8, reg, reg & 0xc5);
 
     // no or wrong sensor, see datasheet register description
     if (reg != 0x3a)

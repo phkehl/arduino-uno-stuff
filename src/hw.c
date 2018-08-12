@@ -730,10 +730,12 @@ static void sHwRandomInit(void)
     DEBUG("hw: seed 0x%08"PRIx32" (RAM)", mSeed);
 #  endif // (FF_HW_RANDSEED == 2) || (FF_HW_RANDSEED == 99)
 
-
-
 #endif // (FF_HW_RANDSEED > 0)
-    DEBUG("hw: seed 0x%08"PRIx32" ("STRINGIFY(FF_HW_RANDSEED)")", seed);
+
+#if (FF_HW_RANDSEED == 99)
+    DEBUG("hw: seed 0x%08"PRIx32" (combined)", seed);
+#endif
+
     srandom(seed);
 }
 

@@ -16,10 +16,11 @@
 // use the built-in LED for the system load and status
 #define FF_HW_LOAD_PIN _D13
 
-// allow more debugging output
-#define FF_HW_TX_BUFSIZE  250
-#define FF_SYS_MON_STRLEN 128
-#define FF_SYS_TASK_STACK 350
+#define FF_APP_STACK_SIZE 200
+#define FF_HW_TX_BUFSIZE  100
+#define FF_SYS_MON_STRLEN 50
+#define FF_SYS_TASK_STACK 260
+#define FF_OS_IDLE_STACK  80
 
 // gain some memory by disabling serial port receive1
 #define FF_HW_RX_BUFSIZE 0

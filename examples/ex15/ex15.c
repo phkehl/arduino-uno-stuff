@@ -84,7 +84,7 @@ static void sAppTask(void *pArg)
         gfxPixel(0, gfxHeight() - 1, GFX_BLACK);
         gfxPixel(gfxWidth() - 1, gfxHeight() - 1, GFX_BLACK);
 
-        gfxPrint(GFX_FONT_5X7, 17, 2, 1, GFX_BLACK, GFX_TRANS, "Hallo!");
+        gfxPrint(GFX_FONT_5X7_1, 17, 2, GFX_BLACK, GFX_TRANS, "Hallo!");
         gfxLineH(17, 2 + 7 + 1, 6 * 5 + 5 * 1, GFX_BLACK);
 
         gfxLineV(gfxWidth() - 2, 5, 30, GFX_BLACK);
@@ -95,7 +95,7 @@ static void sAppTask(void *pArg)
         gfxFill(25, 13, 51, 22, GFX_BLACK);
         char str[10];
         snprintf(str, sizeof(str), "%4"PRIu32, sAppCnt);
-        gfxPrint(GFX_FONT_5X7, 27, 14, 1, GFX_WHITE, GFX_TRANS, str);
+        gfxPrint(GFX_FONT_5X7_1, 27, 14, GFX_WHITE, GFX_TRANS, str);
 
         gfxLine(10, 24, 55, 30, GFX_BLACK);
         gfxLine(10, 26, 55, 35, GFX_BLACK);
@@ -109,7 +109,7 @@ static void sAppTask(void *pArg)
         gfxPixel(0, 42, GFX_BLACK);
         gfxPixel(0, 44, GFX_BLACK);
         gfxPixel(0, 46, GFX_BLACK);
-        gfxPrint(GFX_FONT_5X7, 2, 32, 2, GFX_BLACK, GFX_TRANS, "Xx");
+        gfxPrint(GFX_FONT_5X7_2, 2, 32, GFX_BLACK, GFX_TRANS, "Xx");
 
         gfxFill(28 + 0, 40 + 0, 29 + 0, 41 + 0, GFX_BLACK);
         gfxFill(28 + 3, 40 + 2, 29 + 3, 41 + 2, GFX_BLACK);

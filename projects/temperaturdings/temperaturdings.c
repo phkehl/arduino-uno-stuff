@@ -62,7 +62,7 @@ void appInit(void)
 // starts the user application task
 void appCreateTask(void)
 {
-    static uint8_t stack[350];
+    static uint8_t stack[FF_APP_STACK_SIZE];
     static OS_TASK_t task;
     osTaskCreate("app", 5, &task, stack, sizeof(stack), sAppTask, NULL);
 }
@@ -81,7 +81,7 @@ static uint16_t sLastMeasT = SI7021_NODATA;
 static uint32_t sLastMeasTime = 0;
 
 // measurements of the last minute
-#define MEAS_PER_MIN 5 // (60 * 1000 / MEAS_PERIOD)
+#define MEAS_PER_MIN (60 * (uint16_t)1000 / MEAS_PERIOD)
 static uint16_t sMinuteMeasH[MEAS_PER_MIN];
 static uint16_t sMinuteMeasT[MEAS_PER_MIN];
 static uint16_t sMinuteMeasIx;
@@ -93,7 +93,7 @@ static uint16_t sMinuteMinT;
 static uint16_t sMinuteMaxT;
 
 // minute measurements of last last hour
-#define MIN_PER_HOUR 4 // 60
+#define MIN_PER_HOUR 60
 static uint16_t sHourMeasH[MIN_PER_HOUR];
 static uint16_t sHourMeasT[MIN_PER_HOUR];
 static uint16_t sHourMeasIx;
@@ -105,7 +105,7 @@ static uint16_t sHourMinT;
 static uint16_t sHourMaxT;
 
 // hour measurements of last last day
-#define HOUR_PER_DAY 5 // 24
+#define HOUR_PER_DAY 24
 static uint16_t sDayMeasH[HOUR_PER_DAY];
 static uint16_t sDayMeasT[HOUR_PER_DAY];
 static uint16_t sDayMeasIx;
@@ -417,11 +417,11 @@ static void sDisplayHello(void)
 {
     gfxClear();
     gfxRect(0, 0, gfxWidth() - 1, 33 /*gfxHeight() - 1*/, GFX_BLACK);
-    gfxPrint(GFX_FONT_5X7,  3,  3, 1, GFX_BLACK, GFX_TRANS, "Temperatur");
-    gfxPrint(GFX_FONT_5X7, 17, 11, 1, GFX_BLACK, GFX_TRANS, "Dings");
+    gfxPrint(GFX_FONT_5X7_1,  3,  3, GFX_BLACK, GFX_TRANS, "Temperatur");
+    gfxPrint(GFX_FONT_5X7_1, 17, 11, GFX_BLACK, GFX_TRANS, "Dings");
     //gfxLineH(0, 20, gfxWidth(), GFX_BLACK);
-    gfxPrint(GFX_FONT_5X7, 11, 23, 1, GFX_BLACK, GFX_TRANS, "(c) ffi");
-    gfxPrint(GFX_FONT_5X7, 9, 41, 1, GFX_BLACK, GFX_TRANS, FF_BUILDVER);
+    gfxPrint(GFX_FONT_5X7_1, 11, 23, GFX_BLACK, GFX_TRANS, "(c) ffi");
+    gfxPrint(GFX_FONT_5X7_1, 9, 41, GFX_BLACK, GFX_TRANS, FF_BUILDVER);
     gfxUpdate();
 }
 
@@ -430,22 +430,38 @@ static void sDisplayData(void)
     gfxClear();
     static char strH[10];
     static char strT[10];
-    uint8_t fH, fT;
+    uint8_t fracH, fracT;
     bool haveData = false;
     if (osMutexClaim(&sMeasMx, 50))
     {
         haveData = true;
-        snprintf_P(strH, sizeof(strH), PSTR("%.2f"), (float)sLastMeasH * 0.01f);
-        snprintf_P(strT, sizeof(strT), PSTR("%.2f"), (float)sLastMeasT * 0.01f);
-        fH = sLastMeasH % 10;
-        fT = sLastMeasT % 10;
+        if (sLastMeasH != SI7021_NODATA)
+        {
+            snprintf_P(strH, sizeof(strH), PSTR("%.2f"), (float)sLastMeasH * 0.01f);
+            fracH = sLastMeasH % 10;
+        }
+        else
+        {
+            strcpy_P(strH, PSTR("fail"));
+            fracH = 0;
+        }
+        if (sLastMeasT != SI7021_NODATA)
+        {
+            snprintf_P(strT, sizeof(strT), PSTR("%.2f"), (float)sLastMeasT * 0.01f);
+            fracT = sLastMeasT % 10;
+        }
+        else
+        {
+            strcpy_P(strT, PSTR("fail"));
+            fracT = 0;
+        }
         osMutexRelease(&sMeasMx);
     }
     else
     {
         WARNING("meas mx (disp)");
-        fH = 0;
-        fT = 0;
+        fracH = 0;
+        fracT = 0;
         strcpy_P(strH, PSTR("????"));
         strcpy_P(strT, PSTR("????"));
     }
@@ -454,24 +470,35 @@ static void sDisplayData(void)
     strH[4] = '\0'; // FIXME: can be 100.00
     strT[4] = '\0';
 
-    gfxPrint(GFX_FONT_5X7,  0,  7, 1, GFX_BLACK, GFX_TRANS, "R");
-    gfxPrint(GFX_FONT_5X7, 10,  0, 2, GFX_BLACK, GFX_TRANS, strH);
-    if (haveData)
-    {
-        char str[2] = { '0' + fH, '\0' };
-        gfxPrint(GFX_FONT_5X7, 58, 7, 1, GFX_BLACK, GFX_TRANS, str);
-    }
-    gfxPrint(GFX_FONT_5X7,  0, 25, 1, GFX_BLACK, GFX_TRANS, "T");
-    gfxPrint(GFX_FONT_5X7, 10, 18, 2, GFX_BLACK, GFX_TRANS, strT);
-    if (haveData)
-    {
-        char str[2] = { '0' + fT, '\0' };
-        gfxPrint(GFX_FONT_5X7, 58, 25, 1, GFX_BLACK, GFX_TRANS, str);
-    }
+    // render things
+    int16_t y = 0;
 
+    // humidty
+    gfxPrint(GFX_FONT_5X7_1,  0,  y + 7, GFX_BLACK, GFX_TRANS, "R");
+    gfxPrint(GFX_FONT_5X7_2, 10,  y,     GFX_BLACK, GFX_TRANS, strH);
+    if (haveData)
+    {
+        char str[2] = { '0' + fracH, '\0' };
+        gfxPrint(GFX_FONT_5X7_1, 58, y + 7, GFX_BLACK, GFX_TRANS, str);
+    }
+    y += (2 * 7);
+
+    // temperature
+    y += 2;
+    gfxPrint(GFX_FONT_5X7_1,  0, y + 7, GFX_BLACK, GFX_TRANS, "T");
+    gfxPrint(GFX_FONT_5X7_2, 10, y,     GFX_BLACK, GFX_TRANS, strT);
+    if (haveData)
+    {
+        char str[2] = { '0' + fracT, '\0' };
+        gfxPrint(GFX_FONT_5X7_1, 58, y + 7, GFX_BLACK, GFX_TRANS, str);
+    }
+    y += (2 * 7);
+
+    // measurement count
+    y = gfxHeight() - 1 - 7;
     static char cStr[10];
     snprintf_P(cStr, sizeof(cStr), PSTR("%"PRIu32), sMeasCnt);
-    gfxPrint(GFX_FONT_5X7, 0, 41, 1, GFX_BLACK, GFX_TRANS, cStr);
+    gfxPrint(GFX_FONT_5X7_1, 0, y, GFX_BLACK, GFX_TRANS, cStr);
 
     gfxUpdate();
 }
@@ -505,8 +532,11 @@ static void sAppTask(void *pArg)
         // do measurement and update statistics
         if (osMutexClaim(&sMeasMx, 500))
         {
+            DEBUG("m");
             sMeasurement();
+            DEBUG("u");
             sUpdateStats();
+            DEBUG("d");
 
             osMutexRelease(&sMeasMx);
         }
@@ -536,11 +566,14 @@ static void sAppStatus(char *str, const size_t size)
 {
     if (osMutexClaim(&sMeasMx, 50))
     {
+        //snprintf_P(str, size,
+        //    PSTR("sAppCnt=%"PRIu32", sMeasCnt=%"PRIu32", RH=%.2f (%.2f, %.2f, %.2f), T=%.2f (%.2f, %.2f, %.2f)"),
+        //    sAppCnt, sMeasCnt,
+        //    (float)sLastMeasH * 0.01f, (float)sMinuteAvgH * 0.01f, (float)sHourAvgH * 0.01f, (float)sDayAvgH * 0.01f,
+        //    (float)sLastMeasT * 0.01f, (float)sMinuteAvgT * 0.01f, (float)sHourAvgT * 0.01f, (float)sDayAvgT * 0.01f);
         snprintf_P(str, size,
-            PSTR("sAppCnt=%"PRIu32", sMeasCnt=%"PRIu32", RH=%.2f (%.2f, %.2f, %.2f), T=%.2f (%.2f, %.2f, %.2f)"),
-            sAppCnt, sMeasCnt,
-            (float)sLastMeasH * 0.01f, (float)sMinuteAvgH * 0.01f, (float)sHourAvgH * 0.01f, (float)sDayAvgH * 0.01f,
-            (float)sLastMeasT * 0.01f, (float)sMinuteAvgT * 0.01f, (float)sHourAvgT * 0.01f, (float)sDayAvgT * 0.01f);
+            PSTR("sAppCnt=%"PRIu32", sMeasCnt=%"PRIu32", H=%.1f, T=%.1f"),
+            sAppCnt, sMeasCnt, (float)sMinuteAvgH * 0.01f, (float)sMinuteAvgT * 0.01f);
         osMutexRelease(&sMeasMx);
     }
     else

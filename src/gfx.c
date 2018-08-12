@@ -198,7 +198,7 @@ void gfxLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour
     }
 }
 
-static void sGfxPrint5x7(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
+static void sGfxPrint5x7(uint8_t size, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
 {
     // skip early, gfxPixel() will take care of the precise bounds
     if ( (x < 0) || (y < 0) || (x >= gfxWidth()) || (y >= gfxHeight()) )
@@ -248,12 +248,18 @@ static void sGfxPrint5x7(int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t fg, GF
     }
 }
 
-void gfxPrint(GFX_FONT_t font, int16_t x, int16_t y, uint8_t size, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
+void gfxPrint(GFX_FONT_t font, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
 {
     switch (font)
     {
-        case GFX_FONT_5X7:
-            sGfxPrint5x7(x, y, size, fg, bg, str);
+        case GFX_FONT_5X7_1:
+            sGfxPrint5x7(1, x, y, fg, bg, str);
+            break;
+        case GFX_FONT_5X7_2:
+            sGfxPrint5x7(2, x, y, fg, bg, str);
+            break;
+        case GFX_FONT_5X7_3:
+            sGfxPrint5x7(3, x, y, fg, bg, str);
             break;
     }
 }

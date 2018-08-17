@@ -28,18 +28,18 @@
 // forward declarations
 static void sAppStatus(char *str, const size_t size);
 static void sAppTask(void *pArg);
-
+#include "i2c.h"
 // initialise the user application
 void appInit(void)
 {
     DEBUG("ex14: init");
 
-    si7021Init();
+    //si7021Init();
+    i2cInit();
 
     // register status function for the system task
     sysRegisterMonFunc(sAppStatus);
 }
-
 
 // starts the user application task
 void appCreateTask(void)
@@ -62,6 +62,16 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+    osTaskDelay(100);
+
+    while (ENDLESS)
+    {
+        sAppCnt++;
+        DEBUG("cnt=%"PRIu32, i2cCnt());
+
+        osTaskDelay(1000);
+    }
+#if 0
     // keep running...
     while (ENDLESS)
     {
@@ -72,12 +82,14 @@ static void sAppTask(void *pArg)
         uint16_t hum2, temp2;
         si7021MeasHumidityAndTemperature(&hum2, &temp2);
 
-        DEBUG("RH=%.2f (%.2f), T=%.2f (%.2f)",
+        DEBUG("RH=%.2f (%.2f), T=%.2f (%.2f) cnt=%"PRIu32,
             (float)hum1 * 0.01f, (float)hum2 * 0.01f,
-            (float)temp1 * 0.01f, (float)temp2 * 0.01f);
+            (float)temp1 * 0.01f, (float)temp2 * 0.01f,
+            i2cCnt());
 
-        osTaskDelay(987);
+        osTaskDelay(1000);
     }
+#endif
 }
 
 

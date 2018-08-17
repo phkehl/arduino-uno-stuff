@@ -29,6 +29,8 @@
 
 /* *************************************************************************** */
 
+uint32_t i2cCnt(void);
+
 //! initialise things
 void i2cInit(void);
 
@@ -61,6 +63,11 @@ bool i2cWrite(const uint8_t data);
     \returns true unless an error was encountered (e.g. bus arbitration lost)
 */
 bool i2cRead(const uint8_t num, uint8_t *pData);
+
+
+bool i2cTransmit(const uint8_t *data, const uint8_t len, const bool cont);
+
+#define I2C_WRITE_ADDR(addr) ( (((addr) << 1) & 0xfe) | (0 /* = TW_WRITE */) )
 
 /* *************************************************************************** */
 

@@ -365,6 +365,7 @@ $(OBJDIR)/$(IMGNAME).size: $(OBJDIR)/$(IMGNAME).elf
 	$(V)$(SIZE) -Bd $(OFILES) >> $@
 	$(V)if [ "$(SIZES)" -ge 1 ]; then $(SIZE) -AC $(OBJDIR)/$(IMGNAME).elf; fi
 
+
 # .lss from .elf (extended listing)
 %.lss: %.elf
 	@echo "$(HLV)G $@$(HLO)"
@@ -382,9 +383,12 @@ $(OBJDIR)/$(IMGNAME).size: $(OBJDIR)/$(IMGNAME).elf
 
 # .hex/.srec/.bin from .elf
 OBJCOPYIMG := $(OBJCOPY) # -j .text -j .data
-%.hex: %.elf
+
+%.hex: %.elf $(FFDIR)/tools/checksize.awk
 	@echo "$(HLV)G $@$(HLO)"
 	$(V)$(OBJCOPYIMG) -O ihex $< $@
+	$(V)$(SIZE) -AC $< | $(AWK) -f $(FFDIR)/tools/checksize.awk
+
 %.srec: %.elf
 	@echo "$(HLV)G $@$(HLO)"
 	$(V)$(OBJCOPYIMG) -O srec $< $@

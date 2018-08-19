@@ -125,7 +125,7 @@ void si7021Init(void)
         sn1, sn2, fw >> 4, fw & 0x0f);
 }
 
-uint16_t si7021MeasHumidity(void)
+int16_t si7021MeasHumidity(void)
 {
     if (!sSi7021Ready)
     {
@@ -146,12 +146,12 @@ uint16_t si7021MeasHumidity(void)
     }
 
     const uint16_t raw = ((uint16_t)resp[0] << 8) | resp[1];
-    const uint16_t hum = (((uint32_t)raw * (125 * 100)) / 65536) - 600;
+    const int16_t hum = (((int32_t)raw * (125 * 100)) / 65536) - 600;
 
     return CLIP(hum, 0, 10000);
 }
 
-uint16_t si7021MeasTemperature(void)
+int16_t si7021MeasTemperature(void)
 {
     if (!sSi7021Ready)
     {
@@ -172,14 +172,14 @@ uint16_t si7021MeasTemperature(void)
     }
 
     const uint16_t raw = ((uint16_t)resp[0] << 8) | resp[1];
-    const uint16_t temp = (((uint32_t)raw * (uint32_t)(175.72 * 100)) / 65536) - (uint32_t)(46.85 * 100);
+    const int16_t temp = (((int32_t)raw * (int32_t)(175.72 * 100)) / 65536) - (int32_t)(46.85 * 100);
 
-    return temp;
+    return CLIP(temp, -4600, 12800);
 }
 
 
 
-bool si7021MeasHumidityAndTemperature(uint16_t *pHum, uint16_t *pTemp)
+bool si7021MeasHumidityAndTemperature(int16_t *pHum, int16_t *pTemp)
 {
     if (!sSi7021Ready)
     {

@@ -67,12 +67,12 @@ static void sAppTask(void *pArg)
     {
         sAppCnt++;
 
-        const uint16_t hum1  = si7021MeasHumidity();
-        const uint16_t temp1 = si7021MeasTemperature();
-        uint16_t hum2, temp2;
+        const int16_t hum1  = si7021MeasHumidity();
+        const int16_t temp1 = si7021MeasTemperature();
+        int16_t hum2, temp2;
         si7021MeasHumidityAndTemperature(&hum2, &temp2);
 
-        DEBUG("RH=%.2f (%.2f), T=%.2f (%.2f)",
+        DEBUG("H=%.2f (%.2f), T=%.2f (%.2f)",
             (float)hum1 * 0.01f, (float)hum2 * 0.01f,
             (float)temp1 * 0.01f, (float)temp2 * 0.01f);
 

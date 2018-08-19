@@ -32,19 +32,19 @@
 void si7021Init(void);
 
 //! temperature or humidity value to indicate no data available
-#define SI7021_NODATA 0xffff
+#define SI7021_NODATA 0x7fff /* = 32767 = INT16_MAX */
 
 //! measure relative humidity
 /*!
-    \returns the relative humidity value [0.01%], or #SI7021_NODATA on error
+    \returns the relative humidity value [0.01%], value 0..10000 or #SI7021_NODATA on error
 */
-uint16_t si7021MeasHumidity(void);
+int16_t si7021MeasHumidity(void);
 
 //! measure temperature
 /*!
-    \returns the temperature value [0.01C], or #SI7021_NODATA on error
+    \returns the temperature value [0.01C], value -4600..12800 or #SI7021_NODATA on error
 */
-uint16_t si7021MeasTemperature(void);
+int16_t si7021MeasTemperature(void);
 
 
 //! measure relative humidity and temperature at the same time
@@ -53,7 +53,7 @@ uint16_t si7021MeasTemperature(void);
     \param[out] pTemp  the temperature value [0.01C], or #SI7021_NODATA on error
     \returns true if both measurements are available
 */
-bool si7021MeasHumidityAndTemperature(uint16_t *pHum, uint16_t *pTemp);
+bool si7021MeasHumidityAndTemperature(int16_t *pHum, int16_t *pTemp);
 
 
 #endif // __SI7021_H__

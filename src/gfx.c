@@ -217,7 +217,7 @@ void gfxLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, GFX_COLOUR_t colour
     }
 }
 
-static void sGfxPrint5x7(uint8_t size, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
+static void sGfxPrint5x7(uint8_t size, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str, const bool isProgMem)
 {
 #ifndef GFX_CHECK_BOUNDS
     // skip early, gfxPixel() will take care of the precise bounds
@@ -230,7 +230,7 @@ static void sGfxPrint5x7(uint8_t size, int16_t x, int16_t y, GFX_COLOUR_t fg, GF
         return;
     }
 #endif
-    const int iLen = strlen(str);
+    const int iLen = isProgMem ? strlen_P(str) : strlen(str);
     if ( (iLen > 255) || (iLen < 1) )
     {
         return;
@@ -239,7 +239,7 @@ static void sGfxPrint5x7(uint8_t size, int16_t x, int16_t y, GFX_COLOUR_t fg, GF
     for (uint8_t strIx = 0; strIx < len; strIx++)
     {
         // draw character...
-        uint8_t *bitmap = adaGfxFontChar(str[strIx]);
+        uint8_t *bitmap = adaGfxFontChar( isProgMem ? pgm_read_byte(&str[strIx]) : str[strIx] );
         for (uint8_t bitmapIx = 0; bitmapIx < 5; bitmapIx++)
         {
             // ...row by row
@@ -274,13 +274,29 @@ void gfxPrint(GFX_FONT_t font, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR
     switch (font)
     {
         case GFX_FONT_5X7_1:
-            sGfxPrint5x7(1, x, y, fg, bg, str);
+            sGfxPrint5x7(1, x, y, fg, bg, str, false);
             break;
         case GFX_FONT_5X7_2:
-            sGfxPrint5x7(2, x, y, fg, bg, str);
+            sGfxPrint5x7(2, x, y, fg, bg, str, false);
             break;
         case GFX_FONT_5X7_3:
-            sGfxPrint5x7(3, x, y, fg, bg, str);
+            sGfxPrint5x7(3, x, y, fg, bg, str, false);
+            break;
+    }
+}
+
+void gfxPrint_P(GFX_FONT_t font, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str)
+{
+    switch (font)
+    {
+        case GFX_FONT_5X7_1:
+            sGfxPrint5x7(1, x, y, fg, bg, str, true);
+            break;
+        case GFX_FONT_5X7_2:
+            sGfxPrint5x7(2, x, y, fg, bg, str, true);
+            break;
+        case GFX_FONT_5X7_3:
+            sGfxPrint5x7(3, x, y, fg, bg, str, true);
             break;
     }
 }

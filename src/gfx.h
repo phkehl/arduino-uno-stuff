@@ -169,6 +169,20 @@ typedef enum GFX_FONT_e
 */
 void gfxPrint(GFX_FONT_t font, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str);
 
+//! print a string from progmem
+/*!
+    Characters are 5 [px] wide and 7 [px] tall. Individual characters are separated by 1 [px].
+    The \c size will scales these accordingly.
+
+    \param[in] font    the font to use
+    \param[in] x       x coordinate of top left corner of the first letter
+    \param[in] y       y coordinate of top left corner of the first letter
+    \param[in] fg      foreground colour (letter outlines)
+    \param[in] bg      background colour
+    \param[in] str     the string
+*/
+void gfxPrint_P(GFX_FONT_t font, int16_t x, int16_t y, GFX_COLOUR_t fg, GFX_COLOUR_t bg, const char *str);
+
 /* *************************************************************************** */
 
 #endif // __GFX_H__

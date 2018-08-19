@@ -401,7 +401,7 @@ __FORCEINLINE void hwLedLoadOff(void) { }
 /* ***** exception handling & reset debugging ******************************* */
 
 #ifndef __DOXYGEN__ // STFU
-const const char skHwPanicStr[][6] PROGMEM =
+static const char skHwPanicStr[][6] PROGMEM =
 {
     { "NONE\0" }, { "HW\0" }, { "OS\0" }, { "SYS\0" }, { "OTHER\0" }
 };

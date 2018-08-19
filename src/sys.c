@@ -26,9 +26,9 @@ static void sSysTask(void *pArg);
 
 void sysInit(void)
 {
-    DEBUG("sys: init (stack %"PRIu16", mon %"PRIu16", prio "PRIu8")",
+    DEBUG("sys: init (stack %"PRIu16", mon %"PRIu16", prio %"PRIu8", wd %"PRIu8")",
         (uint16_t)sizeof(sSysTaskStack), (uint16_t)FF_SYS_MON_PERIOD,
-        (uint8_t)FF_SYS_TASK_PRIO);
+        (uint8_t)FF_SYS_TASK_PRIO, (uint8_t)FF_SYS_SW_WATCHDOG);
 }
 
 void sysCreateSystemTask(void)

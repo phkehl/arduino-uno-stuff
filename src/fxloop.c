@@ -1,6 +1,6 @@
 /*!
     \file
-    \brief flipflip's Arduino Uno stuff: template (see \ref FXLOOP)
+    \brief flipflip's Arduino Uno stuff: effect loops (see \ref FXLOOP)
 
     - Copyright (c) 2016 Philippe Kehl (flipflip at oinkzwurgl dot org)
 

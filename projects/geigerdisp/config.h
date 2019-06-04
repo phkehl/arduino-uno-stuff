@@ -13,7 +13,7 @@
 
 /* *************************************************************************** */
 
-#define FF_HW_LOAD_PIN        _NONE // _D13
+#define FF_HW_LOAD_PIN        _D13 // same as DL_PIN_CUE, but no problem as long as we don't load a cursor (which we don't do)
 #define FF_HW_TICK_PIN        _NONE // _A1
 
 #define FF_HW_RXTX_BAUDRATE   9600

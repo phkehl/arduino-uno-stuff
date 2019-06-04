@@ -35,7 +35,7 @@ my $inputFunc = undef;
 if ($ARGV[0] && ($ARGV[0] =~ m@^(/dev/[^:]+|COM\d)(?::(\d+)|)$@))
 {
     my $port = $1;
-    my $br = $2 || 115200;
+    my $br = $2 || $ARGV[1] || 115200;
     printf("serial port: [%s] [%s]\n", $port, $br);# if ($debug);
     unless ($inputFunc = createHandleSerial($port, $br))
     {

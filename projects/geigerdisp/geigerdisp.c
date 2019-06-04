@@ -12,11 +12,13 @@
 
 #include "stdstuff.h"      // ff: useful macros and types
 #include "arduinopins.h"   // ff: Arduino pins
+#include "config.h"        // ff: configuration
 #include "debug.h"         // ff: debugging output facility
 #include "os.h"            // ff: operating system abstractions
 #include "hw.h"            // ff: hardware abstraction
 #include "sys.h"           // ff: system task
 
+#include "dl2416t.h"
 #include "geigerdisp.h"
 
 
@@ -28,6 +30,19 @@ static void sAppTask(void *pArg)
     // not using the task argument
     UNUSED(pArg);
 
+    dl2416tBlank(false);
+
+    dl2416tClear();
+    dl2416tStrScroll_P(PSTR("    (-: Geiger Counter :-)    "), 250);
+    dl2416tStr_P(PSTR("(c)"), 0, 4);
+    osTaskDelay(500);
+    dl2416tStr_P(PSTR("ffi"), 0, 4);
+    osTaskDelay(1000);
+    dl2416tStr_P(PSTR("2019"), 0, 4);
+    osTaskDelay(500);
+
+    dl2416tClear();
+
     static char    lineBuf[100];
     static uint8_t lineIx;
 
@@ -38,6 +53,7 @@ static void sAppTask(void *pArg)
         if (nRx == 0)
         {
             WARNING("no data!");
+            dl2416tStr_P(PSTR("????"), 0, 4);
             continue;
         }
 
@@ -65,12 +81,33 @@ static void sAppTask(void *pArg)
     }
 }
 
+static void sWriteDisplay(const char c, const uint16_t v)
+{
+    dl2416tWrite(0, c);
+    if (v < 10)
+    {
+        dl2416tWrite(2, '.');
+        dl2416tWrite(1, '.');
+        dl2416tUnsigned(v, 3, 1);
+    }
+    else if (v < 100)
+    {
+        dl2416tWrite(1, '.');
+        dl2416tUnsigned(v, 2, 2);
+    }
+    else
+    {
+        dl2416tUnsigned(v, 1, 3);
+    }
+}
+
 static void sProcessGeigerLine(const char *line)
 {
     const int len = strlen(line);
     if (len < 1)
     {
         WARNING("no line!");
+        sWriteDisplay('?', 0);
         return;
     }
     DEBUG("%s", line);
@@ -88,6 +125,16 @@ static void sProcessGeigerLine(const char *line)
     if (sscanf(line, "CPS, %"PRIu16", CPM, %"PRIu16, &cps, &cpm) == 2)
     {
         DEBUG("cps=%"PRIu16" cpm=%"PRIu16, cps, cpm);
+        static uint16_t lastCps;
+        if ( (lastCps == 0) && (cps == 0) )
+        {
+            sWriteDisplay('M', cpm);
+        }
+        else
+        {
+            sWriteDisplay('S', cps);
+        }
+        lastCps = cps;
     }
     else
     {
@@ -95,12 +142,11 @@ static void sProcessGeigerLine(const char *line)
     }
 }
 
-
-
 // initialise the user application
 void appInit(void)
 {
     DEBUG("geigerdisp: init");
+    dl2416tInit();
 }
 
 // starts the user application tasks

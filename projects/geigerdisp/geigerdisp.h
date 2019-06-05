@@ -7,6 +7,9 @@
     \defgroup PROJECTS_GEIGERDISP Geiger Counter display
     \ingroup PROJECTS
 
+    <img src="../../projects/geigerdisp/geiger1.jpg"/>
+    <img src="../../projects/geigerdisp/geiger2.jpg"/>
+
     @{
 */
 

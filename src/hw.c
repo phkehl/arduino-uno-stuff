@@ -479,10 +479,12 @@ void hwPanic(const HW_PANIC_t reason, const uint32_t u0, const uint32_t u1)
 
         ERROR("RESET");
 
-        //void(* reset) (void) = 0;
-        //reset();
-
+#ifdef BROKEN_WDT_RESET
+        hwReset(HW_RESET_SOFT);
+#else
         hwReset(HW_RESET_HARD);
+#endif
+
     }
 }
 
@@ -493,21 +495,29 @@ uint8_t MCUSR_mirror __SECTION(.noinit);
 void get_mcusr(void) __NAKED __SECTION(.init3);
 void get_mcusr(void)
 {
+    // FIXME: something doesn't quite work here.. :-/
     if (MCUSR_mirror == 0)
     {
         // save and clear the MCU status register
         MCUSR_mirror = MCUSR;
     }
     MCUSR = 0;
+    // CLRBITS(MCUSR, BIT(WDRF));
 }
-// s.a. wdt_init()
+
+// disable watchdog early, we may have used it to do a hard reset
+// (the bootload will have to do this in case we have one)
+// s.a. get_mcusr()
+void wdt_init(void) __NAKED __SECTION(.init3);
+void wdt_init(void)
+{
+    wdt_disable();
+}
 
 // https://github.com/Optiboot/optiboot/issues/97
-//uint8_t MCUSR_mirror_optiboot __SECTION(.noinit);
 void get_mcusr_optiboot(void) __NAKED __SECTION(.init0);
 void get_mcusr_optiboot(void)
 {
-    //__asm__ __volatile__ ("mov %0, r2\n" : "=r" (MCUSR_mirror_optiboot) :);
     __asm__ __volatile__ ("mov %0, r2\n" : "=r" (MCUSR_mirror) :);
 }
 
@@ -663,16 +673,6 @@ void hwReset(const HW_RESET_t type)
             break;
     }
 }
-
-// disable watchdog early, we may have used it to do a hard reset
-// (the bootload will have to do this in case we have one)
-// s.a. get_mcusr()
-void wdt_init(void) __NAKED __SECTION(.init3);
-void wdt_init(void)
-{
-    wdt_disable();
-}
-
 
 /* ***** random number seeding ********************************************** */
 

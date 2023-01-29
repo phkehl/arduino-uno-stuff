@@ -51,7 +51,8 @@ static void sAppTask(void *pArg)
 
     while (ENDLESS)
     {
-        if (osSemaphoreTake(&sMeasureNow, 10000))
+        sysAssertSwWatchdog();
+        if (osSemaphoreTake(&sMeasureNow, 5000))
         {
             const uint32_t now = osTaskGetTicks();
             const double dt = (double)(now - prev) * 1e-3;
@@ -67,9 +68,7 @@ static void sAppTask(void *pArg)
             WARNING("no measurements?!");
         }
     }
-
 }
-
 
 // Initialise the user application
 void appInit(void)

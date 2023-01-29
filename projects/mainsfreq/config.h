@@ -25,6 +25,9 @@
 
 // #define FF_SYS_MON_STRLEN     128
 
+#define FF_SYS_SW_WATCHDOG 10
+#define BROKEN_WDT_RESET // FIXME
+
 // complete configuration by including the defaults
 #include "defconfig.h"
 
